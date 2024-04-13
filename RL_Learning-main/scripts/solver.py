@@ -15,7 +15,7 @@ from model import *
 
 class Solve:
     def __init__(self, env: grid_env.GridEnv):
-        self.gama = 0.9
+        self.gama = 0.9   #discount rate
         self.env = env
         self.action_space_size = env.action_space_size
         self.state_space_size = env.size ** 2
@@ -26,6 +26,9 @@ class Solve:
         self.policy = self.mean_policy.copy()
         self.writer = SummaryWriter("logs")  # 实例化SummaryWriter对象
 
+        print("action_space_size: {} state_space_size：{}" .format(self.action_space_size ,self.state_space_size) )
+        print("state_value.shape:{} , qvalue.shape:{} , mean_policy.shape:{}".format(self.state_value.shape,self.qvalue.shape, self.mean_policy.shape))
+        print('----------------------------------------------------------------')
     def random_greed_policy(self):
         """
         生成随机的greedy策略
@@ -35,6 +38,7 @@ class Solve:
         for state_index in range(self.state_space_size):
             action = np.random.choice(range(self.action_space_size))
             policy[state_index, action] = 1
+        print("random_choice_policy",policy)
         return policy
 
     def policy_evaluation(self, policy, tolerance=0.001, steps=10):

@@ -238,13 +238,15 @@ if __name__ == '__main__':
         3: np.array([0, -1]),
         4: np.array([0, 0]),
     }
-    uniform_policy = np.random.random(size=(25, 5))
-    # uniform_policy = np.ones(shape=(25, 5)) / 5
-    # for state in range(25):
-    #     for action in range(5):
-    #         policy = uniform_policy[state, action]
-    #         render.draw_action(pos=[state // 5, state % 5], toward=policy * 0.4 * action_to_direction[action],
-    #                            radius=0.03 + 0.07 * policy)
+    # uniform_policy = np.random.random(size=(25, 5))
+    uniform_policy = np.ones(shape=(25, 5)) / 5
+    print("uniform_policy:",uniform_policy)
+
+    for state in range(25):
+        for action in range(5):
+            policy = uniform_policy[state, action]
+            render.draw_action(pos=[state // 5, state % 5], toward=policy * 0.4 * action_to_direction[action],
+                               radius=0.03 + 0.07 * policy)
     for a in range(5):
         render.trajectory.append((a, a))
     render.show_frame()
