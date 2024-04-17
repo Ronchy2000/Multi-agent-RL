@@ -68,7 +68,8 @@ class  class_policy_iteration:
             length -= 1
             state = next_state
             action = next_action
-            _, reward, done, _, _ = self.env.step(action)
+            _, reward, done, _, _ = (self.env.step+
+                                     (action))
             next_state = self.env.pos2state(self.env.agent_location)
             next_action = np.random.choice(np.arange(len(policy[next_state])),
                                            p=policy[next_state])
