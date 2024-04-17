@@ -9,7 +9,7 @@ from torch.utils.tensorboard import SummaryWriter  # 导入SummaryWriter
 import grid_env
 
 
-class class_value_iteration:
+class class_value_iteration():
     def __init__(self, env: grid_env.GridEnv):
         self.gama = 0.9   #discount rate
         self.env = env
