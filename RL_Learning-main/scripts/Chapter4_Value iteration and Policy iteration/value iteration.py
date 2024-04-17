@@ -6,6 +6,9 @@ import numpy as np
 from torch.utils import data
 from torch.utils.tensorboard import SummaryWriter  # 导入SummaryWriter
 
+# 引用上级目录
+import sys
+sys.path.append("..")
 import grid_env
 
 
@@ -23,7 +26,7 @@ class class_value_iteration():
 
         self.mean_policy = np.ones(shape=(self.state_space_size, self.action_space_size)) / self.action_space_size
         self.policy = self.mean_policy.copy()
-        self.writer = SummaryWriter("logs")  # 实例化SummaryWriter对象
+        self.writer = SummaryWriter("../logs")  # 实例化SummaryWriter对象
 
         print("action_space_size: {} state_space_size：{}" .format(self.action_space_size ,self.state_space_size) )
         print("state_value.shape:{} , qvalue.shape:{} , mean_policy.shape:{}".format(self.state_value.shape,self.qvalue.shape, self.mean_policy.shape))
@@ -130,8 +133,8 @@ class class_value_iteration():
 
 if __name__ == "__main__":
     print("-----Begin!-----")
-    gird_world2x2 = grid_env.GridEnv(size=5, target=[1, 1],
-                           forbidden=[[1, 0]],
+    gird_world2x2 = grid_env.GridEnv(size=3, target=[2, 2],
+                           forbidden=[[1, 0],[2,1]],
                            render_mode='')
 
     solver = class_value_iteration(gird_world2x2)

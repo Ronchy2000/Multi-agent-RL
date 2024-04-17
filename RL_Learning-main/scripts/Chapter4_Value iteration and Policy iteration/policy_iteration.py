@@ -6,6 +6,9 @@ import numpy as np
 from torch.utils import data
 from torch.utils.tensorboard import SummaryWriter  # 导入SummaryWriter
 
+# 引用上级目录
+import sys
+sys.path.append("..")
 import grid_env
 
 class  class_policy_iteration:
@@ -23,7 +26,7 @@ class  class_policy_iteration:
 
         self.mean_policy = np.ones(shape=(self.state_space_size, self.action_space_size)) / self.action_space_size
         self.policy = self.mean_policy.copy()
-        self.writer = SummaryWriter("logs")  # 实例化SummaryWriter对象
+        self.writer = SummaryWriter("../logs")  # 实例化SummaryWriter对象
 
         print("action_space_size: {} state_space_size：{}".format(self.action_space_size, self.state_space_size))
         print("state_value.shape:{} , qvalue.shape:{} , mean_policy.shape:{}".format(self.state_value.shape,
@@ -70,7 +73,7 @@ class  class_policy_iteration:
         """
         state_value_k = np.ones(self.state_space_size)
         state_value = np.zeros(self.state_space_size)
-        while np.linalg.norm(state_value_k - state_value, ord=1) > tolerance:
+        while np.linalg.norm(state_value_k - state_value, ord=1) > tolerance:  # While j < jtruncate, do
             state_value = state_value_k.copy()
             for state in range(self.state_space_size):
                 value = 0
