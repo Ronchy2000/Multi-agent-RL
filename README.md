@@ -5,7 +5,8 @@
 ---
 
 转载自:https://github.com/jwk1rose/RL_Learning
-`重构jwk1rose的代码，尽可能的将其分为不同的章节，并写好注释。`
+
+>Refactor the code of jwk1rose, divide it into as many sections as possible and write comments.
 
 ##  RL_Learning 🎉️
 
@@ -38,3 +39,7 @@
 - [Personal Project management link(Feishu)](https://m6tsmtxj3r.feishu.cn/docx/KKLTdnhpyo6ijOxJQUncwkYynzf?from=from_copylink)
 
 ongoing...
+---
+Any Questions email me Plz.
+
+Fight for MARL.
