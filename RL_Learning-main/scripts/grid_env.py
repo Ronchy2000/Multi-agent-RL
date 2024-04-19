@@ -96,8 +96,15 @@ class GridEnv(gym.Env):
     def render(self) -> Optional[Union[RenderFrame, List[RenderFrame]]]:
         if self.render_mode == "video":
             self.render_.save_video('image/' + str(time.time()))
+
         self.render_.show_frame(0.3)
         return None
+    def render_clear(self):
+        self.render_.close_frame()
+        return None
+
+    def plot_title(self,title = "title"):
+        self.render_.plot_title(title)
 
     def get_obs(self) -> ObsType:
         return {"agent": self.agent_location, "target": self.target_location, "barrier": self.forbidden_location}

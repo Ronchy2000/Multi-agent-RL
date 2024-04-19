@@ -150,7 +150,15 @@ class Render:
         :param t: 持续时间
         :return: None
         """
+
         self.fig.show()
+    def close_frame(self,) -> None:
+        self.fig.clear()
+
+    def plot_title(self,title = "title"):
+        plt.subplots_adjust(top=0.9)  # 调整顶部空间给标题
+        plt.suptitle(title, y=0.95,fontsize = 16)  # 设置标题并调整垂直位置
+
 
     def save_frame(self, name: str) -> None:
         """
@@ -249,4 +257,6 @@ if __name__ == '__main__':
                                radius=0.03 + 0.07 * policy)
     for a in range(5):
         render.trajectory.append((a, a))
+    render.plot_title()
+
     render.show_frame()

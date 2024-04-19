@@ -103,21 +103,26 @@ class MC_Basic:
 
 
 if __name__ == "__main__":
-    gird_world2x2 = grid_env.GridEnv(size=5, target=[2, 3],
-                            forbidden=[[1, 1],[2,1],[2,2],[1,3],[3,3],[1,4]],
-                            render_mode='')
-    solver = MC_Basic(gird_world2x2)
-    start_time = time.time()
+    # episode_length = [1]
+    episode_length = [1,2,3,4,14,15,30,100]
+    # episode_length = [1, 2, 3, 4]
+    for i in episode_length:
+        gird_world = grid_env.GridEnv(size=5, target=[2, 3],
+                                      forbidden=[[1, 1], [2, 1], [2, 2], [1, 3], [3, 3], [1, 4]],
+                                      render_mode='')
+        solver = MC_Basic(gird_world)
+        start_time = time.time()
 
-    solver.state_value = solver.mc_basic(length=3, epochs=10)
+        solver.state_value = solver.mc_basic(length=i, epochs=10)
 
-    end_time = time.time()
+        end_time = time.time()
+        cost_time = end_time - start_time
+        print("episode_length:{} that the cost_time is:{}".format(i,round(cost_time, 2)))
 
-    cost_time = end_time - start_time
-    print("cost_time:{}".format(round(cost_time, 2)))
-    print(len(gird_world2x2.render_.trajectory))
-
-    solver.show_policy()  # solver.env.render()
-    solver.show_state_value(solver.state_value, y_offset=0.25)
-
-    gird_world2x2.render()
+        print(len(gird_world.render_.trajectory))
+        solver.show_policy()  # solver.env.render()
+        solver.show_state_value(solver.state_value, y_offset=0.25)
+        gird_world.plot_title("Episode_length = "+str(i))
+        gird_world.render()
+        # gird_world.render_clear()
+        print("--------------------")
