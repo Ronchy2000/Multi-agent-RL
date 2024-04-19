@@ -26,10 +26,10 @@ class  class_policy_iteration:
 
         self.mean_policy = np.ones(shape=(self.state_space_size, self.action_space_size)) / self.action_space_size
         self.policy = self.mean_policy.copy()
-        self.writer = SummaryWriter("../logs")  # 实例化SummaryWriter对象
+        self.writer = SummaryWriter("./logs")  # 实例化SummaryWriter对象
 
         print("action_space_size: {} state_space_size：{}".format(self.action_space_size, self.state_space_size))
-        print("state_value.shape:{} , qvalue.shape:{} , mean_policy.shape:{}".format(self.state_value.shape,
+        print("state_value.shape:{} , qvalue.shape:{} , mean_p olicy.shape:{}".format(self.state_value.shape,
                                                                                      self.qvalue.shape,
                                                                                      self.mean_policy.shape))
         print("\n分别是non-forbidden area, target area, forbidden area 以及撞墙:")

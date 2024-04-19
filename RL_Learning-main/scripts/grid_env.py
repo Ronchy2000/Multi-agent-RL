@@ -47,7 +47,7 @@ class GridEnv(gym.Env):
         self.action_space, self.action_space_size = spaces.Discrete(5), spaces.Discrete(5).n
 
         # self.reward_list = [0, 1, -10, -10]
-        self.reward_list = [0, 1, -1, -1]
+        self.reward_list = [0, 1, -1, -10]
 
         self.observation_space = spaces.Dict(
             {
