@@ -1,9 +1,6 @@
 import random
 import time
-
-import matplotlib.pyplot as plt
 import numpy as np
-from torch.utils import data
 from torch.utils.tensorboard import SummaryWriter  # 导入SummaryWriter
 
 # 引用上级目录
@@ -61,7 +58,7 @@ class MC_Basic:
         :param start_state: 起始state
         :param start_action: 起始action
         :param length: 一个episode 长度
-        :return: 一个 state,action,reward,next_state,next_action 序列
+        :return: 一个 state,action,reward,next_state,next_action 列表，其中是字典格式
         """
         self.env.agent_location = self.env.state2pos(start_state)
         episode = []
@@ -76,7 +73,7 @@ class MC_Basic:
             next_action = np.random.choice(np.arange(len(policy[next_state])),
                                            p=policy[next_state])
             episode.append({"state": state, "action": action, "reward": reward, "next_state": next_state,
-                            "next_action": next_action})
+                            "next_action": next_action})  #向列表中添加一个字典
         return episode
 
     def mc_basic(self, length=300, epochs=10):
@@ -89,6 +86,7 @@ class MC_Basic:
                 for action in range(self.action_space_size):
                     episode = self.obtain_episode(self.policy, state, action, length)
                     g = 0
+                    print("obtain_episode,type:,{}; {}".format(type(episode), episode))
                     for step in range(len(episode)-1, -1, -1):
                         g = episode[step]['reward'] + self.gama * g
                     self.qvalue[state][action] = g
@@ -103,8 +101,8 @@ class MC_Basic:
 
 
 if __name__ == "__main__":
-    # episode_length = [1]
-    episode_length = [1,2,3,4,14,15,30,100]
+    episode_length = [15]
+    # episode_length = [1,2,3,4,14,15,30,100]
     # episode_length = [1, 2, 3, 4]
     for i in episode_length:
         gird_world = grid_env.GridEnv(size=5, target=[2, 3],

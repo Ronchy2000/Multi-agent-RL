@@ -47,8 +47,8 @@ class GridEnv(gym.Env):
         self.action_space, self.action_space_size = spaces.Discrete(5), spaces.Discrete(5).n
 
         # self.reward_list = [0, 1, -10, -10]
-        self.reward_list = [0, 1, -1, -10]
-
+        # self.reward_list = [0, 1, -1, -10]
+        self.reward_list = [0, 1, -10, -1]  #forbidden area:-10 ;  撞墙:-1
         self.observation_space = spaces.Dict(
             {
                 "agent": spaces.Box(0, size - 1, shape=(2,), dtype=int),
