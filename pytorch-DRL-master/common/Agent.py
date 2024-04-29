@@ -1,13 +1,10 @@
 
-import os
-# print(os.getcwd())
-
 import torch as th
 
 import numpy as np
 
-from theMemory import ReplayMemory
-from utils import identity
+from common.Memory import ReplayMemory
+from common.utils import identity
 
 
 class Agent(object):
