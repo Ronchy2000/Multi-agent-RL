@@ -1,6 +1,8 @@
 
 import random
 import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
 
 class RandomGraph:
     def __init__(self, V):
@@ -22,17 +24,17 @@ class RandomGraph:
   
     def printEGadjcencyMatrixWithRAndS(self):
         for row in self.adj_m:
-            print(row) 
+            print(row)
                 
     def printEGadjcencyMatrixWithNoRAndS(self):
          for row in self.adj:
-                print(row)  
+                print(row)
                 
     def getRGWithRiskEdgesAndSupportNodes(self):
         return self.adj_m
     
     def getRGWithNoRiskEdgesAndSupportNodes(self):
-        return self.adj 
+        return self.adj
     
     def getTotalRiskyEdges(self): # unrepeated
             return self.R_E
@@ -49,7 +51,7 @@ class RandomGraph:
     # get environment graph edges 
     def getEnvironmentGraphEdges(self):  
         #print("Environment Graph Edges") 
-        EG_Edges =  []        
+        EG_Edges =  []
         for i in range(self.V):
             for j in range(self.V):
                 if self.adj[i][j]!=0:  
@@ -59,8 +61,8 @@ class RandomGraph:
     def generateRandomGraph(self):
         #print("?????????????????????????", self.R_E)
         np.random.seed(111)
-        adjacency_matrix11 = np.random.randint(0,2,(self.V,self.V))
-        adjacency_matrix1 = np.tril(adjacency_matrix11) + np.tril(adjacency_matrix11, -1).T
+        adjacency_matrix11 = np.random.randint(0,2,(self.V,self.V))  #generate a matrix, with size: self.V * self.V, each element is valued 0 or 1
+        adjacency_matrix1 = np.tril(adjacency_matrix11) + np.tril(adjacency_matrix11, -1).T  # 得到对称阵
         adjacency_matrix= adjacency_matrix1.tolist()
         #print(">>>>>>>>>>>>>>>>>>>>>>>>>>", self.R_E)
         for i in range(self.V):
@@ -69,7 +71,7 @@ class RandomGraph:
                     self.adj_m[i][j]=0
                     self.adj[i][j] = 0
                 if i!=j and adjacency_matrix[i][j]==1:
-                    self.adj_m[i][j]=[self.edge_cost,()] 
+                    self.adj_m[i][j]=[self.edge_cost,()]  # common cost = 10,adj_m存储 除了边的权重还提供了额外的空间来存储其他与边相关的信息
                     self.adj[i][j] = self.edge_cost 
     def generateRGWithSupportNodesAndRiskyEdges(self, risky_edges):
         self.R_E = risky_edges
@@ -100,4 +102,14 @@ class RandomGraph:
                             self.adj[i][j] = self.edge_cost 
                             self.adj[j][i] = self.edge_cost  
                             
+
+if __name__ == "__main__":
+    graph = RandomGraph(3)
+    graph.generateRandomGraph()
+    graph.generateRGWithSupportNodesAndRiskyEdges(1)
+    # nx.draw(graph, with_labels=True, node_color='lightblue', font_weight='bold', node_size=700, font_size=18)
+    # plt.show()
+    print("adj_m:",graph.adj_m)
+    print("------------------------------")
+    print("adj:", graph.adj)
     

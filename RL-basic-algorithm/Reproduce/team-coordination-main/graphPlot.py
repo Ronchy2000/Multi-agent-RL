@@ -107,3 +107,9 @@ def plot_environment_graph_test(E):
         a.margins(0.10)
     fig.tight_layout()
     plt.show()
+
+if __name__ == "__main__":
+    # 假设你的邻接矩阵是 adj_matrix
+    # adj_matrix = np.matrix([[0, 10, 0], [10, 0, 10], [0, 10, 0]])
+    adj_matrix = [[0, 10, 0], [10, 0, 10], [0, 10, 0]]
+    plot_environment_graph(adj_matrix)

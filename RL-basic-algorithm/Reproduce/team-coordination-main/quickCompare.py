@@ -12,24 +12,30 @@ from criticalJSG import CJSGraph
 from randomGraphGenerator import RandomGraph
 import time
 import graphCompare
+import networkx as nx
+import matplotlib.pyplot as plt
+import numpy as np
 
 ################# Static Environment Graph #####################
 ###### (A) 3 nodes, 2 edges with 1 risky edge with 2 support nodes 
-V = 3
-S11 = (0,0) # start: 0 node
-Sgg = (2,2) # goal: 2 node
-adj_ws = [[0,[10,(0,2)],float('inf')], # 3 nodes 2 edges 
-               [[10,(0,2)],0,[10,()]],
-               [float('inf'),[10,()],0]]
-adj_ns = [[0,10,0],
-                [10,0,10],
-                [0,10,0]]    
+# V = 3
+# S11 = (0,0) # start: 0 node
+# Sgg = (2,2) # goal: 2 node
+# adj_ws = [[0,[10,(0,2)],float('inf')], # 3 nodes 2 edges
+#                [[10,(0,2)],0,[10,()]],
+#                [float('inf'),[10,()],0]]
+# adj_ns = [[0,10,0],
+#           [10,0,10],
+#           [0,10,0]]
+# graph = nx.from_numpy_array(np.array(adj_ns))
+# nx.draw_networkx(graph)  # draw
+# plt.show()
 
 ####### (B) 4 nodes, 3 edges with 1 risky edge each with 2 support nodes 
 V = 4
 S11 = (0,0) # start: 0 node
 Sgg = (3,3) # goal: 3 node
-adj_ws = [[0,[10,(0,2)],float('inf'),float('inf')], # 4 nodes 3 edges 
+adj_ws = [[0,[10,(0,2)],float('inf'),float('inf')], # 4 nodes 3 edges
         [[10,(0,2)],0,[10,()],float('inf')],
         [float('inf'),[10,()],0, [10,()]],
         [float('inf'),float('inf'),[10,()],0]]
@@ -37,23 +43,25 @@ adj_ns = [[0,10,0,0],
         [10,0,10,0],
         [0,10,0,10],
         [0,0,10,0]]
-
+graph = nx.from_numpy_array(np.array(adj_ns))
+nx.draw_networkx(graph)  # draw
+plt.show()
 ###### (C) 6 node, 6 edges with 3 risky edge  each with 2 support nodes
-V = 6
-S11 = (0,0) # start: 0 node
-Sgg = (5,5) # goal: 5 node
-adj_ws = [[0, [10, (0, 2)], float('inf'), float('inf'), float('inf'), float('inf')],
-    [[10, (0, 2)], 0, [10, ()], [10, ()], float('inf'), float('inf')],
-    [float('inf'), [10, ()], 0, float('inf'), [10, (2, 5)], float('inf')],
-    [float('inf'), [10, ()], float('inf'), 0, [10, (3, 5)], float('inf')],
-    [float('inf'), float('inf'), [10, (2, 5)], [10, (3, 5)], 0, [10, ()]],
-    [float('inf'), float('inf'), float('inf'), float('inf'), [10, ()], 0]]
-adj_ns = [[0, 10, 0, 0, 0, 0],
-           [10, 0, 10, 10, 0, 0],
-           [0, 10, 0, 0, 10, 0],
-           [0, 10, 0, 0, 10, 0],
-           [0, 0, 10, 10, 0, 10],
-           [0, 0, 0, 0, 10, 0]]
+# V = 6
+# S11 = (0,0) # start: 0 node
+# Sgg = (5,5) # goal: 5 node
+# adj_ws = [[0, [10, (0, 2)], float('inf'), float('inf'), float('inf'), float('inf')],
+#     [[10, (0, 2)], 0, [10, ()], [10, ()], float('inf'), float('inf')],
+#     [float('inf'), [10, ()], 0, float('inf'), [10, (2, 5)], float('inf')],
+#     [float('inf'), [10, ()], float('inf'), 0, [10, (3, 5)], float('inf')],
+#     [float('inf'), float('inf'), [10, (2, 5)], [10, (3, 5)], 0, [10, ()]],
+#     [float('inf'), float('inf'), float('inf'), float('inf'), [10, ()], 0]]
+# adj_ns = [[0, 10, 0, 0, 0, 0],
+#            [10, 0, 10, 10, 0, 0],
+#            [0, 10, 0, 0, 10, 0],
+#            [0, 10, 0, 0, 10, 0],
+#            [0, 0, 10, 10, 0, 10],
+#            [0, 0, 0, 0, 10, 0]]
 
 ###### (D) 7 nodes 6 edges with 3 risky edges each with 2 support nodes
 # V = 7
