@@ -62,7 +62,7 @@ class RandomGraph:
         #print("?????????????????????????", self.R_E)
         np.random.seed(111)
         adjacency_matrix11 = np.random.randint(0,2,(self.V,self.V))  #generate a matrix, with size: self.V * self.V, each element is valued 0 or 1
-        adjacency_matrix1 = np.tril(adjacency_matrix11) + np.tril(adjacency_matrix11, -1).T  # 得到对称阵
+        adjacency_matrix1 = np.tril(adjacency_matrix11) + np.tril(adjacency_matrix11, -1).T  # 得到对称阵 ，tril 得到下三角阵
         adjacency_matrix= adjacency_matrix1.tolist()
         #print(">>>>>>>>>>>>>>>>>>>>>>>>>>", self.R_E)
         for i in range(self.V):
@@ -112,4 +112,3 @@ if __name__ == "__main__":
     print("adj_m:",graph.adj_m)
     print("------------------------------")
     print("adj:", graph.adj)
-    
