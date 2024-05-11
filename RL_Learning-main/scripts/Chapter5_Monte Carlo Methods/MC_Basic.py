@@ -76,7 +76,7 @@ class MC_Basic:
                             "next_action": next_action})  #向列表中添加一个字典
         return episode
 
-    def mc_basic(self, length=300, epochs=10):
+    def mc_basic(self, length=50, epochs=10):
         """
         :param length: 每一个 state-action 对的长度
         :return:
@@ -86,7 +86,7 @@ class MC_Basic:
                 for action in range(self.action_space_size):
                     episode = self.obtain_episode(self.policy, state, action, length)
                     g = 0
-                    print("obtain_episode,type:,{}; {}".format(type(episode), episode))
+                    print("obtain_episode,type:,{}; {}".format(type(episode[0]), episode))
                     for step in range(len(episode)-1, -1, -1):
                         g = episode[step]['reward'] + self.gama * g
                     self.qvalue[state][action] = g
