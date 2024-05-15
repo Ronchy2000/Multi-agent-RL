@@ -44,16 +44,17 @@ class GridEnv(gym.Env):
             self.forbidden_location.append(np.array(fob))
         self.target_location = np.array(target)
         # 初始化 动作空间 观测空间
-        self.action_space, self.action_space_size = spaces.Discrete(5), spaces.Discrete(5).n
+        self.action_space, self.action_space_size = spaces.Discrete(5,seed = 42), spaces.Discrete(5).n  #seed = 42, “42 是 “生命、宇宙和一切终极问题的答案”
+        print("self.action_space:{}, self.action_space_size:{}".format(self.action_space, self.action_space_size))  #从0开始索引
 
         # self.reward_list = [0, 1, -10, -10]
         # self.reward_list = [0, 1, -1, -10]
         self.reward_list = [0, 1, -10, -1]  #forbidden area:-10 ;  撞墙:-1
         self.observation_space = spaces.Dict(
             {
-                "agent": spaces.Box(0, size - 1, shape=(2,), dtype=int),
-                "target": spaces.Box(0, size - 1, shape=(2,), dtype=int),
-                "barrier": spaces.Box(0, size - 1, shape=(2,), dtype=int),
+                "agent": spaces.Box(low = 0, high = size - 1, shape=(2,), dtype=int),
+                "target": spaces.Box(low = 0, high = size - 1, shape=(2,), dtype=int),
+                "barrier": spaces.Box(low = 0, high = size - 1, shape=(2,), dtype=int),
             }
         )
         # action to pos偏移量 的一个map

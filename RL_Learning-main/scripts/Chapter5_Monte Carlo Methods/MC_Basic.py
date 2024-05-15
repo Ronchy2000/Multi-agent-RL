@@ -74,7 +74,7 @@ class MC_Basic:
                                            p=policy[next_state])
             episode.append({"state": state, "action": action, "reward": reward, "next_state": next_state,
                             "next_action": next_action})  #向列表中添加一个字典
-        return episode
+        return episode  #返回列表，其中的元素为字典
 
     def mc_basic(self, length=50, epochs=10):
         """
@@ -87,6 +87,7 @@ class MC_Basic:
                     episode = self.obtain_episode(self.policy, state, action, length)
                     g = 0
                     print("obtain_episode,type:,{}; {}".format(type(episode[0]), episode))
+                    # 这里原作者利用递归的思想求qvalue,实际上可以傻瓜式求解。
                     for step in range(len(episode)-1, -1, -1):
                         g = episode[step]['reward'] + self.gama * g
                     self.qvalue[state][action] = g
@@ -98,7 +99,31 @@ class MC_Basic:
             print(epoch)
         return self.state_value
 
+    def mc_basic_simple(self, length=50, epochs=10):
+        """
+        :param length: 每一个 state-action 对的长度
+        :return:
+        """
+        for epoch in range(epochs):
+            for state in range(self.state_space_size):
+                for action in range(self.action_space_size):
+                    episode = self.obtain_episode(self.policy, state, action, length)
 
+                    #Policy evaluation:
+                    sum_qvalue = 0
+                    for i in range(len(episode)-1):
+                        sum_qvalue += episode[i]['reward']
+                    self.qvalue[state][action] = sum_qvalue
+
+                #Policy improvement:
+                max_index = np.argmax(self.qvalue[state])
+                max_qvalue = np.max(self.qvalue[state])
+                self.policy[state,:] = np.zeros(self.action_space_size)
+                self.policy[state,max_index] = 1
+
+                self.state_value[state] = max_qvalue
+            print("epoch:", epoch)
+        return self.state_value
 
 if __name__ == "__main__":
     episode_length = [15]
@@ -111,8 +136,8 @@ if __name__ == "__main__":
         solver = MC_Basic(gird_world)
         start_time = time.time()
 
-        solver.state_value = solver.mc_basic(length=i, epochs=10)
-
+        solver.state_value = solver.mc_basic_simple(length=i, epochs=10)
+        print()
         end_time = time.time()
         cost_time = end_time - start_time
         print("episode_length:{} that the cost_time is:{}".format(i,round(cost_time, 2)))

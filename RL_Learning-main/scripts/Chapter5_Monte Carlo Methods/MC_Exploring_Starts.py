@@ -23,6 +23,7 @@ class MC_Exploring_Starts:
         self.reward_space_size, self.reward_list = len(self.env.reward_list), self.env.reward_list  # [-10,-10,0,1]  reward list
         self.state_value = np.zeros(shape=self.state_space_size) #一维列表
         print("self.state_value:",self.state_value)
+        #Q表和policy 维数一样
         self.qvalue = np.zeros(shape=(self.state_space_size, self.action_space_size))  # 二维： state数 x action数
         self.mean_policy = np.ones(shape=(self.state_space_size, self.action_space_size)) / self.action_space_size  #平均策略，即取每个动作的概率均等
         self.policy = self.mean_policy.copy()
@@ -51,3 +52,52 @@ class MC_Exploring_Starts:
             self.env.render_.write_word(pos=self.env.state2pos(state), word=str(round(state_value[state], 1)),
                                         y_offset=y_offset,
                                         size_discount=0.7)
+
+    def obtain_episode(self, policy, start_state, start_action, length):
+        """
+        :param policy: 由指定策略产生episode
+        :param start_state: 起始state
+        :param start_action: 起始action
+        :param length: 一个episode 长度
+        :return: 一个 state,action,reward,next_state,next_action 列表，其中是字典格式
+        """
+        self.env.agent_location = self.env.state2pos(start_state)
+        episode = []
+        next_action = start_action
+        next_state = start_state
+        while length > 0:
+            length -= 1
+            state = next_state
+            action = next_action
+            _, reward, done, _, _ = self.env.step(action)
+            next_state = self.env.pos2state(self.env.agent_location)
+            next_action = np.random.choice(np.arange(len(policy[next_state])),  #[0, len(policy[next_state]) 中随机抽一个随机数
+                                           p=policy[next_state])  #p参数的例子： p=[0.1, 0.2, 0.3, 0.1, 0.3]的概率从 [0,1,2,3,4]这四个数中选取3个数
+            episode.append({"state": state, "action": action, "reward": reward, "next_state": next_state,
+                            "next_action": next_action})  #向列表中添加一个字典
+        return episode
+
+    def mc_exploring_starts(self, length=50, epochs=10):
+        """
+        :param length: 每一个 state-action 对的长度
+        :return:
+        """
+        for epoch in range(epochs):
+            episode = self.obtain_episode(self.policy, state, action, length)  # policy is mean policy
+
+            for state in range(self.state_space_size):
+                for action in range(self.action_space_size):
+                    episode = self.obtain_episode(self.policy, state, action, length)  # policy is mean policy
+                    g = 0
+                    print("obtain_episode,type:,{}; {}".format(type(episode[0]), episode))
+                    for step in range(len(episode)-1, -1, -1):
+                        g = episode[step]['reward'] + self.gama * g
+                    self.qvalue[state][action] = g
+                qvalue_star = self.qvalue[state].max()
+                action_star = self.qvalue[state].tolist().index(qvalue_star)
+                self.policy[state] = np.zeros(shape=self.action_space_size)
+                self.policy[state, action_star] = 1
+                self.state_value[state] = qvalue_star.copy()
+            print(epoch)
+        return self.state_value
+
