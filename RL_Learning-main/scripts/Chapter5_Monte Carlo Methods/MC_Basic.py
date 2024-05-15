@@ -8,11 +8,11 @@ import sys
 sys.path.append("..")
 import grid_env
 
+from tqdm import tqdm
+
 
 '''
 MC Basic 是个Model free 的方法，与value iteration和 Policy iteration对比，数据是MC的必需品。
-
-
 '''
 class MC_Basic:
     def __init__(self, env = grid_env.GridEnv):
@@ -98,7 +98,10 @@ class MC_Basic:
                 self.state_value[state] = qvalue_star.copy()
             print(epoch)
         return self.state_value
-
+    """
+    mc_basic_simple函数与书中的MC_basic算法伪代码一致。  2024.5.15
+    return: self.state_value 为了render结果图，即可视化
+    """
     def mc_basic_simple(self, length=50, epochs=10):
         """
         :param length: 每一个 state-action 对的长度
@@ -125,6 +128,33 @@ class MC_Basic:
             print("epoch:", epoch)
         return self.state_value
 
+
+    def mc_basic_simple_GUI(self, length=50, epochs=10):
+        """
+        :param length: 每一个 state-action 对的长度
+        """
+        for epoch in range(epochs):
+            for state in tqdm(range(self.state_space_size), desc = f"Epoch {epoch}/{epochs}"):
+                for action in range(self.action_space_size):
+                    episode = self.obtain_episode(self.policy, state, action, length)
+
+                    #Policy evaluation:
+                    sum_qvalue = 0
+                    for i in range(len(episode)-1):
+                        sum_qvalue += episode[i]['reward']
+                    self.qvalue[state][action] = sum_qvalue
+
+                #Policy improvement:
+                max_index = np.argmax(self.qvalue[state])
+                max_qvalue = np.max(self.qvalue[state])
+                self.policy[state,:] = np.zeros(self.action_space_size)
+                self.policy[state,max_index] = 1
+
+                self.state_value[state] = max_qvalue
+            # print("epoch:", epoch)
+
+
+
 if __name__ == "__main__":
     episode_length = [15]
     # episode_length = [1,2,3,4,14,15,30,100]
@@ -136,8 +166,9 @@ if __name__ == "__main__":
         solver = MC_Basic(gird_world)
         start_time = time.time()
 
-        solver.state_value = solver.mc_basic_simple(length=i, epochs=10)
-        print()
+        # solver.state_value = solver.mc_basic_simple(length=i, epochs=10)  #原作者代码
+        solver.mc_basic_simple_GUI(length=i, epochs=10)  #修改后，利用tqdm显示epoch进度
+
         end_time = time.time()
         cost_time = end_time - start_time
         print("episode_length:{} that the cost_time is:{}".format(i,round(cost_time, 2)))
@@ -149,3 +180,26 @@ if __name__ == "__main__":
         gird_world.render()
         # gird_world.render_clear()
         print("--------------------")
+
+
+
+
+"""
+tqdm库测试
+"""
+if __name__ == "__main1__":
+    # 记录开始时间
+    start_time = time.time()
+
+    # 迭代过程
+    for i in tqdm(range(100)):
+        time.sleep(0.1)  # 模拟一些耗时的操作
+
+    # 记录结束时间
+    end_time = time.time()
+
+    # 计算运行时间
+    elapsed_time = end_time - start_time
+
+    # 在 tqdm 进度条描述中显示时间信息
+    print("Algorithm finished in {:.2f} seconds.".format(elapsed_time))
