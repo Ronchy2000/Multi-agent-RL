@@ -15,7 +15,7 @@ MC Basic 是个Model free 的方法，与value iteration和 Policy iteration对�
 
 '''
 class MC_Basic:
-    def __init__(self, env: grid_env.GridEnv):
+    def __init__(self, env = grid_env.GridEnv):
         self.gama = 0.9   #discount rate
         self.env = env
         self.action_space_size = env.action_space_size
