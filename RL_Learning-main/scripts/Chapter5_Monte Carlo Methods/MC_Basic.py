@@ -58,7 +58,7 @@ class MC_Basic:
         :param start_state: 起始state
         :param start_action: 起始action
         :param length: 一个episode 长度
-        :return: 一个 state,action,reward,next_state,next_action 列表，其中是字典格式
+        :return: 一个列表，其中是字典格式: state,action,reward,next_state,next_action
         """
         self.env.agent_location = self.env.state2pos(start_state)
         episode = []
@@ -136,6 +136,7 @@ class MC_Basic:
         for epoch in range(epochs):
             for state in tqdm(range(self.state_space_size), desc = f"Epoch {epoch}/{epochs}"):
                 for action in range(self.action_space_size):
+                    # collect all the episodes starting from the same state-action pair
                     episode = self.obtain_episode(self.policy, state, action, length)
 
                     #Policy evaluation:

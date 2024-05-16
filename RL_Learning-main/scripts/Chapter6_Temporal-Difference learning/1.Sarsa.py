@@ -8,5 +8,9 @@ import sys
 sys.path.append("..")
 import grid_env
 
-
-class
+"""
+SARSA: State - action - reward - state - action
+"""
+class Sarsa():
+    def __init__(self):
+        pass

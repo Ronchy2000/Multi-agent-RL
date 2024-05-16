@@ -77,7 +77,7 @@ class MC_Exploring_Starts:
                             "next_action": next_action})  #向列表中添加一个字典
         return episode
 
-    def mc_exploring_starts(self, length=50, epochs=10):
+    def mc_exploring_starts_simple(self, length=50, epochs=10):
         """
         :param length: 每一个 state-action 对的长度
         :return:
@@ -101,3 +101,35 @@ class MC_Exploring_Starts:
             print(epoch)
         return self.state_value
 
+    def mc_exploring_starts(self, length=10):
+        time_start = time.time()
+        policy = self.mean_policy.copy()
+        qvalue = self.qvalue.copy()
+        returns = [[[0 for row in range(1)] for col in range(5)] for block in range(25)]
+        while np.linalg.norm(policy - self.policy, ord=1) > 0.001:
+            policy = self.policy.copy()
+            for state in range(self.state_space_size):
+                for action in range(self.action_space_size):
+                    visit_list = []
+                    g = 0
+                    episode = self.obtain_episode(policy=self.policy, start_state=state, start_action=action,
+                                                  length=length)
+                    for step in range(len(episode) - 1, -1, -1):
+                        reward = episode[step]['reward']
+                        state = episode[step]['state']
+                        action = episode[step]['action']
+                        g = self.gama * g + reward
+                        ##Exploring Starts
+                        # first visit
+                        if [state, action] not in visit_list:
+                            visit_list.append([state, action])
+                            returns[state][action].append(g)
+                            qvalue[state, action] = np.array(returns[state][action]).mean()
+                            qvalue_star = qvalue[state].max()
+                            action_star = qvalue[state].tolist().index(qvalue_star)
+                            self.policy[state] = np.zeros(shape=self.action_space_size).copy()
+                            self.policy[state, action_star] = 1
+            print(np.linalg.norm(policy - self.policy, ord=1))
+
+        time_end = time.time()
+        print("mc_exploring_starts cost time:" + str(time_end - time_start))
