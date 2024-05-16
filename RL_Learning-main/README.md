@@ -1,4 +1,6 @@
-转载：https://github.com/jwk1rose/RL_Learning
+转载自：https://github.com/jwk1rose/RL_Learning
+
+>本人正在重构所有代码ing...
 
 # RL_Learning 🎉️
 
