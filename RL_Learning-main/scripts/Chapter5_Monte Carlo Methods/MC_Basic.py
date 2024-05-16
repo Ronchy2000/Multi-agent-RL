@@ -91,6 +91,7 @@ class MC_Basic:
                     for step in range(len(episode)-1, -1, -1):
                         g = episode[step]['reward'] + self.gama * g
                     self.qvalue[state][action] = g
+
                 qvalue_star = self.qvalue[state].max()
                 action_star = self.qvalue[state].tolist().index(qvalue_star)
                 self.policy[state] = np.zeros(shape=self.action_space_size)
@@ -109,15 +110,19 @@ class MC_Basic:
         """
         for epoch in range(epochs):
             for state in range(self.state_space_size):
+                """
+                Page97: The first strategy is, in the policy evaluation step, 
+                to collect all the episodes starting from the same state-action pair and then approximate the action 
+                value using the average return of these episodes. This strategy is adopted in the MC Basic algorithm.
+                """
                 for action in range(self.action_space_size):
                     episode = self.obtain_episode(self.policy, state, action, length)
 
                     #Policy evaluation:
                     sum_qvalue = 0
                     for i in range(len(episode)-1):
-                        sum_qvalue += episode[i]['reward']
+                        sum_qvalue += (self.gama**i) * episode[i]['reward']
                     self.qvalue[state][action] = sum_qvalue
-
                 #Policy improvement:
                 max_index = np.argmax(self.qvalue[state])
                 max_qvalue = np.max(self.qvalue[state])
@@ -142,7 +147,7 @@ class MC_Basic:
                     #Policy evaluation:
                     sum_qvalue = 0
                     for i in range(len(episode)-1):
-                        sum_qvalue += episode[i]['reward']
+                        sum_qvalue += (self.gama**i) * episode[i]['reward']
                     self.qvalue[state][action] = sum_qvalue
 
                 #Policy improvement:
@@ -167,8 +172,8 @@ if __name__ == "__main__":
         solver = MC_Basic(gird_world)
         start_time = time.time()
 
-        # solver.state_value = solver.mc_basic_simple(length=i, epochs=10)  #原作者代码
-        solver.mc_basic_simple_GUI(length=i, epochs=10)  #修改后，利用tqdm显示epoch进度
+        solver.state_value = solver.mc_basic_simple(length=i, epochs=10)  #原作者代码
+        # solver.mc_basic_simple_GUI(length=i, epochs=10)  #修改后，利用tqdm显示epoch进度
 
         end_time = time.time()
         cost_time = end_time - start_time

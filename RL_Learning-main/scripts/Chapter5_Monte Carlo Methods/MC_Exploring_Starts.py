@@ -88,18 +88,17 @@ class MC_Exploring_Starts:
             for state in range(self.state_space_size):
                 for action in range(self.action_space_size):
                     episode = self.obtain_episode(self.policy, state, action, length)  # policy is mean policy
-                    g = 0
                     print("obtain_episode,type:,{}; {}".format(type(episode[0]), episode))
-                    for step in range(len(episode)-1, -1, -1):
-                        g = episode[step]['reward'] + self.gama * g
-                    self.qvalue[state][action] = g
-                qvalue_star = self.qvalue[state].max()
-                action_star = self.qvalue[state].tolist().index(qvalue_star)
-                self.policy[state] = np.zeros(shape=self.action_space_size)
-                self.policy[state, action_star] = 1
-                self.state_value[state] = qvalue_star.copy()
-            print(epoch)
-        return self.state_value
+                    # Policy evaluation:
+                    sum_qvalue = 0
+                    for i in range(len(episode) - 1):
+                        sum_qvalue += episode[i]['reward']
+                    self.qvalue[state][action] = sum_qvalue
+
+                # Policy improvement:
+                max_index = np.argmax(self.qvalue[state]) # qvalue_star
+                max_qvalue = np.max(self.qvalue[state]) #action_star
+
 
     def mc_exploring_starts(self, length=10):
         time_start = time.time()
