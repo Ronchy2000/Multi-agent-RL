@@ -76,6 +76,11 @@ class MC_Basic:
                             "next_action": next_action})  #向列表中添加一个字典
         return episode  #返回列表，其中的元素为字典
 
+
+    """
+    jkrose作者这个代码不是MC_basic代码，而是MC_exploring_start every visit形式的代码。
+    MC_Basic算法请查看mc_basic_simple() 函数
+    """
     def mc_basic(self, length=50, epochs=10):
         """
         :param length: 每一个 state-action 对的长度
@@ -103,32 +108,39 @@ class MC_Basic:
     mc_basic_simple函数与书中的MC_basic算法伪代码一致。  2024.5.15
     return: self.state_value 为了render结果图，即可视化
     """
-    def mc_basic_simple(self, length=50, epochs=10):
+    def mc_basic_simple(self, length=20, epochs=10):
         """
         :param length: 每一个 state-action 对的长度
         :return:
         """
+        num_episode = 5
+        episodes = []
         for epoch in range(epochs):
             for state in range(self.state_space_size):
                 """
                 Page97: The first strategy is, in the policy evaluation step, 
                 to collect all the episodes starting from the same state-action pair and then approximate the action 
                 value using the average return of these episodes. This strategy is adopted in the MC Basic algorithm.
+                我的理解：对于一个state，获取到了该状态下，每一个action下的episode之后再进行 policy improvement
                 """
                 for action in range(self.action_space_size):
-                    episode = self.obtain_episode(self.policy, state, action, length)
-
+                    # Collect sufficiently many episodes starting from (s, a) by following πk
+                    for tmp in range(num_episode): #对每个action 采集 10条 episode
+                        episodes.append(self.obtain_episode(self.policy, state, action, length))
                     #Policy evaluation:
-                    sum_qvalue = 0
-                    for i in range(len(episode)-1):
-                        sum_qvalue += (self.gama**i) * episode[i]['reward']
-                    self.qvalue[state][action] = sum_qvalue
+                    sum_qvalue_list = []
+                    for each_episode in episodes:
+                        sum_qvalue = 0
+                        for i in range(len(each_episode)):
+                            sum_qvalue += (self.gama**i) * each_episode[i]['reward']
+                    sum_qvalue_list.append(sum_qvalue)
+                    self.qvalue[state][action] = np.mean(sum_qvalue_list) #the average return of all the episodes starting from (s, a)
+                    # self.qvalue[state][action] = np.sum(sum_qvalue_list)/num_episode
                 #Policy improvement:
                 max_index = np.argmax(self.qvalue[state])
                 max_qvalue = np.max(self.qvalue[state])
                 self.policy[state,:] = np.zeros(self.action_space_size)
                 self.policy[state,max_index] = 1
-
                 self.state_value[state] = max_qvalue
             print("epoch:", epoch)
         return self.state_value
@@ -138,31 +150,36 @@ class MC_Basic:
         """
         :param length: 每一个 state-action 对的长度
         """
+        num_episode = 5
+        episodes = []
         for epoch in range(epochs):
             for state in tqdm(range(self.state_space_size), desc = f"Epoch {epoch}/{epochs}"):
                 for action in range(self.action_space_size):
-                    # collect all the episodes starting from the same state-action pair
-                    episode = self.obtain_episode(self.policy, state, action, length)
-
-                    #Policy evaluation:
-                    sum_qvalue = 0
-                    for i in range(len(episode)-1):
-                        sum_qvalue += (self.gama**i) * episode[i]['reward']
-                    self.qvalue[state][action] = sum_qvalue
-
-                #Policy improvement:
+                    # Collect sufficiently many episodes starting from (s, a) by following πk
+                    for tmp in range(num_episode):  # 对每个action 采集 10条 episode
+                        episodes.append(self.obtain_episode(self.policy, state, action, length))
+                    # Policy evaluation:
+                    sum_qvalue_list = []
+                    for each_episode in episodes:
+                        sum_qvalue = 0
+                        for i in range(len(each_episode)):
+                            sum_qvalue += (self.gama ** i) * each_episode[i]['reward']
+                    sum_qvalue_list.append(sum_qvalue)
+                    self.qvalue[state][action] = np.mean(
+                        sum_qvalue_list)  # the average return of all the episodes starting from (s, a)
+                    # self.qvalue[state][action] = np.sum(sum_qvalue_list)/num_episode
+                # Policy improvement:
                 max_index = np.argmax(self.qvalue[state])
                 max_qvalue = np.max(self.qvalue[state])
-                self.policy[state,:] = np.zeros(self.action_space_size)
-                self.policy[state,max_index] = 1
-
+                self.policy[state, :] = np.zeros(self.action_space_size)
+                self.policy[state, max_index] = 1
                 self.state_value[state] = max_qvalue
-            # print("epoch:", epoch)
+
 
 
 
 if __name__ == "__main__":
-    episode_length = [15]
+    episode_length = [20]
     # episode_length = [1,2,3,4,14,15,30,100]
     # episode_length = [1, 2, 3, 4]
     for i in episode_length:
@@ -172,8 +189,8 @@ if __name__ == "__main__":
         solver = MC_Basic(gird_world)
         start_time = time.time()
 
-        solver.state_value = solver.mc_basic_simple(length=i, epochs=10)  #原作者代码
-        # solver.mc_basic_simple_GUI(length=i, epochs=10)  #修改后，利用tqdm显示epoch进度
+        # solver.state_value = solver.mc_basic_simple(length=i, epochs=10)
+        solver.mc_basic_simple_GUI(length=i, epochs=10)  #修改后，利用tqdm显示epoch进度
 
         end_time = time.time()
         cost_time = end_time - start_time

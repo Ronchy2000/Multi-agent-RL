@@ -92,7 +92,7 @@ class MC_Exploring_Starts:
                     # Policy evaluation:
                     sum_qvalue = 0
                     for i in range(len(episode) - 1):
-                        sum_qvalue += episode[i]['reward']
+                        sum_qvalue += self.gama**i * episode[i]['reward']
                     self.qvalue[state][action] = sum_qvalue
 
                 # Policy improvement:
@@ -100,7 +100,7 @@ class MC_Exploring_Starts:
                 max_qvalue = np.max(self.qvalue[state]) #action_star
 
 
-    def mc_exploring_starts(self, length=10):
+    def mc_exploring_starts_every_visit(self, length=10):
         time_start = time.time()
         policy = self.mean_policy.copy()
         qvalue = self.qvalue.copy()
@@ -118,7 +118,7 @@ class MC_Exploring_Starts:
                         state = episode[step]['state']
                         action = episode[step]['action']
                         g = self.gama * g + reward
-                        ##Exploring Starts
+
                         # first visit
                         if [state, action] not in visit_list:
                             visit_list.append([state, action])
