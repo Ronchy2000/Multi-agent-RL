@@ -257,10 +257,9 @@ class Solve:
                 action_star = self.qvalue[state].tolist().index(qvalue_star)
                 for a in range(self.action_space_size):
                     if a == action_star:
-                        self.policy[state, a] = 1 - (
-                                self.action_space_size - 1) / self.action_space_size * epsilon
+                        self.policy[state, a] = (1 -( (self.action_space_size - 1) / self.action_space_size )* epsilon)
                     else:
-                        self.policy[state, a] = 1 / self.action_space_size * epsilon
+                        self.policy[state, a] = (1 / self.action_space_size) * epsilon
             print(np.linalg.norm(self.qvalue - qvalue, ord=1))
             norm_list.append(np.linalg.norm(self.qvalue - qvalue, ord=1))
 
@@ -953,11 +952,11 @@ if __name__ == "__main__":
     #                        render_mode='')
     solver = Solve(env)
     # solver.show_state_value(solver.state_value, y_offset=0.2)
-    solver.q_learning_off_policy()
-    solver.state_value = solver.policy_evaluation(solver.policy, steps=100)
+    # solver.q_learning_off_policy()
+    # solver.state_value = solver.policy_evaluation(solver.policy, steps=100)
 
     start_time = time.time()
-    solver.dqn()
+    # solver.dqn()
     # solver.q_learning_off_policy()
 
     # solver.td_value_approximation()
@@ -968,17 +967,20 @@ if __name__ == "__main__":
     # solver.qlearning_function_approximation()
     # solver.dqn()
     # solver.reinforce()
-    end_time = time.time()
+    # end_time = time.time()
 
-    cost_time = end_time - start_time
-    print("cost_time:{}".format(round(cost_time, 2)))
+    # cost_time = end_time - start_time
+    # print("cost_time:{}".format(round(cost_time, 2)))
     print(len(env.render_.trajectory))
     # solver.mc_epsilon_greedy()
-    # solver.mc_exploring_starts(length=20)
+    solver.mc_epsilon_greedy(length=200000)
     # solver.mc_basic(length=15)
     solver.show_policy()  # solver.env.render()
     solver.show_state_value(solver.state_value, y_offset=0.25)
+    # end_time = time.time()
 
+    # cost_time = end_time - start_time
+    # print("cost_time:{}".format(round(cost_time, 2)))
     # solver.env.render()
     # solver.env.render_.draw_episode()
     solver.env.render()

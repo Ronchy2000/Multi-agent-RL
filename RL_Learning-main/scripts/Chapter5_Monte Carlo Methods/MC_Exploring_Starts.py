@@ -100,35 +100,69 @@ class MC_Exploring_Starts:
                 max_qvalue = np.max(self.qvalue[state]) #action_star
 
 
-    def mc_exploring_starts_every_visit(self, length=10):
+    def mc_exploring_starts_first_visit(self, length=10):
         time_start = time.time()
-        policy = self.mean_policy.copy()
+        # policy = self.mean_policy.copy()
+        # policy = np.zeros(shape=(self.state_space_size, self.action_space_size))
+        policy = np.random.dirichlet(alpha=[1] * self.action_space_size, size = self.state_space_size)
+        print("policy:",policy)
+        # policy /= policy.sum(1)
+
         qvalue = self.qvalue.copy()
-        returns = [[[0 for row in range(1)] for col in range(5)] for block in range(25)]
+        returns = [[[0] for col in range(5)] for block in range(25)]
+        # returns = [[]]
+        print("returns:", returns)
+        print("np.linalg.norm(policy - self.policy, ord=1) :",np.linalg.norm(policy - self.policy, ord=1) )
         while np.linalg.norm(policy - self.policy, ord=1) > 0.001:
+            print("开始运行：")
             policy = self.policy.copy()
             for state in range(self.state_space_size):
                 for action in range(self.action_space_size):
                     visit_list = []
                     g = 0
+                    # Following the current policy, generate an episode of length T ;生成一个episode
                     episode = self.obtain_episode(policy=self.policy, start_state=state, start_action=action,
                                                   length=length)
-                    for step in range(len(episode) - 1, -1, -1):
+                    for step in range(len(episode)-1, -1, -1):  #从末尾开始截取
                         reward = episode[step]['reward']
                         state = episode[step]['state']
                         action = episode[step]['action']
                         g = self.gama * g + reward
-
                         # first visit
+                        # print("[state, action] :",[state, action] )
                         if [state, action] not in visit_list:
                             visit_list.append([state, action])
+                            # print("visit_list:",visit_list)
                             returns[state][action].append(g)
                             qvalue[state, action] = np.array(returns[state][action]).mean()
                             qvalue_star = qvalue[state].max()
                             action_star = qvalue[state].tolist().index(qvalue_star)
                             self.policy[state] = np.zeros(shape=self.action_space_size).copy()
                             self.policy[state, action_star] = 1
+                            # self.state_value[state] = qvalue_star
             print(np.linalg.norm(policy - self.policy, ord=1))
 
         time_end = time.time()
         print("mc_exploring_starts cost time:" + str(time_end - time_start))
+
+if __name__ == "__main__":
+    episode_length = 2000
+    gird_world = grid_env.GridEnv(size=5, target=[2, 3],
+                                  forbidden=[[1, 1], [2, 1], [2, 2], [1, 3], [3, 3], [1, 4]],
+                                  render_mode='')
+    solver = MC_Exploring_Starts(gird_world)
+    start_time = time.time()
+
+    # solver.state_value = solver.mc_exploring_starts_first_visit(length=episode_length)
+    solver.mc_exploring_starts_first_visit(length=episode_length)  # 修改后，利用tqdm显示epoch进度
+
+    end_time = time.time()
+    cost_time = end_time - start_time
+    print("episode_length:{} that the cost_time is:{}".format(episode_length, round(cost_time, 2)))
+
+    solver.show_policy()  # solver.env.render()
+    solver.show_state_value(solver.state_value, y_offset=0.25)
+    gird_world.plot_title("Episode_length = " + str(episode_length))
+    gird_world.render()
+    # gird_world.render_clear()
+    print("--------------------")
