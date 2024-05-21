@@ -71,7 +71,7 @@ class MC_epsilon_greedy:
                             "next_action": next_action})  #向列表中添加一个字典
         return episode
 
-    def mc_epsilon_greedf(self, episodes, epsilon = 0.1 ):
+    def mc_epsilon_greedy(self, episodes, episode_length, epsilon = 0.5 ):
         # 初始化Returns和Num计数器
         returns = np.zeros(self.qvalue.shape)  # 初始化回报累计
         num_visits = np.zeros(self.qvalue.shape, dtype=int)  # 初始化访问次数
@@ -83,23 +83,49 @@ class MC_epsilon_greedy:
                                             p=self.policy[start_state])
 
             episode = self.obtain_episode(self.policy, start_state, start_action,
-                                          self.env.episode_length)  # 获取一个episode
+                                          episode_length)  # 获取一个episode
 
             # 对于每个step的回报累积和访问次数更新
             for step in reversed(episode):  # 逆序遍历，从T-1到0
                 state, action, reward = step["state"], step["action"], step["reward"]
                 G = reward  # 当前步的即时奖励
                 for rt in episode[::-1][episode.index(step):]:  # 从当前步开始反向累加未来奖励
-                    G = gamma * G + rt["reward"]  # 累积折扣回报
-                self.returns[state, action] += G  # 更新累积回报
-                self.num_visits[state, action] += 1  # 更新状态动作对的访问次数
+                    G = self.gama * G + rt["reward"]  # 累积折扣回报
+                returns[state, action] += G  # 更新累积回报
+                num_visits[state, action] += 1  # 更新状态动作对的访问次数
 
             # Policy evaluation
-            self.qvalue = np.divide(self.returns, self.num_visits, where=self.num_visits != 0)  # 避免除以零错误
+            self.qvalue = np.divide(returns, num_visits, where=num_visits != 0)  # 避免除以零错误
             # Policy improvement
             best_actions = np.argmax(self.qvalue, axis=1)  # 找到每个状态下最优的动作
             for state in range(self.state_space_size):
                 for action in range(self.action_space_size):
-                    self.policy[state, action] = (1 - epsilon + epsilon / self.action_space_size) * (
-                                action == best_actions[state]) + \
-                                                 (epsilon / self.action_space_size) * (action != best_actions[state])
+                    # self.policy[state, action] = (1 - epsilon + epsilon / self.action_space_size) * (
+                    #             action == best_actions[state]) + \
+                    #                              (epsilon / self.action_space_size) * (action != best_actions[state])
+                    self.policy[state, :] = 0  # 先将所有动作概率设为0
+                    self.policy[state, best_actions[state]] = 1  # 最优动作概率设为1
+
+
+if __name__ == "__main__":
+    episodes = 1000
+    episode_length = 2000
+    gird_world = grid_env.GridEnv(size=5, target=[2, 3],
+                                  forbidden=[[1, 1], [2, 1], [2, 2], [1, 3], [3, 3], [1, 4]],
+                                  render_mode='')
+    solver = MC_epsilon_greedy(gird_world)
+    start_time = time.time()
+
+    # solver.state_value = solver.mc_exploring_starts_first_visit(length=episode_length)
+    solver.mc_epsilon_greedy(episodes, episode_length)  # 修改后，利用tqdm显示epoch进度
+
+    end_time = time.time()
+    cost_time = end_time - start_time
+    print("episode_length:{} that the cost_time is:{}".format(episode_length, round(cost_time, 2)))
+
+    solver.show_policy()  # solver.env.render()
+    solver.show_state_value(solver.state_value, y_offset=0.25)
+    gird_world.plot_title("Episode_length = " + str(episode_length))
+    gird_world.render()
+    # gird_world.render_clear()
+    print("--------------------")

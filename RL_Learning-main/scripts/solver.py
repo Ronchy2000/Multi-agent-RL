@@ -267,7 +267,7 @@ class Solve:
         print(len(norm_list))
         print("mc_exploring_starts cost time:" + str(time_end - time_start))
 
-    def sarsa(self, alpha=0.1, epsilon=0.1, num_episodes=80):
+    def sarsa(self, alpha=0.1, epsilon=0.1, num_episodes=800):
         qvalue_list = [self.qvalue, self.qvalue + 1]
         while num_episodes > 0:
             done = False
@@ -973,7 +973,8 @@ if __name__ == "__main__":
     # print("cost_time:{}".format(round(cost_time, 2)))
     print(len(env.render_.trajectory))
     # solver.mc_epsilon_greedy()
-    solver.mc_epsilon_greedy(length=200000)
+    # solver.mc_epsilon_greedy(length=2000)
+    solver.sarsa()
     # solver.mc_basic(length=15)
     solver.show_policy()  # solver.env.render()
     solver.show_state_value(solver.state_value, y_offset=0.25)
