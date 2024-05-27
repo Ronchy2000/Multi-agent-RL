@@ -1,3 +1,6 @@
+
+# https://www.bilibili.com/read/cv17592910/
+
 import math
 real_value = math.sqrt( (1+math.sqrt(5))/2 + 2 ) - (1+math.sqrt(5))/2
 print("real_value:",real_value)
