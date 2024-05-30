@@ -267,8 +267,9 @@ class Solve:
         print(len(norm_list))
         print("mc_exploring_starts cost time:" + str(time_end - time_start))
 
-    def sarsa(self, alpha=0.1, epsilon=0.1, num_episodes=800):
+    def sarsa(self, alpha=0.1, epsilon=0.1, num_episodes=1600):
         qvalue_list = [self.qvalue, self.qvalue + 1]
+        # print("qvalue_list.shape:", qvalue_list.shape)
         while num_episodes > 0:
             done = False
             self.env.reset()
@@ -282,6 +283,7 @@ class Solve:
                 action = np.random.choice(np.arange(self.action_space_size),
                                           p=self.policy[state])
                 _, reward, done, _, _ = self.env.step(action)
+                # print("done:", done)
                 episode_length += 1
                 total_rewards += reward
                 next_state = self.env.pos2state(self.env.agent_location)
@@ -303,6 +305,7 @@ class Solve:
     def expected_sarsa(self, alpha=0.1, epsilon=1, num_episodes=1000):
         init_num = num_episodes
         qvalue_list = [self.qvalue, self.qvalue + 1]
+        print("qvalue_list.shape:",qvalue_list.shape)
         episode_index_list = []
         reward_list = []
         length_list = []
