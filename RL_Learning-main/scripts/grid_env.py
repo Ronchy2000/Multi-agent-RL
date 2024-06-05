@@ -21,6 +21,14 @@ def arr_in_list(array, _list):
     return False
 
 
+'''
+grid_world坐标系：
+行 * 列
+-------> +x
+|
+|
+v  +y
+'''
 class GridEnv(gym.Env):
 
     def __init__(self, size: int, target: Union[list, tuple, np.ndarray], forbidden: Union[list, tuple, np.ndarray],
@@ -49,7 +57,7 @@ class GridEnv(gym.Env):
 
         # self.reward_list = [0, 1, -10, -10]
         # self.reward_list = [0, 1, -1, -10]
-        self.reward_list = [-1, 0, -1, -10]  #forbidden area:-10 ;  撞墙:-10
+        self.reward_list = [-1, 0, -10, -10]  #reward_list[other, target, forbidden, overflow]
         self.observation_space = spaces.Dict(
             {
                 "agent": spaces.Box(low = 0, high = size - 1, shape=(2,), dtype=int),
@@ -60,15 +68,15 @@ class GridEnv(gym.Env):
         # action to pos偏移量 的一个map
         #坐标系  ------>    x > 0
         #       |
-        #       | y>0
+        #       | y >0
         #       v
 
         self.action_to_direction = {
-            0: np.array([-1, 0]),
-            1: np.array([0, 1]),
-            2: np.array([1, 0]),
-            3: np.array([0, -1]),
-            4: np.array([0, 0]),
+            0: np.array([0, -1]), #up
+            1: np.array([1, 0]),  #right
+            2: np.array([0, 1]),  #down
+            3: np.array([-1, 0]), #left
+            4: np.array([0, 0]),  #stay
         }
         # Rsa表示 在 指定 state 选取指定 action 得到Immediate reward的概率
         self.Rsa = None
@@ -85,7 +93,7 @@ class GridEnv(gym.Env):
 
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, bool, dict]:  #  -> 是函数的返回类型注解，
 
-        reward = self.reward_list[self.Rsa[self.pos2state(self.agent_location), action].tolist().index(1)]
+        reward = self.reward_list[  self.Rsa[self.pos2state(self.agent_location), action].tolist().index(1)  ]
         direction = self.action_to_direction[action]
         self.render_.upgrade_agent(self.agent_location, direction, self.agent_location + direction)
         self.agent_location = np.clip(self.agent_location + direction, 0, self.size - 1)
@@ -119,17 +127,17 @@ class GridEnv(gym.Env):
         用于将状态（state）转换为位置（pos）。这在一些环境中是很常见的.
         比如在一个二维的格子世界中，我们可能会将每个格子看作一个状态，然后用一个整数来表示这个状态。而这个函数就是用来将这个整数转换回对应的格子位置。
         :param state: state number
-        :return: 二维列表，表示agent的位置：x行x列
+        :return: 二维列表，表示agent的位置：x列 y行
         """
-        return np.array((state // self.size, state % self.size))
+        return np.array((state % self.size,state // self.size))
 
     def pos2state(self, pos: np.ndarray) -> int:
         """
-        假设 self.size 是 4，那么位置 (1, 1) 对应的状态就是 1 * 4 + 1 = 5
-        :param pos:  pos[0] 和 pos[1] 分别表示位置的行和列。
+        假设 self.size 是 5，那么位置 (1, 2) 对应的状态就是 1 + 2*5 = 11
+        :param pos:位置数组[1, 2]  pos[0]： 列， pos[1] 行。
         :return: state number
         """
-        return pos[0] * self.size + pos[1]
+        return pos[1] * self.size + pos[0]
 
     def psa_rsa_init(self):
         """
@@ -164,7 +172,7 @@ class GridEnv(gym.Env):
 
         state_size = self.size ** 2
         self.Psa = np.zeros(shape=(state_size, self.action_space_size, state_size), dtype=float)
-        self.Rsa = np.zeros(shape=(self.size ** 2, self.action_space_size, len(self.reward_list)), dtype=float)
+        self.Rsa = np.zeros(shape=(state_size, self.action_space_size, len(self.reward_list)), dtype=float)
         # 填充Psa、Rsa矩阵
         for state_index in range(state_size):
             for action_index in range(self.action_space_size):
@@ -179,9 +187,10 @@ class GridEnv(gym.Env):
                     if np.array_equal(next_pos, self.target_location): #如果到达target area
                         self.Rsa[state_index, action_index, 1] = 1
                     elif arr_in_list(next_pos, self.forbidden_location): #如果进入forbidden_area
-                        self.Rsa[state_index, action_index, 2] = 1 #
-                    else:
+                        self.Rsa[state_index, action_index, 2] = 1
+                    else: #other
                         self.Rsa[state_index, action_index, 0] = 1
+                    #reward_list[other, target, forbidden, overflow]
         #print("self.Psa:{}\n self.Rsa:{}".format(self.Psa,self.Rsa))
     def close(self):
         pass
@@ -189,5 +198,5 @@ class GridEnv(gym.Env):
 
 if __name__ == "__main__":
     # grid = GridEnv(size=5, target=[1, 3], forbidden=[[2, 2],[2,0],[4,2],[3,4]], render_mode='')
-    grid = GridEnv(size=2, target=[1, 1], forbidden=[], render_mode='')
+    grid = GridEnv(size=5, target=[0, 1], forbidden=[[2, 2],[2,0],[4,2],[3,4]], render_mode='')
     grid.render()

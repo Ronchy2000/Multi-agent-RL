@@ -79,24 +79,24 @@ class Sarsa():
     '''
         Learn an optimal policy that can lead the agent to the target state from an initial state s0.
     '''
-    def Sarsa(self,initial_location= [0,0] ,epsilon = 0.1):
+    def Sarsa(self,initial_location, epsilon = 0.1):
         total_rewards = []
         episode_lengths = []
         initial_state = self.env.pos2state(initial_location)
+        # initial_state = 0
         print("initial_state:", initial_state)
         initial_policy = self.policy
-        done = False
-        next_state = initial_state
-        next_action = np.random.choice(a=np.arange(self.action_space_size),
-                                       p=initial_policy[initial_state, :])
-        for episode_num in range(1000): # episode_num
+        for episode_num in range(800): # episode_num
+            next_state = initial_state
+            np.random.seed(42)
+            next_action = np.random.choice(a=np.arange(self.action_space_size),
+                                           p=initial_policy[initial_state, :])
             total_reward = 0
             episode_length = 0
             done = False
             print("episode_num:",episode_num)
             while not done:  #If s_t is not the target state, do
                 episode_length += 1
-                # print("Not done")
                 #S
                 state = next_state
                 #A
@@ -108,7 +108,7 @@ class Sarsa():
                 print("next_state:",next_state, "self.env.agent_location:",self.env.agent_location)
                 #A
                 next_action = np.random.choice(np.arange(self.action_space_size),
-                                               p=self.policy[next_state]) #生成
+                                               p=self.policy[next_state,:]) #生成
 
                 total_reward += reward
                 #Update q-value for (st, at):
@@ -124,13 +124,14 @@ class Sarsa():
                         self.policy[state, a] = epsilon / self.action_space_size
             total_rewards.append(total_reward)
             episode_lengths.append(episode_length)
+
         return total_rewards,episode_lengths
 
 
 
 
 if __name__ =="__main__":
-    gird_world = grid_env.GridEnv(size=5, target=[2, 3],
+    gird_world = grid_env.GridEnv(size=5, target=[3, 2],
                                   forbidden=[[1, 1], [2, 1], [2, 2], [1, 3], [3, 3], [1, 4]],
                                   render_mode='')
     solver = Sarsa(alpha =0.1, env = gird_world)
@@ -141,7 +142,7 @@ if __name__ =="__main__":
     #     print("a0:",a0)
 
     start_time = time.time()
-    total_rewards, episode_lengths = solver.Sarsa()
+    total_rewards, episode_lengths = solver.Sarsa(initial_location = [0,0])
 
 
     end_time = time.time()
@@ -169,7 +170,7 @@ if __name__ =="__main__":
     plt.plot(range(1, len(episode_lengths) + 1), episode_lengths,  # 空心，设置填充色为透明
              markeredgecolor='blue',  # 边框颜色为蓝色
              markersize=10,
-             linestyle='-', color='blue', label='total_rewards')
+             linestyle='-', color='blue', label='')
     plt.xlabel('Episode index', fontsize=12)
     plt.ylabel('episode_length', fontsize=12)
 
