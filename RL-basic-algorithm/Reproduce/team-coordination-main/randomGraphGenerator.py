@@ -104,7 +104,7 @@ class RandomGraph:
                             
 
 if __name__ == "__main__":
-    graph = RandomGraph(3)
+    graph = RandomGraph(10)
     graph.generateRandomGraph()
     graph.generateRGWithSupportNodesAndRiskyEdges(1)
     # nx.draw(graph, with_labels=True, node_color='lightblue', font_weight='bold', node_size=700, font_size=18)
