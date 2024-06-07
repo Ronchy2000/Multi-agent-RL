@@ -2,12 +2,18 @@
 - [RL Course Link](https://www.bilibili.com/video/BV1sd4y167NS)
 - [Book-Mathematical-Foundation-of-Reinforcement-Learning](https://github.com/MathFoundationRL/Book-Mathematical-Foundation-of-Reinforcement-Learning?tab=readme-ov-file)
 
+
+
+## 2024.6.7
+重大更新! 原作者render坐标与state设置不一致。
+坐标已统一修改为：
+![img.png](img.png)
+
+
+
 ---
-
 转载自:https://github.com/jwk1rose/RL_Learning
-
->Refactor the code of jwk1rose, divide it into as many sections as possible and write comments.
-
+>Refactoring the code of jwk1rose,I'm trying to divide it into as many sections as possible and write comments.
 ##  RL_Learning 🎉️
 
 ### 简介 📖
