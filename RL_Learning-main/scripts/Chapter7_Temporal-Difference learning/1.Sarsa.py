@@ -94,6 +94,10 @@ class Sarsa():
             state = initial_state
             action = np.random.choice(a=np.arange(self.action_space_size),
                                       p=self.policy[state, :])  # Generate a0 at s0 following π0(s0)
+            #initialize buffers
+            states = [state]
+            aciton = [action]
+            rewards = [0]
             while not done:  #If s_t is not the target state, do
                 episode_length += 1
                 _, reward, done, _, _ = self.env.step(action) #Collect an experience sample (rt+1, st+1, at+1)
