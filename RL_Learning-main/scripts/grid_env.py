@@ -198,5 +198,8 @@ class GridEnv(gym.Env):
 
 if __name__ == "__main__":
     # grid = GridEnv(size=5, target=[1, 3], forbidden=[[2, 2],[2,0],[4,2],[3,4]], render_mode='')
-    grid = GridEnv(size=5, target=[0, 1], forbidden=[[2, 2],[2,0],[4,2],[3,4]], render_mode='')
+    # grid = GridEnv(size=5, target=[0, 1], forbidden=[[2, 2],[2,0],[4,2],[3,4]], render_mode='')
+    grid = GridEnv(size=5, target=[2, 3],
+                                  forbidden=[[1, 1], [2, 1], [2, 2], [1, 3], [3, 3], [1, 4]],
+                                  render_mode='')
     grid.render()

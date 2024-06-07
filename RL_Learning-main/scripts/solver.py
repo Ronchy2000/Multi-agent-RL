@@ -949,7 +949,7 @@ if __name__ == "__main__":
     #                        render_mode='')
 
     env = grid_env.GridEnv(size=5, target=[2, 3],
-                           forbidden=[[2, 2], [2, 1], [1, 1], [3, 3], [1, 3], [1, 4]],
+                           forbidden=[[1, 1], [2, 1], [2, 2], [1, 3], [3, 3], [1, 4]],
                            render_mode='')
     # env = grid_env.GridEnv(size=3, target=[2, 1], forbidden=[[2, 0], [1, 0], [1, 1]],
     #                        render_mode='')
