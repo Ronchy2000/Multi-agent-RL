@@ -6,3 +6,5 @@
 
 #如果你想忽略所有名为logs的文件夹，无论它们在项目中的位置如何，你可以在.gitignore文件中添加以下内容：
 **/logs/
+
+RL-basic-algorithm/Graph based Multi-agent path planning/
