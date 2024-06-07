@@ -115,6 +115,7 @@ class Sarsa():
 
                     else:
                         self.policy[state, a] = epsilon / self.action_space_size
+
                 action = next_action
                 state = next_state
             total_rewards.append(total_reward)

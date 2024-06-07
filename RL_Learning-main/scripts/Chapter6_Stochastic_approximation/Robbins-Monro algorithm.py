@@ -26,12 +26,15 @@ def calculate_g_tilde(w):
     # g_tilde = decimal.Decimal(w ** 3) - 5
     return (g_tilde)
 
-for a_k in range(2,50):  # a_k 要从2开始
+for a_k in range(2,550):  # a_k 要从2开始
     g_tilde.append( calculate_g_tilde(w_k[-1]) ) # g_k
     # print("g_tilde",g_tilde)
     w_k.append( w_k[-1] - np.array(1/a_k) * g_tilde[-1] )
     # print("w_k" ,w_k)
 print("w_k",w_k)  #w_k[-1]是结果
+print('---------------------------')
+print("实际结果：",np.cbrt(5))  #numpy开立方
+print("迭代最后结果：",w_k[-1])
 
 
 
