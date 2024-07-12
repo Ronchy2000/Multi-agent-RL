@@ -55,9 +55,11 @@ class GridEnv(gym.Env):
         self.action_space, self.action_space_size = spaces.Discrete(5,seed = 42), spaces.Discrete(5).n  #seed = 42, “42 是 “生命、宇宙和一切终极问题的答案”
         print("self.action_space:{}, self.action_space_size:{}".format(self.action_space, self.action_space_size))  #从0开始索引
 
+        # reward_list[other, target, forbidden, overflow]
         # self.reward_list = [0, 1, -10, -10]
         # self.reward_list = [0, 1, -1, -10]
-        self.reward_list = [-1, 0, -10, -10]  #reward_list[other, target, forbidden, overflow]
+        # self.reward_list = [-1, 0, -10, -10]  #reward_list[other, target, forbidden, overflow]
+        self.reward_list = [0, 1, -1, -1]
         self.observation_space = spaces.Dict(
             {
                 "agent": spaces.Box(low = 0, high = size - 1, shape=(2,), dtype=int),
