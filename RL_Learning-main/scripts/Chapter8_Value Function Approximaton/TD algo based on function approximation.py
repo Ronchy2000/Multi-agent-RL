@@ -86,7 +86,7 @@ class TD_learning_with_FunctionApproximation():
 
         if state < 0 or state >= self.state_space_size:
             raise ValueError("Invalid state value")
-        y, x = self.env.state2pos(state) + (1, 1)
+        x, y = self.env.state2pos(state) + (1, 1)
         feature_vector = []
         if fourier:
             # 归一化到 -1 到 1
