@@ -58,7 +58,7 @@ class GridEnv(gym.Env):
         # reward_list[other, target, forbidden, overflow]
         # self.reward_list = [0, 1, -10, -10]
         # self.reward_list = [0, 1, -1, -10]
-        # self.reward_list = [-1, 0, -10, -10]  #reward_list[other, target, forbidden, overflow]
+        # self.reward_list = [-1, 0, -10, -10] #chapter7
         self.reward_list = [0, 1, -1, -1]  #reward list for TD linear
         self.observation_space = spaces.Dict(
             {
