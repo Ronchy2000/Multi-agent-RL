@@ -21,7 +21,7 @@ class TD_learning_with_FunctionApproximation():
          self.action_space_size = env.action_space_size
          self.state_space_size = env.size ** 2
          self.reward_space_size, self.reward_list = len(
-             self.env.reward_list), self.env.reward_list  # [-10,-10,0,1]  reward list
+             self.env.reward_list), [-1,-1,0,1]  # [-10,-10,0,1]  reward list
          self.state_value = np.zeros(shape=self.state_space_size)  # 一维列表
          print("self.state_value:", self.state_value)
          self.qvalue = np.zeros(shape=(self.state_space_size, self.action_space_size))  # 二维： state数 x action数
@@ -147,13 +147,18 @@ class TD_learning_with_FunctionApproximation():
             raise TypeError("Invalid input type")
         if learning_rate <= 0 or epochs <= 0 or ord <= 0:
             raise ValueError("Invalid input value")
+
+
+        # feature_vector = []
         episode_length = epochs
         start_state = np.random.randint(self.state_space_size)
         start_action = np.random.choice(np.arange(self.action_space_size),
                                         p=self.mean_policy[start_state])
         episode = self.obtain_episode(self.mean_policy, start_state, start_action, length=episode_length)
         dim = (ord + 1) ** 2 if fourier else np.arange(ord + 2).sum()
-        w = np.random.default_rng().normal(size=dim)
+        fixed_dim = 2
+        w = np.random.default_rng().normal(size=fixed_dim)
+        print("feature vector w:",w)  #多项式特征函数
         rmse = []
         value_approximation = np.zeros(self.state_space_size)
         for epoch in range(epochs):
@@ -168,6 +173,7 @@ class TD_learning_with_FunctionApproximation():
                 value_approximation[state] = np.dot(self.get_feature_vector(fourier, state, ord), w)
             rmse.append(np.sqrt(np.mean((value_approximation - self.state_value) ** 2)))
             print(epoch)
+
         X, Y = np.meshgrid(np.arange(1, 6), np.arange(1, 6))
         Z = self.state_value.reshape(5, 5)
         Z1 = value_approximation.reshape(5, 5)
