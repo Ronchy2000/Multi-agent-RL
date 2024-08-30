@@ -482,7 +482,7 @@ class Solve:
                     feature_vector.append(state_normalized ** (ord - i) * action_normalized ** j)
         return np.array(feature_vector)
 
-    def td_value_approximation(self, learning_rate=0.0005, epochs=100000, fourier=True, ord=5):
+    def td_value_approximation(self, learning_rate=0.0005, epochs=500000, fourier=False, ord=1):
         self.state_value=self.policy_evaluation(self.policy)
         if not isinstance(learning_rate, float) or not isinstance(epochs, int) or not isinstance(
                 fourier, bool) or not isinstance(ord, int):
@@ -977,7 +977,9 @@ if __name__ == "__main__":
     print(len(env.render_.trajectory))
     # solver.mc_epsilon_greedy()
     # solver.mc_epsilon_greedy(length=2000)
-    solver.sarsa()
+    # solver.sarsa()
+    print("state_value_hat:", solver.td_value_approximation())
+    print("solver.state_value:", solver.state_value)
     # solver.mc_basic(length=15)
     solver.show_policy()  # solver.env.render()
     solver.show_state_value(solver.state_value, y_offset=0.25)

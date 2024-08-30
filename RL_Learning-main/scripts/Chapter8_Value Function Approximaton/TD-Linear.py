@@ -12,11 +12,12 @@ import grid_env
 
 '''
 首先通过policy iteration计算ground truth，再通过 TD linear 方法去拟合，观察效果。
+有点问题，没有解决2024.8.30
 '''
 class TD_learning_with_FunctionApproximation():
     def __init__(self,alpha,env = grid_env.GridEnv):
          self.gamma = 0.9  # discount rate
-         self.alpha = alpha  #learning rate
+         self.learning_rate = alpha  #learning rate
          self.env = env
          self.action_space_size = env.action_space_size
          self.state_space_size = env.size ** 2
@@ -83,27 +84,26 @@ class TD_learning_with_FunctionApproximation():
         :param ord: 特征函数最高阶次数/傅里叶q(对应书)
         :return: 代入state后的计算结果
         """
-
         if state < 0 or state >= self.state_space_size:
             raise ValueError("Invalid state value")
+
         x, y = self.env.state2pos(state) + (1, 1)
         feature_vector = []
         if fourier:
-            # 归一化到 -1 到 1
+            # 归一化到 [-1 ,1]
             x_normalized = x / self.env.size
             y_normalized = y / self.env.size
             for i in range(ord + 1):
                 for j in range(ord + 1):
                     feature_vector.append(np.cos(np.pi * (i * x_normalized + j * y_normalized)))
 
-        else:
-            # 归一化到 0 到 1
+        else: #多项式 featrue vector
+            # 归一化到 0 到 1 将数据中心化到 [0, self.env.size - 1] 区间的中心位置,确保数据在归一化后不会偏向区间的一端。
             x_normalized = (x - (self.env.size - 1) * 0.5) / (self.env.size - 1)
             y_normalized = (y - (self.env.size - 1) * 0.5) / (self.env.size - 1)
             for i in range(ord + 1):
                 for j in range(i + 1):
-                    feature_vector.append(y_normalized ** (ord - i) * x_normalized ** j)
-
+                    feature_vector.append(y_normalized ** (ord - i) * x_normalized ** j)  # ord =1时，feature vector:[1, y, x]
         return np.array(feature_vector)
 
     def get_feature_vector_with_action(self, fourier: bool, state: int, action: int, ord: int) -> np.ndarray:
@@ -140,58 +140,97 @@ class TD_learning_with_FunctionApproximation():
                     feature_vector.append(state_normalized ** (ord - i) * action_normalized ** j)
         return np.array(feature_vector)
 
-    def td_value_approximation(self, learning_rate=0.0005, epochs=100000, fourier=True, ord=5):
-        # self.state_value = self.policy_evaluation(self.policy)
-        if not isinstance(learning_rate, float) or not isinstance(epochs, int) or not isinstance(
+
+    def policy_evaluation(self, policy, tolerance=0.001, steps=10):
+        """
+        迭代求解贝尔曼公式 得到 state value tolerance 和 steps 满足其一即可
+        :param policy: 需要求解的policy
+        :param tolerance: 当 前后 state_value 的范数小于tolerance 则认为state_value 已经收敛
+        :param steps: 当迭代次数大于step时 停止计算 此时若是policy iteration 则算法变为 truncated iteration
+        :return: 求解之后的收敛值
+        """
+        state_value_k = np.ones(self.state_space_size)
+        state_value = np.zeros(self.state_space_size)
+        while np.linalg.norm(state_value_k - state_value, ord=1) > tolerance:
+            state_value = state_value_k.copy()
+            for state in range(self.state_space_size):
+                value = 0
+                for action in range(self.action_space_size):
+                    value += policy[state, action] * self.calculate_qvalue(state_value=state_value_k.copy(),
+                                                                           state=state,
+                                                                           action=action)  # bootstrapping
+                state_value_k[state] = value
+        return state_value_k
+    def calculate_qvalue(self, state, action, state_value):
+        """
+        计算qvalue elementwise形式
+        :param state: 对应的state
+        :param action: 对应的action
+        :param state_value: 状态值
+        :return: 计算出的结果
+        """
+        qvalue = 0
+        for i in range(self.reward_space_size):
+            qvalue += self.reward_list[i] * self.env.Rsa[state, action, i]
+        for next_state in range(self.state_space_size):
+            qvalue += self.gamma * self.env.Psa[state, action, next_state] * state_value[next_state]
+        return qvalue
+
+    def td_state_value_hat(self, epochs=5000, fourier=False, ord=1):  # False 时为多项式feature vector
+        self.state_value = self.policy_evaluation(self.policy)
+        if not isinstance(self.learning_rate, float) or not isinstance(epochs, int) or not isinstance(
                 fourier, bool) or not isinstance(ord, int):
             raise TypeError("Invalid input type")
-        if learning_rate <= 0 or epochs <= 0 or ord <= 0:
+        if self.learning_rate <= 0 or epochs <= 0 or ord <= 0:
             raise ValueError("Invalid input value")
 
+        dim = (ord + 1) ** 2 if fourier else np.arange(ord + 2).sum()  #条件表达式
+        w = np.random.default_rng().normal(size=dim) #生成了一个长度为 dim 的向量，其中每个元素都服从标准正态分布（均值为 0，方差为 1）
+        print("feature vector w:",w) # parameter
+        rmse = []  #均方根误差RMSE（Root Mean Square Error） RMSE = √(Σ(yi - Ŷi)²/n)
+        value_hat = np.zeros(self.state_space_size)
 
-        # feature_vector = []
-        episode_length = epochs
-        start_state = np.random.randint(self.state_space_size)
-        start_action = np.random.choice(np.arange(self.action_space_size),
-                                        p=self.mean_policy[start_state])
-        episode = self.obtain_episode(self.mean_policy, start_state, start_action, length=episode_length)
-        dim = (ord + 1) ** 2 if fourier else np.arange(ord + 2).sum()
-        fixed_dim = 2
-        w = np.random.default_rng().normal(size=fixed_dim)
-        print("feature vector w:",w)  #多项式特征函数
-        rmse = []
-        value_approximation = np.zeros(self.state_space_size)
+
         for epoch in range(epochs):
-            reward = episode[epoch]['reward']
-            state = episode[epoch]['state']
-            next_state = episode[epoch]['next_state']
-            target = reward + self.gamma * np.dot(self.get_feature_vector(fourier, next_state, ord), w)
-            error = target - np.dot(self.get_feature_vector(fourier, state, ord), w)
-            gradient = self.get_feature_vector(fourier, state, ord)
-            w = w + learning_rate * error * gradient
+            start_state = np.random.randint(self.state_space_size)
+            start_action = np.random.choice(np.arange(self.action_space_size),
+                                            p=self.mean_policy[start_state])
+            episode = self.obtain_episode(self.mean_policy, start_state, start_action, length=epochs)
+            for sample in episode:
+                reward = sample['reward']
+                state = sample['state']
+                next_state = sample['next_state']
+                # target = reward + self.gamma * np.dot(self.get_feature_vector(fourier, next_state, ord), w) # 括号内第一项，第二项求点积,即 phi(s_t+1)*w
+                # error = target - np.dot(self.get_feature_vector(fourier, state, ord), w)  #括号内第一项，第二项求点积即 phi(s_t)*w
+                # gradient = self.get_feature_vector(fourier, state, ord)  # phi(s)*w的梯度为phi(s)，即feature vector本身
+                # w = w + learning_rate * error * gradient
+                #书中的TD-Linear公式
+                w = w + self.learning_rate*(reward + self.gamma*np.dot(self.get_feature_vector(fourier, next_state, ord),w) - np.dot(self.get_feature_vector(fourier, state, ord),w) )
+
             for state in range(self.state_space_size):
-                value_approximation[state] = np.dot(self.get_feature_vector(fourier, state, ord), w)
-            rmse.append(np.sqrt(np.mean((value_approximation - self.state_value) ** 2)))
+                value_hat[state] = np.dot(self.get_feature_vector(fourier, state, ord), w)
+
+            rmse.append(np.sqrt(np.mean((value_hat - self.state_value) ** 2)))
             print(epoch)
 
-        X, Y = np.meshgrid(np.arange(1, 6), np.arange(1, 6))
+        X, Y = np.meshgrid(np.arange(1, 6), np.arange(1, 6))  # position on grid world.
         Z = self.state_value.reshape(5, 5)
-        Z1 = value_approximation.reshape(5, 5)
+        Z1 = value_hat.reshape(5, 5)
         # 绘制 3D 曲面图
         fig = plt.figure(figsize=(8, 6))  # 设置图形的尺寸，宽度为8，高度为6
         ax = fig.add_subplot(121, projection='3d')
+
         ax.plot_surface(X, Y, Z)
+        ax.set_title('True State Value')
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
         ax.set_zlabel('State Value')
-        z_min = -5
-        z_max = -2
+        z_min,z_max = -5,-2
         ax.set_zlim(z_min, z_max)
         ax1 = fig.add_subplot(122, projection='3d')
         ax1.plot_surface(X, Y, Z1)
+        ax1.set_title('Estimated State Value')
         ax1.set_xlabel('X')
-        ax1.set_ylabel('Y')
-        ax1.set_zlabel('Value Approximation')
         ax1.set_zlim(z_min, z_max)
         fig_rmse = plt.figure(figsize=(8, 6))  # 设置图形的尺寸，宽度为8，高度为6
         ax_rmse = fig_rmse.add_subplot(111)
@@ -202,18 +241,21 @@ class TD_learning_with_FunctionApproximation():
         ax_rmse.set_xlabel('Epoch')
         ax_rmse.set_ylabel('RMSE')
         plt.show()
-        return value_approximation
+        return value_hat
 
 if __name__ == "__main__":
+    print("Creating grid world")
     gird_world = grid_env.GridEnv(size=5, target=[2, 3],
-                               forbidden=[[1, 1], [2, 1], [2, 2], [1, 3], [3, 3], [1, 4]],
-                               render_mode='')
+                                  forbidden=[[1, 1], [2, 1], [2, 2], [1, 3], [3, 3], [1, 4]],
+                                  render_mode='')
 
-    solver = TD_learning_with_FunctionApproximation(alpha =0.1, env = gird_world)
-    solver.td_value_approximation()
+    print("Creating solver")
+    solver = TD_learning_with_FunctionApproximation(alpha=0.0005, env=gird_world)  # 实例化5
 
-
-
-    solver.show_state_value(state_value=solver.td_value_approximation(), y_offset=-0.25)
-
-    solver.env.render()
+    print("Calculating state value hat")
+    state_value_hat = solver.td_state_value_hat()
+    solver.show_state_value(state_value=state_value_hat, y_offset=-0.25)
+    solver.show_state_value(state_value=solver.state_value, y_offset=-0.25)
+    print("state_value_hat:", state_value_hat)
+    print("solver.state_value:", solver.state_value)
+    gird_world.render()
