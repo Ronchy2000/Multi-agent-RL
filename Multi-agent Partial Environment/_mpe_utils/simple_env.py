@@ -8,8 +8,8 @@ from gymnasium.utils import seeding
 
 from pettingzoo import AECEnv
 from core import Agent
-from pettingzoo.utils import wrappers
-from pettingzoo.utils.agent_selector import AgentSelector
+from utils import wrappers
+from utils.agent_selector import AgentSelector
 
 alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
