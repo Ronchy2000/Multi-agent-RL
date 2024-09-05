@@ -3,9 +3,9 @@ from __future__ import annotations
 import numpy as np
 from gymnasium.spaces import Box
 
-from pettingzoo.utils.env import AECEnv
-from pettingzoo.utils.env_logger import EnvLogger
-from pettingzoo.utils.wrappers.base import BaseWrapper
+from ..env import AECEnv
+from ..env_logger import EnvLogger
+from ..wrappers.base import BaseWrapper
 
 
 class ClipOutOfBoundsWrapper(BaseWrapper):

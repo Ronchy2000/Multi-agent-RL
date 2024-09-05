@@ -5,7 +5,7 @@ from typing import Any
 import gymnasium.spaces
 import numpy as np
 
-from pettingzoo.utils.env import ActionType, AECEnv, AgentID, ObsType
+from ..env import ActionType, AECEnv, AgentID, ObsType
 
 
 class BaseWrapper(AECEnv[AgentID, ObsType, ActionType]):

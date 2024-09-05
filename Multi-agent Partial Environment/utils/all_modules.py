@@ -1,8 +1,8 @@
-from pettingzoo.atari.all_modules import atari_environments
-from pettingzoo.butterfly.all_modules import butterfly_environments
-from pettingzoo.classic.all_modules import classic_environments
-from pettingzoo.mpe.all_modules import mpe_environments
-from pettingzoo.sisl.all_modules import sisl_environments
+from atari.all_modules import atari_environments
+from butterfly.all_modules import butterfly_environments
+from classic.all_modules import classic_environments
+from mpe.all_modules import mpe_environments
+from sisl.all_modules import sisl_environments
 
 all_prefixes = ["atari", "classic", "butterfly", "mpe", "sisl"]
 

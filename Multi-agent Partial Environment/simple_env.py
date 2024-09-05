@@ -1,4 +1,5 @@
 import os
+import sys
 
 import gymnasium
 import numpy as np
@@ -6,10 +7,10 @@ import pygame
 from gymnasium import spaces
 from gymnasium.utils import seeding
 
-from pettingzoo import AECEnv
-from core import Agent
+from utils.env import AECEnv
+from _mpe_utils.core import Agent
 from utils import wrappers
-from utils.agent_selector import AgentSelector
+from utils.AgentSelector import AgentSelector
 
 alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -358,3 +359,8 @@ class SimpleEnv(AECEnv):
         if self.screen is not None:
             pygame.quit()
             self.screen = None
+
+
+if __name__ == "__main__":
+    print("test")
+    

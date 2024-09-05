@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import copy
 
-from pettingzoo.utils.env import ActionType, AgentID, ObsType, ParallelEnv
-from pettingzoo.utils.wrappers.base_parallel import BaseParallelWrapper
+from ..env import ActionType, AgentID, ObsType, ParallelEnv
+from ..wrappers.base_parallel import BaseParallelWrapper
 
 
 class MultiEpisodeParallelEnv(BaseParallelWrapper):

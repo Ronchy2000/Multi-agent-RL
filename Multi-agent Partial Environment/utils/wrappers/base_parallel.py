@@ -3,7 +3,7 @@ from __future__ import annotations
 import gymnasium.spaces
 import numpy as np
 
-from pettingzoo.utils.env import ActionType, AgentID, ObsType, ParallelEnv
+from ..env import ActionType, AgentID, ObsType, ParallelEnv
 
 
 class BaseParallelWrapper(ParallelEnv[AgentID, ObsType, ActionType]):

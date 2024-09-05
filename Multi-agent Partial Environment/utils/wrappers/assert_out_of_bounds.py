@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from pettingzoo.utils.env import ActionType, AECEnv, AgentID, ObsType
-from pettingzoo.utils.wrappers.base import BaseWrapper
+from ..env import ActionType, AECEnv, AgentID, ObsType
+from base import BaseWrapper
 
 
 class AssertOutOfBoundsWrapper(BaseWrapper[AgentID, ObsType, ActionType]):

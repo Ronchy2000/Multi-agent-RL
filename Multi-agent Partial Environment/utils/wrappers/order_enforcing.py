@@ -4,7 +4,7 @@ from typing import Any
 
 import numpy as np
 
-from pettingzoo.utils.env import (
+from ..env import (
     ActionType,
     AECEnv,
     AECIterable,
@@ -12,8 +12,8 @@ from pettingzoo.utils.env import (
     AgentID,
     ObsType,
 )
-from pettingzoo.utils.env_logger import EnvLogger
-from pettingzoo.utils.wrappers.base import BaseWrapper
+from ..env_logger import EnvLogger
+from base import BaseWrapper
 
 
 class OrderEnforcingWrapper(BaseWrapper[AgentID, ObsType, ActionType]):

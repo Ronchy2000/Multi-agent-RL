@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import copy
 
-from pettingzoo.utils.env import ActionType, AECEnv
-from pettingzoo.utils.wrappers.base import BaseWrapper
+from ..env import ActionType, AECEnv
+from ..wrappers.base import BaseWrapper
 
 
 class MultiEpisodeEnv(BaseWrapper):

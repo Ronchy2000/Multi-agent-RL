@@ -4,7 +4,7 @@ import random
 
 import numpy as np
 
-from pettingzoo.utils.env import AECEnv
+from env import AECEnv
 
 
 def random_demo(env: AECEnv, render: bool = True, episodes: int = 1) -> float:

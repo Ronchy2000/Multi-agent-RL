@@ -10,7 +10,7 @@ class AgentSelector:
     Can reinitialize to a new order.
 
     Example:
-        >>> from pettingzoo.utils import AgentSelector
+        >>> import AgentSelector
         >>> agent_selector = AgentSelector(agent_order=["player1", "player2"])
         >>> agent_selector.reset()
         'player1'

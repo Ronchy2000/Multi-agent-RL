@@ -4,9 +4,9 @@ import warnings
 from collections import defaultdict
 from typing import Callable, Dict, Optional
 
-from pettingzoo.utils import AgentSelector
-from pettingzoo.utils.env import ActionType, AECEnv, AgentID, ObsType, ParallelEnv
-from pettingzoo.utils.wrappers import OrderEnforcingWrapper
+import AgentSelector
+from env import ActionType, AECEnv, AgentID, ObsType, ParallelEnv
+from .wrappers import OrderEnforcingWrapper
 
 
 def parallel_wrapper_fn(env_fn: Callable) -> Callable:

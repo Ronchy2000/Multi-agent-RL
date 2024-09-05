@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from pettingzoo.utils.env import ActionType, AECEnv, AgentID, ObsType
-from pettingzoo.utils.env_logger import EnvLogger
-from pettingzoo.utils.wrappers.base import BaseWrapper
+from ..env import ActionType, AECEnv, AgentID, ObsType
+from ..env_logger import EnvLogger
+from base import BaseWrapper
 
 
 class TerminateIllegalWrapper(BaseWrapper[AgentID, ObsType, ActionType]):

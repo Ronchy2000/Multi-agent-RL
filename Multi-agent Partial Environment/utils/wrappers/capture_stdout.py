@@ -1,6 +1,6 @@
-from pettingzoo.utils.capture_stdout import capture_stdout
-from pettingzoo.utils.env import AECEnv
-from pettingzoo.utils.wrappers.base import BaseWrapper
+from ..capture_stdout import capture_stdout
+from ..env import AECEnv
+from ..wrappers.base import BaseWrapper
 
 
 class CaptureStdoutWrapper(BaseWrapper):

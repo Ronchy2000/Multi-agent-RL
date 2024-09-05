@@ -6,7 +6,7 @@ class capture_stdout:
     r"""Class allowing to capture stdout.
 
     Example:
-        >>> from pettingzoo.utils.capture_stdout import capture_stdout
+        >>> from utils.capture_stdout import capture_stdout
         >>> with capture_stdout() as var:
         ...     print("test")
         ...     data = var.getvalue()
