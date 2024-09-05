@@ -6,11 +6,10 @@ from pettingzoo.mpe import simple_v3
 
 ### Parallel
 # 在 Parallel 模式下，所有智能体同时进行动作和观察。这意味着每个时间步所有智能体都在执行动作，没有等待时间。
+from pettingzoo.mpe import simple_spread_v3
 
-
-env = simple_v3.env(render_mode="human")
+env = simple_spread_v3.env(render_mode="human")
 env.reset(seed=42)
-
 
 for agent in env.agent_iter():
     observation, reward, termination, truncation, info = env.last()
@@ -23,3 +22,4 @@ for agent in env.agent_iter():
 
     env.step(action)
 env.close()
+
