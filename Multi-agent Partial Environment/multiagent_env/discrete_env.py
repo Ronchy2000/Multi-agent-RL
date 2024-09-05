@@ -5,6 +5,9 @@ from pettingzoo.utils.conversions import parallel_wrapper_fn
 import numpy as np
 from gymnasium.utils import EzPickle
 
+
+from pettingzoo.mpe.simple.simple import env, parallel_env, raw_env
+
 class PredatorPreyEnv(SimpleEnv, EzPickle):
     def __init__(
         self,
