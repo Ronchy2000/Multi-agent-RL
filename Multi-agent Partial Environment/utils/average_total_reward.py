@@ -4,7 +4,7 @@ import random
 
 import numpy as np
 
-from env import AECEnv
+from .env import AECEnv
 
 
 def average_total_reward(

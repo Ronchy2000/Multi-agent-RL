@@ -1,5 +1,13 @@
+# Python 中，相对导入只能在作为模块运行时工作，不能在直接运行文件时使用。
+# 可以在文件夹中添加__init__.py文件来告诉解释器，该文件夹下为一个包（模块）。
+# 获取项目的根目录（根据你的文件结构动态获取 MPE 目录）
+
 import os
 import sys
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# 添加项目根目录到 sys.path
+sys.path.append(project_root)
+
 
 import gymnasium
 import numpy as np
@@ -7,8 +15,9 @@ import pygame
 from gymnasium import spaces
 from gymnasium.utils import seeding
 
+
 from utils.env import AECEnv
-from _mpe_utils.core import Agent
+from .core import Agent
 from utils import wrappers
 from utils.AgentSelector import AgentSelector
 

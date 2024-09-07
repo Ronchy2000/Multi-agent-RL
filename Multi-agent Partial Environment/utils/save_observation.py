@@ -6,7 +6,7 @@ from typing import Any
 import gymnasium.spaces
 import numpy as np
 
-from env import AECEnv, AgentID, ParallelEnv
+from .env import AECEnv, AgentID, ParallelEnv
 
 
 def _check_observation_saveable(

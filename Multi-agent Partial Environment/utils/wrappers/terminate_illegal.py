@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from ..env import ActionType, AECEnv, AgentID, ObsType
 from ..env_logger import EnvLogger
-from base import BaseWrapper
+from .base import BaseWrapper
 
 
 class TerminateIllegalWrapper(BaseWrapper[AgentID, ObsType, ActionType]):

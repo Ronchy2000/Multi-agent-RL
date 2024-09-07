@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from ..env import ActionType, AECEnv, AgentID, ObsType
-from base import BaseWrapper
+from .base import BaseWrapper
 
 
 class AssertOutOfBoundsWrapper(BaseWrapper[AgentID, ObsType, ActionType]):
