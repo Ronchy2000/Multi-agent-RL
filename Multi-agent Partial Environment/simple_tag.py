@@ -79,7 +79,7 @@ class raw_env(SimpleEnv, EzPickle):
         self,
         num_good=1,
         num_adversaries=3,
-        num_obstacles=2,
+        num_obstacles=3,
         max_cycles=25,
         continuous_actions=False,
         render_mode=None,
@@ -125,7 +125,7 @@ class Scenario(BaseScenario):
         world.agents = [Agent() for i in range(num_agents)]
         for i, agent in enumerate(world.agents):
             agent.adversary = True if i < num_adversaries else False
-            base_name = "adversary" if agent.adversary else "agent"
+            base_name = "predator" if agent.adversary else "prey"
             base_index = i if i < num_adversaries else i - num_adversaries
             agent.name = f"{base_name}_{base_index}"
             agent.collide = True
@@ -279,7 +279,7 @@ class Scenario(BaseScenario):
 if __name__ =="__main__":
     print("test")
     simple_tag_v3 = make_env(raw_env)
-    env = simple_tag_v3(render_mode="human")
+    env = simple_tag_v3(render_mode="human",num_good = 1, num_adversaries = 3, num_obstacles = 2, max_cycles = 2500, continuous_actions=False)
     env.reset(seed = 42)
 
     for agent in env.agent_iter():
