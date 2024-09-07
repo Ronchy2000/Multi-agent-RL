@@ -4,9 +4,9 @@ import warnings
 from collections import defaultdict
 from typing import Callable, Dict, Optional
 
-import AgentSelector
-from env import ActionType, AECEnv, AgentID, ObsType, ParallelEnv
-from .wrappers import OrderEnforcingWrapper
+from .AgentSelector import AgentSelector
+from .env import ActionType, AECEnv, AgentID, ObsType, ParallelEnv
+from .wrappers.order_enforcing import OrderEnforcingWrapper
 
 
 def parallel_wrapper_fn(env_fn: Callable) -> Callable:

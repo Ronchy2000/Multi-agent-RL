@@ -13,7 +13,7 @@ from ..env import (
     ObsType,
 )
 from ..env_logger import EnvLogger
-from base import BaseWrapper
+from .base import BaseWrapper
 
 
 class OrderEnforcingWrapper(BaseWrapper[AgentID, ObsType, ActionType]):
