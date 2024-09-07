@@ -108,8 +108,8 @@ class raw_env(SimpleEnv, EzPickle):
         self.metadata["name"] = "simple_tag_v3"
 
 
-env = make_env(raw_env)
-parallel_env = parallel_wrapper_fn(env)
+# env = make_env(raw_env)
+# parallel_env = parallel_wrapper_fn(env)
 
 
 class Scenario(BaseScenario):
@@ -274,3 +274,22 @@ class Scenario(BaseScenario):
             + other_pos
             + other_vel
         )
+
+
+if __name__ =="__main__":
+    print("test")
+    simple_tag_v3 = make_env(raw_env)
+    env = simple_tag_v3(render_mode="human")
+    env.reset(seed = 42)
+
+    for agent in env.agent_iter():
+        observation, reward, termination, truncation, info = env.last()
+
+        if termination or truncation:
+            action = None
+        else:
+            action = env.action_space(agent).sample()
+
+        env.step(action)
+    env.close()
+
