@@ -38,10 +38,10 @@ def make_env(raw_env):
 
 
 class SimpleEnv(AECEnv):
-    metadata = {
+    metadata = {  # 与类相关的元数据
         "render_modes": ["human", "rgb_array"],
         "is_parallelizable": True,
-        "render_fps": 10,
+        "render_fps": 60,
     }
 
     def __init__(

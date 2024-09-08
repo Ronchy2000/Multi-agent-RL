@@ -74,7 +74,7 @@ from _mpe_utils.simple_env import SimpleEnv, make_env
 from utils.conversions import parallel_wrapper_fn
 
 
-class raw_env(SimpleEnv, EzPickle):
+class raw_env(SimpleEnv, EzPickle):  #多重继承
     def __init__(
         self,
         num_good=1,
@@ -85,7 +85,7 @@ class raw_env(SimpleEnv, EzPickle):
         render_mode=None,
         dynamic_rescaling=False,
     ):
-        EzPickle.__init__(
+        EzPickle.__init__(  #调用EzPickle父类的构造方法
             self,
             num_good=num_good,
             num_adversaries=num_adversaries,
@@ -96,7 +96,7 @@ class raw_env(SimpleEnv, EzPickle):
         )
         scenario = Scenario()
         world = scenario.make_world(num_good, num_adversaries, num_obstacles)
-        SimpleEnv.__init__(
+        SimpleEnv.__init__(  #调用SimpleEnv父类的构造方法
             self,
             scenario=scenario,
             world=world,
@@ -279,7 +279,7 @@ class Scenario(BaseScenario):
 if __name__ =="__main__":
     print("test")
     simple_tag_v3 = make_env(raw_env)
-    env = simple_tag_v3(render_mode="human",num_good = 1, num_adversaries = 3, num_obstacles = 2, max_cycles = 2500, continuous_actions=False)
+    env = simple_tag_v3(render_mode="human",num_good = 1, num_adversaries = 3, num_obstacles = 2, max_cycles = 250, continuous_actions=False)
     env.reset(seed = 42)
 
     for agent in env.agent_iter():
