@@ -88,7 +88,7 @@ if __name__ == '__main__':
         while env.agents:  # interact with the env for an episode
             step += 1
             if step < random_steps:
-                action = {agent_id: env.action_space(agent_id).sample() for agent_id in env.agents}
+                action = {agent_id: env.action_space(agent_id).sample() for agent_id in env.agents} # dict 类型
             else:
                 action = maddpg.select_action(obs)
 
