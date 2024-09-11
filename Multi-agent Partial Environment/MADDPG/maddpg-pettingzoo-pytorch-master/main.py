@@ -6,7 +6,7 @@ import numpy as np
 from pettingzoo.mpe import simple_adversary_v3, simple_spread_v3, simple_tag_v3
 
 from MADDPG import MADDPG
-
+import time
 
 def get_env(env_name, ep_len=25):
     """create environment and get observation and action dimension of each agent in this environment"""
@@ -47,7 +47,7 @@ if __name__ == '__main__':
     # parser.add_argument('--actor_lr', type=float, default=0.01, help='learning rate of actor')
     # parser.add_argument('--critic_lr', type=float, default=0.01, help='learning rate of critic')
     # args = parser.parse_args()
-
+    start_time = time.time()
     # 直接在代码中设置参数
     env_name = 'simple_tag_v3'
     episode_num = 30000
@@ -126,6 +126,13 @@ if __name__ == '__main__':
 
     maddpg.save(episode_rewards)  # save model
 
+    end_time = time.time()
+    # 将执行时间转换为分钟和秒
+    execution_time = end_time - start_time
+    minutes = int(execution_time // 60)
+    seconds = int(execution_time % 60)
+
+    print(f"程序执行时间为：{minutes} 分钟 {seconds} 秒")
 
     def get_running_reward(arr: np.ndarray, window=100):
         """calculate the running reward, i.e. average of last `window` elements from rewards"""
