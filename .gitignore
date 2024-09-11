@@ -8,3 +8,6 @@
 **/logs/
 # ignore the work I'm doing now
 RL-basic-algorithm/Graph based Multi-agent path planning/
+
+#忽略 .\Multi-agents-RL\Multi-agent Partial Environment\MADDPG\maddpg-pettingzoo-pytorch-master下的*
+**/results/
