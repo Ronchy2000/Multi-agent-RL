@@ -3,7 +3,7 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
-from pettingzoo.mpe import simple_adversary_v2, simple_spread_v2, simple_tag_v2
+from pettingzoo.mpe import simple_adversary_v3, simple_spread_v3, simple_tag_v3
 
 from MADDPG import MADDPG
 
@@ -11,12 +11,12 @@ from MADDPG import MADDPG
 def get_env(env_name, ep_len=25):
     """create environment and get observation and action dimension of each agent in this environment"""
     new_env = None
-    if env_name == 'simple_adversary_v2':
-        new_env = simple_adversary_v2.parallel_env(max_cycles=ep_len)
-    if env_name == 'simple_spread_v2':
-        new_env = simple_spread_v2.parallel_env(max_cycles=ep_len)
-    if env_name == 'simple_tag_v2':
-        new_env = simple_tag_v2.parallel_env(max_cycles=ep_len)
+    if env_name == 'simple_adversary_v3':
+        new_env = simple_adversary_v3.parallel_env(max_cycles=ep_len)
+    if env_name == 'simple_spread_v3':
+        new_env = simple_spread_v3.parallel_env(max_cycles=ep_len)
+    if env_name == 'simple_tag_v3':
+        new_env = simple_tag_v3.parallel_env(max_cycles=ep_len)
 
     new_env.reset()
     _dim_info = {}
@@ -29,7 +29,7 @@ def get_env(env_name, ep_len=25):
 
 
 if __name__ == '__main__':
-    #使用命令行传递参数
+    # 使用命令行传递参数
     # parser = argparse.ArgumentParser()
     # parser.add_argument('env_name', type=str, default='simple_adversary_v2', help='name of the env',
     #                     choices=['simple_adversary_v2', 'simple_spread_v2', 'simple_tag_v2'])
@@ -48,31 +48,30 @@ if __name__ == '__main__':
     # parser.add_argument('--critic_lr', type=float, default=0.01, help='learning rate of critic')
     # args = parser.parse_args()
 
-
-    #直接在代码中设置参数
+    # 直接在代码中设置参数
     env_name = 'simple_tag_v3'
     episode_num = 30000
     episode_length = 25
     learn_interval = 100  # steps interval between learning time
-    random_steps = 50000 # random steps before the agent start to learn
-    tau = 0.02 # soft update parameter
-    gamma = 0.95 # discounted rate
-    buffer_capacity = int(1e6) # capacity of replay buffer
-    batch_size = 1024 # batch-size of replay buffer
-    actor_lr = 0.01 # learning rate of actor
-    critic_lr = 0.01 # learning rate of critic
+    random_steps = 50000  # random steps before the agent start to learn
+    tau = 0.02  # soft update parameter
+    gamma = 0.95  # discounted rate
+    buffer_capacity = int(1e6)  # capacity of replay buffer
+    batch_size = 1024  # batch-size of replay buffer
+    actor_lr = 0.01  # learning rate of actor
+    critic_lr = 0.01  # learning rate of critic
 
     # create folder to save result
     # 例如，如果 env_name 是 simple_tag_v2，则 env_dir 将是 ./results/simple_tag_v2
     env_dir = os.path.join('./results', env_name)
     if not os.path.exists(env_dir):
         os.makedirs(env_dir)
-    total_files = len([file for file in os.listdir(env_dir)]) #  # 计算目录中已有的文件或文件夹数量
-    result_dir = os.path.join(env_dir, f'{total_files + 1}') # 创建一个新的子目录，名称为已有文件数量加1
+    total_files = len([file for file in os.listdir(env_dir)])  # # 计算目录中已有的文件或文件夹数量
+    result_dir = os.path.join(env_dir, f'{total_files + 1}')  # 创建一个新的子目录，名称为已有文件数量加1
     # 这段代码将 env_dir 与 total_files + 1 连接起来，生成一个新的子目录路径。
     # 例如，如果 total_files 是 3，则新的子目录路径将是 ./results/simple_adversary_v2/4。
     # 然后，os.makedirs(result_dir) 创建这个新的子目录。
-    os.makedirs(result_dir) ## 创建新的子目录
+    os.makedirs(result_dir)  ## 创建新的子目录
 
     env, dim_info = get_env(env_name, episode_length)
     maddpg = MADDPG(dim_info, buffer_capacity, batch_size, actor_lr, critic_lr,
@@ -83,18 +82,24 @@ if __name__ == '__main__':
     # reward of each episode of each agent
     episode_rewards = {agent_id: np.zeros(episode_num) for agent_id in env.agents}
     for episode in range(episode_num):
-        obs = env.reset()
+        # obs = env.reset()
+        observations, infos = env.reset()  # Parallel形式下 reset有返回值
+
         agent_reward = {agent_id: 0 for agent_id in env.agents}  # agent reward of the current episode
         while env.agents:  # interact with the env for an episode
+            # this is where you would insert your policy
+
             step += 1
             if step < random_steps:
-                action = {agent_id: env.action_space(agent_id).sample() for agent_id in env.agents} # dict 类型
+                action = {agent_id: env.action_space(agent_id).sample() for agent_id in env.agents}
             else:
-                action = maddpg.select_action(obs)
+                action = maddpg.select_action(observations)
+            next_observation, reward, termination, truncation, info = env.step(action)
+            # next_obs, reward, done, info = env.step(action)
 
-            next_obs, reward, done, info = env.step(action)
             # env.render()
-            maddpg.add(obs, action, reward, next_obs, done)
+            maddpg.add(observations, action, reward, next_observation, termination)
+            # maddpg.add(obs, action, reward, next_obs, done)
 
             for agent_id, r in reward.items():  # update reward
                 agent_reward[agent_id] += r
@@ -103,7 +108,8 @@ if __name__ == '__main__':
                 maddpg.learn(batch_size, gamma)
                 maddpg.update_target(tau)
 
-            obs = next_obs
+            # obs = next_observation
+            observations = next_observation
 
         # episode finishes
         for agent_id, r in agent_reward.items():  # record reward
