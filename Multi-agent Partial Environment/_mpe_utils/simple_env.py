@@ -26,6 +26,8 @@ alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 def make_env(raw_env):
     def env(**kwargs):
+        #**kwargs 是一个特殊的语法，用于将任意数量的关键字参数传递给函数。
+        # 它允许你在调用 env 函数时传递任意数量的关键字参数，而不需要在函数定义中明确列出这些参数
         env = raw_env(**kwargs)
         if env.continuous_actions:
             env = wrappers.ClipOutOfBoundsWrapper(env)

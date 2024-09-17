@@ -18,14 +18,20 @@ from .base import BaseWrapper
 
 class OrderEnforcingWrapper(BaseWrapper[AgentID, ObsType, ActionType]):
     """Checks if function calls or attribute access are in a disallowed order.
-
+    # 属性访问控制，方法调用控制，重置状态
     The following are raised:
     * AttributeError if any of the following are accessed before reset():
       rewards, terminations, truncations, infos, agent_selection,
       num_agents, agents.
+      即在调用 reset() 方法之前，如果尝试访问某些属性
+      （如 rewards, terminations, truncations, infos, agent_selection, num_agents, agents），会引发 AttributeError。
     * An error if any of the following are called before reset:
       render(), step(), observe(), state(), agent_iter()
+      即在调用 reset() 方法之前，如果尝试调用某些方法（如 render(), step(), observe(), state(), agent_iter()），会引发错误。
     * A warning if step() is called when there are no agents remaining.
+    即如果在没有剩余智能体的情况下调用 step() 方法，会发出警告
+
+    使用EnvLogger记录错误和警告信息，帮助开发者调试和跟踪问题。
     """
 
     def __init__(self, env: AECEnv[AgentID, ObsType, ActionType]):

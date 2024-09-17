@@ -278,19 +278,37 @@ class Scenario(BaseScenario):
 
 if __name__ =="__main__":
     print("test")
+    #不同环境的关系 raw env -> env -> parallel env, simple _tag_v3中包含raw_env, env, parallel_env
+    # raw env -> make_env -> env ->parallel_wrapper_fn -> parallel_env
     simple_tag_v3 = make_env(raw_env)
-    env = simple_tag_v3(render_mode="human",num_good = 1, num_adversaries = 3, num_obstacles = 2, max_cycles = 250, continuous_actions=False)
-    env.reset(seed = 42)
+    simple_tag_v3_parallel_env = parallel_wrapper_fn(simple_tag_v3)
 
-    for agent in env.agent_iter():
-        observation, reward, termination, truncation, info = env.last()
+    '''
+       以下是AEC  agent env cycle 轮流执行动作，环境下的demo
+    '''
+    # env = simple_tag_v3(render_mode="human", num_good=1, num_adversaries=3, num_obstacles=2, max_cycles=250,
+    #                     continuous_actions=False)
+    # env.reset(seed=42)
+    # for agent in env.agent_iter():
+    #     observation, reward, termination, truncation, info = env.last()
+    #
+    #     if termination or truncation:
+    #         action = None
+    #     else:
+    #         action = env.action_space(agent).sample()
+    #
+    #     env.step(action)
+    # env.close()
 
-        if termination or truncation:
-            action = None
-        else:
-            action = env.action_space(agent).sample()
+    '''
+    以下是parallel 环境下的demo，并行执行动作
+    '''
+    env = simple_tag_v3_parallel_env(render_mode="human", num_good=1, num_adversaries=3, num_obstacles=2, max_cycles=250,
+                        continuous_actions=False)
+    observation, infos = env.reset()
+    while env.agents:
+        # this is where you would insert your policy
+        actions = {agent: env.action_space(agent).sample() for agent in env.agents}
 
-        env.step(action)
+        observations, rewards, terminations, truncations, infos = env.step(actions)
     env.close()
-
-
