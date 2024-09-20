@@ -2,7 +2,7 @@
 - [RL Course Link](https://www.bilibili.com/video/BV1sd4y167NS)
 - [Book-Mathematical-Foundation-of-Reinforcement-Learning](https://github.com/MathFoundationRL/Book-Mathematical-Foundation-of-Reinforcement-Learning?tab=readme-ov-file)
 
-
+[赵老师强化学习代码仓库: ./RL_Learning-main/scripts](./RL_Learning-main/scripts)
 
 ## 2024.6.7
 重大更新! 原作者render坐标与state设置不一致。
