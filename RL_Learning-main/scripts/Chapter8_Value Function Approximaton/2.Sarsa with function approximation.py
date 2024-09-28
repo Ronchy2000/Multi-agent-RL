@@ -168,7 +168,7 @@ class Sarsa():
         Learn an optimal policy that can lead the agent to the target state from an initial state s0.
         add approximation method into Sarsa
     '''
-    def Sarsa_alg_with_approximation(self,initial_location, epsilon = 0.1, learning_rate = 0.001, ord = 2):
+    def Sarsa_alg_with_approximation(self,initial_location, epsilon = 0.1, learning_rate = 0.001, ord = 5):
         initial_state = self.env.pos2state(initial_location)
         print("initial_state:", initial_state)
         total_rewards, episode_lengths = [],[]
