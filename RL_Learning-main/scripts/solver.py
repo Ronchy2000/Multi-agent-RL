@@ -503,7 +503,7 @@ class Solve:
             state = episode[epoch]['state']
             next_state = episode[epoch]['next_state']
             target = reward + self.gama * np.dot(self.gfv(fourier, next_state, ord), w)
-            error = target - np.dot(self.gfv(fourier, state, ord), w)
+            error = target -
             gradient = self.gfv(fourier, state, ord)
             w = w + learning_rate * error * gradient
             for state in range(self.state_space_size):
