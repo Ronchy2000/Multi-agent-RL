@@ -81,15 +81,18 @@ class TD_learning_with_FunctionApproximation():
         get_feature_vector:   Φ(s)
         :param fourier: 是否使用傅里叶特征函数
         :param state: 状态
-        :param ord: 特征函数最高阶次数/傅里叶q(对应书)
-        :return: 代入state后的计算结果
+        :param ord: 特征函数最高阶次数/傅里叶(对应书)
+        :return: 多项式特征向量
         """
         if state < 0 or state >= self.state_space_size:
             raise ValueError("Invalid state value")
 
         x, y = self.env.state2pos(state) + (1, 1)
         feature_vector = []
+
+
         if fourier:
+            # 傅里叶feature vector
             # 归一化到 [-1 ,1]
             x_normalized = x / self.env.size
             y_normalized = y / self.env.size
@@ -97,13 +100,17 @@ class TD_learning_with_FunctionApproximation():
                 for j in range(ord + 1):
                     feature_vector.append(np.cos(np.pi * (i * x_normalized + j * y_normalized)))
 
-        else: #多项式 featrue vector
-            # 归一化到 0 到 1 将数据中心化到 [0, self.env.size - 1] 区间的中心位置,确保数据在归一化后不会偏向区间的一端。
+        else:
+            #多项式 featrue vector
+            # 归一化到 [0,1] ;
+            # 将数据中心化到 [0, self.env.size - 1] 区间的中心位置,确保数据在归一化后不会偏向区间的一端。
             x_normalized = (x - (self.env.size - 1) * 0.5) / (self.env.size - 1)
             y_normalized = (y - (self.env.size - 1) * 0.5) / (self.env.size - 1)
-            for i in range(ord + 1):
-                for j in range(i + 1):
-                    feature_vector.append(y_normalized ** (ord - i) * x_normalized ** j)  # ord =1时，feature vector:[1, y, x]
+            # 初始化特征向量
+            feature_vector = [1]  # 特征向量的第一个元素总是常数1
+            for i in range(1, ord + 1):  # 从1到ord阶
+                for j in range(i + 1):  # j表示y的指数，i-j表示x的指数
+                    feature_vector.append((x_normalized ** (i - j)) * (y_normalized ** j))  #[1, x, y, x^2, xy, y^2]
         return np.array(feature_vector)
 
     def get_feature_vector_with_action(self, fourier: bool, state: int, action: int, ord: int) -> np.ndarray:
@@ -184,12 +191,12 @@ class TD_learning_with_FunctionApproximation():
         if self.learning_rate <= 0 or epochs <= 0 or ord <= 0:
             raise ValueError("Invalid input value")
 
-        dim = (ord + 1) ** 2 if fourier else np.arange(ord + 2).sum()  #条件表达式
-        w = np.random.default_rng().normal(size=dim) #生成了一个长度为 dim 的向量，其中每个元素都服从标准正态分布（均值为 0，方差为 1）
+        dim = (ord + 1) ** 2 if fourier else np.arange(ord + 2).sum()  #条件表达式;  计算特征向量的维度
+        w = np.random.default_rng().normal(size=dim) # 初始化权重参数; 生成了一个长度为 dim 的向量，其中每个元素都服从标准正态分布（均值为 0，方差为 1）
         print("feature vector w:",w) # parameter
+
         rmse = []  #均方根误差RMSE（Root Mean Square Error） RMSE = √(Σ(yi - Ŷi)²/n)
         value_hat = np.zeros(self.state_space_size)
-
 
         for epoch in range(epochs):
             start_state = np.random.randint(self.state_space_size)
@@ -205,11 +212,13 @@ class TD_learning_with_FunctionApproximation():
                 # gradient = self.get_feature_vector(fourier, state, ord)  # phi(s)*w的梯度为phi(s)，即feature vector本身
                 # w = w + learning_rate * error * gradient
                 #书中的TD-Linear公式
-                w = w + self.learning_rate*(reward + self.gamma*np.dot(self.get_feature_vector(fourier, next_state, ord),w) - np.dot(self.get_feature_vector(fourier, state, ord),w) )
+                w += (self.learning_rate*
+                      (reward
+                    + self.gamma*np.dot(self.get_feature_vector(fourier, next_state, ord),w)
+                    - np.dot(self.get_feature_vector(fourier, state, ord),w) ))
 
             for state in range(self.state_space_size):
                 value_hat[state] = np.dot(self.get_feature_vector(fourier, state, ord), w)
-
             rmse.append(np.sqrt(np.mean((value_hat - self.state_value) ** 2)))
             print(epoch)
 
