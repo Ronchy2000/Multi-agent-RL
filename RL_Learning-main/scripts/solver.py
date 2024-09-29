@@ -503,7 +503,7 @@ class Solve:
             state = episode[epoch]['state']
             next_state = episode[epoch]['next_state']
             target = reward + self.gama * np.dot(self.gfv(fourier, next_state, ord), w)
-            error = target -
+            error = target - np.dot(self.gfv(fourier, state, ord), w)
             gradient = self.gfv(fourier, state, ord)
             w = w + learning_rate * error * gradient
             for state in range(self.state_space_size):
@@ -978,7 +978,8 @@ if __name__ == "__main__":
     # solver.mc_epsilon_greedy()
     # solver.mc_epsilon_greedy(length=2000)
     # solver.sarsa()
-    print("state_value_hat:", solver.td_value_approximation())
+    # print("state_value_hat:", solver.td_value_approximation())
+    print("state_value_hat:", solver.qvalue_function_approximation())
     print("solver.state_value:", solver.state_value)
     # solver.mc_basic(length=15)
     solver.show_policy()  # solver.env.render()

@@ -188,7 +188,7 @@ class Sarsa():
         total_rewards, episode_lengths = [],[]
         dim = len(self.get_feature_vector_with_action(0, 0,0, ord))  # 确定特征向量的维度
         w = np.random.default_rng().normal(size=dim)  # 初始化权重参数
-        q_hat = np.zeros(self.state_space_size, self.action_space_size)
+        # q_hat = np.zeros(self.state_space_size, self.action_space_size)
         for episode_num in range(1000): # episode_num
             self.env.reset()
             total_reward = 0
