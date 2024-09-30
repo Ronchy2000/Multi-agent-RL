@@ -59,7 +59,8 @@ class GridEnv(gym.Env):
         # self.reward_list = [0, 1, -10, -10]
         # self.reward_list = [0, 1, -1, -10]
         # self.reward_list = [-1, 0, -10, -10] #chapter7
-        self.reward_list = [0, 1, -1, -1]  #reward list for TD linear
+        # self.reward_list = [0, 1, -1, -1]  #reward list for TD linear
+        self.reward_list = [0, 1, -10, -10]  # reward list chapter8
         self.observation_space = spaces.Dict(
             {
                 "agent": spaces.Box(low = 0, high = size - 1, shape=(2,), dtype=int),

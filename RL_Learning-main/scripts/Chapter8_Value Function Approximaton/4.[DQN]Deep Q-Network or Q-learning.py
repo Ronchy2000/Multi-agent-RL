@@ -178,9 +178,9 @@ class DQN():
         for epoch in range(epochs):
             for state_action, reward, next_state in date_iter:
                 i += 1
-                q_value = q_net(state_action)
+                q_value = q_net(state_action) # 计算当前状态-动作对的Q值
                 q_value_target = torch.empty((batch_size, 0))  # 定义空的张量
-                for action in range(self.action_space_size):
+                for action in range(self.action_space_size): #遍历所有动作a1,a2,a3,a4,a5
                     s_a = torch.cat((next_state, torch.full((batch_size, 1), action)), dim=1)
                     q_value_target = torch.cat((q_value_target, q_target_net(s_a)), dim=1)
                 q_star = torch.max(q_value_target, dim=1, keepdim=True)[0]
