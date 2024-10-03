@@ -61,7 +61,7 @@ if __name__ == '__main__':
     p1_probability = [0.8, 0.2]
     importance_sampling = Importance_sampling(p0_probability, p1_probability) #实例化
 
-    importance_sampling.sampling(10000)
+    importance_sampling.sampling(200)
     average_result, importance_sampling_result = importance_sampling.calculate()
 
     importance_sampling.render(average_result, importance_sampling_result)
