@@ -1,6 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
+'''
+There is no need sampling too much, because you can't tell the samples if you collect more than 1000 samples.
+That's catastrophe for ploting!
+200 samples are enough.
+2024.10.4
+'''
 class Importance_sampling:
     def __init__(self,p0_probability, p1_probability):
         self.seed = 42
