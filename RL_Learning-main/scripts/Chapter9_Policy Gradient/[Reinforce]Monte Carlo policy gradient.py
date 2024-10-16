@@ -71,6 +71,7 @@ class REINFORCE():
                                         y_offset=y_offset,
                                         size_discount=0.7)
 
+    #其中一个episode 就是一个从start 到 target 的轨迹。
     def obtain_episode_net(self, policy_net, start_state, start_action):
         """
         :param policy_net: 由指定策略产生episode
@@ -82,11 +83,11 @@ class REINFORCE():
         episode = []
         next_action = start_action
         next_state = start_state
-        done = False
-        while not done:
+        terminated = False
+        while not terminated:
             state = next_state
             action = next_action
-            _, reward, done, _, _ = self.env.step(action)  # 一步动作
+            _, reward, terminated, _, _ = self.env.step(action)  # 一步动作
             next_state = self.env.pos2state(self.env.agent_location)
             x, y = self.env.state2pos(next_state) / self.env.size
             prb = policy_net(torch.tensor((x, y)).reshape(-1, 2))[0]
@@ -104,6 +105,7 @@ class REINFORCE():
             start_action = np.random.choice(np.arange(self.action_space_size), p=prb.detach().numpy())
             episode = self.obtain_episode_net(policy_net, start_state=0, start_action=start_action)
             # print("eposode:", episode)
+
             if len(episode) < 10 :
                 g = -100
             else:
@@ -114,7 +116,8 @@ class REINFORCE():
                 state = episode[step]['state']
                 action = episode[step]['action']
                 if len(episode) > 1000:
-                    print(g, reward)
+                    # print(g, reward)
+                    pass
                 g = self.gama * g + reward
                 self.qvalue[state, action] = g
                 x ,y = self.env.state2pos(state)/self.env.size
