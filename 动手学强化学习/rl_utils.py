@@ -21,6 +21,8 @@ class ReplayBuffer:
         return len(self.buffer)
 
 def moving_average(a, window_size):
+    a = np.array(a)  # 先转换为 NumPy 数组
+    a = np.where(a > 200, 200, a)  # 将大于200的值替换为200
     cumulative_sum = np.cumsum(np.insert(a, 0, 0)) 
     middle = (cumulative_sum[window_size:] - cumulative_sum[:-window_size]) / window_size
     r = np.arange(1, window_size-1, 2)
