@@ -7,3 +7,5 @@ This file aims to reproduce https://hrl.boyuai.com/chapter/2/dqn%E7%AE%97%E6%B3%
 
 最后扩展到MADDPG。
 
+##[2023]py script 形式的HandsOnRL
+https://github.com/peterwu4084/HandsOnRL/tree/main
