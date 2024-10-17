@@ -79,7 +79,7 @@ class DQN:
         dqn_loss.backward()  # 反向传播更新参数
         self.optimizer.step()
 
-        if self.count % self.target_update == 0:
+        if self.count % self.target_update == 0:  #target_update 指C步之后更新目标网络Q_target的参数 \omega
             self.target_q_net.load_state_dict(
                 self.q_net.state_dict())  # 更新目标网络
         self.count += 1

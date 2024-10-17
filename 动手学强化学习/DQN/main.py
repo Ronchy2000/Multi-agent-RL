@@ -1,4 +1,4 @@
-import gym
+import gymnasium as gym
 import torch
 import random
 import numpy as np
@@ -10,8 +10,7 @@ import sys
 import os
 # 将上级目录添加到 sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-# import rl_utils
-from rl_utils import *
+import rl_utils
 
 def dis_to_con(discrete_action, env, action_dim):
     action_lowbound = env.action_space.low[0]
@@ -33,11 +32,11 @@ def train_DQN(agent, env, num_episodes, replay_buffer, minimal_size, batch_size)
                 while not done:
                     # print("state", state)
                     action = agent.take_action(state)
-                    max_q_value = agent.max_q_value(state) * 0.005 + max_q_value * 0.995
-                    max_q_value_list.append(max_q_value)
+                    # max_q_value = agent.max_q_value(state) * 0.005 + max_q_value * 0.995
+                    # max_q_value_list.append(max_q_value)
 
-                    action_continuous = dis_to_con(action, env, agent.action_dim)
-                    next_state, reward, done, *_ = env.step(action_continuous)
+                    # action_continuous = dis_to_con(action, env, agent.action_dim)
+                    next_state, reward, done, *_ = env.step(action)  #实参或者为： action_continuous
                     replay_buffer.add(state, action, reward, next_state, done)
                     state = next_state
                     episode_return += reward
@@ -64,52 +63,57 @@ def train_DQN(agent, env, num_episodes, replay_buffer, minimal_size, batch_size)
 
 
 
-lr = 1e-2
-num_episodes = 200
-hidden_dim = 128
-gamma = 0.98
-epsilon = 0.01
-target_update = 50
-buffer_size = 5000
-minimal_size = 1000
-batch_size = 64
-device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+if __name__ == "__main__":
+    lr = 2e-3
+    num_episodes = 500
+    hidden_dim = 128
+    gamma = 0.99
+    epsilon = 0.01
+    target_update = 10
+    buffer_size = 10000
+    minimal_size = 500
+    batch_size = 64
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    print(f"Using device: {device}")
+    # env_name = 'Pendulum-v1'
+    env_name = "CartPole-v0"
+    env = gym.make(env_name)
+    print("CartPole-v0 env:",env)
 
-# env_name = 'Pendulum-v1'
-env_name = "CartPole-v0"
-env = gym.make(env_name)
-state_dim = env.observation_space.shape[0]
-action_dim = 11
+    random.seed(0)
+    np.random.seed(0)
+    env.reset(seed = 0)  # 新版gymnausim
+    # env.seed(0)  #旧版gym
+    torch.manual_seed(0)
 
-print("DQN")
-random.seed(0)
-np.random.seed(0)
-env.reset(seed = 0)  # 新版gymnausim
-# env.seed(0)  #旧版gym
-torch.manual_seed(0)
 
-replay_buffer = ReplayBuffer(buffer_size)
-print("replay_buffer建立成功！", replay_buffer)
-agent = DQN(state_dim, hidden_dim, action_dim, lr, gamma, epsilon, target_update, device)
-return_list, max_q_value_list = train_DQN(agent, env, num_episodes, replay_buffer, minimal_size, batch_size)
+    replay_buffer = rl_utils.ReplayBuffer(buffer_size)
+    print("replay_buffer建立成功！", replay_buffer)
+    state_dim = env.observation_space.shape[0]
+    action_dim = env.action_space.n
+    print("state_dim:", state_dim)
+    print("action_dim:", action_dim)
+    agent = DQN(state_dim, hidden_dim, action_dim, lr, gamma, epsilon, target_update, device)
+    # return_list, max_q_value_list = train_DQN(agent, env, num_episodes, replay_buffer, minimal_size, batch_size)
+    return_list, _ = train_DQN(agent, env, num_episodes, replay_buffer, minimal_size, batch_size)
 
-torch.save(agent.q_net.state_dict(), 'dqn_pendulumv1.pth')
-episodes_list = list(range(len(return_list)))
-mv_returns = moving_average(return_list, 5)
-plt.plot(episodes_list, mv_returns)
-plt.xlabel('Episodes')
-plt.ylabel('Returns')
-plt.title('DQN Returns on {}'.format(env_name))
-plt.show()
+    # torch.save(agent.q_net.state_dict(), 'dqn_pendulumv1.pth')
+    episodes_list = list(range(len(return_list)))
 
-frames_list = list(range(len(max_q_value_list)))
-plt.plot(frames_list, max_q_value_list)
-plt.axhline(0, c='orange', ls='--')
-plt.axhline(10, c='red', ls='--')
-plt.xlabel('Frames')
-plt.ylabel('Q value')
-plt.title('DQN Q Value on {}'.format(env_name))
-plt.show()
+    plt.plot(episodes_list, return_list)
+    plt.xlabel('Episodes')
+    plt.ylabel('Returns')
+    plt.title('DQN Returns on {}'.format(env_name))
+    plt.show()
+    ##将结果平滑处理
+    mv_return = rl_utils.moving_average(return_list, 9)
+    plt.plot(episodes_list, mv_return)
+    plt.xlabel('Episodes')
+    plt.ylabel('Returns')
+    plt.title('DQN on {}'.format(env_name))
+    plt.show()
+
+
 
 # --------------------------------------------------------
 #
