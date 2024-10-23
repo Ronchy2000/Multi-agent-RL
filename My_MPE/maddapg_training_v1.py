@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+# @Time : 2024-10-23 20:40:27
+# @Author : Ronchy Lu
+# @Email : rongqi1949@gmail.com
+# @File : maddapg_training_v1.py
+# @Software: PyCharm
+# @Description: None
+
 import numpy as np
 import torch
 import torch.nn as nn
