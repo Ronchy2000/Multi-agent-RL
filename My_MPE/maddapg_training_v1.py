@@ -18,8 +18,9 @@ from maddpg_agent_v1 import Agent
 
 #  Set deviece
 print("torch.cuda.is_available:", torch.cuda.is_available())
+# device = torch.device("cpu")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print("Using device: {}".format(device) )
+print("Using device: {}".format(device))
 
 
 
@@ -29,11 +30,11 @@ def multi_observations2state(multi_obs):
     """
     state = np.array([])
     for agent_obs in multi_obs.values():  # 访问字典中的值
-        state = np.concatenate([state,agent_obs])
+        state = np.concatenate([state, agent_obs])
     return state
 #-----------------------------------------------------------------------------------
 NUM_EPISODE = 10000
-NUM_STEP = 200
+NUM_STEP = 100
 MEMORY_SIZE = 100000
 BATCH_SIZE = 512
 TARGET_UPDATE_INTERVAL = 200  # 最好是整除NUM_STEP。
@@ -46,7 +47,7 @@ HIDDEN_DIM = 64
 
 
 # 1 Initialize the agents
-env = simple_tag_v3.parallel_env(render_mode="human", num_good = 1, num_adversaries = 3, num_obstacles = 0, max_cycles = 25, continuous_actions = True)
+env = simple_tag_v3.parallel_env(render_mode="human", num_good = 1, num_adversaries = 3, num_obstacles = 0, max_cycles = NUM_STEP, continuous_actions = True)
 multi_observations, infos = env.reset() # 返回多个agent的初始状态，每个agent的初始状态是一个字典，字典的key是agent的名字，value是agent的初始状态
 
 NUM_AGENT = env.num_agents
@@ -92,12 +93,14 @@ for episode_i in range(NUM_EPISODE):
         for agent_i, agent_name in enumerate(agent_name_list):
             agent = agents[agent_i]
             single_obs = multi_observations[agent_name]
+            # single_obs = torch.tensor(data=multi_observations[agent_name], dtype=torch.float).to(device)
             single_action = agent.get_action(single_obs)  #  通过每个智能体自己的观测，分别得到每个agent的action
             multi_actions[agent_name] = single_action
 
         # 2.2 Execute actions
         multi_next_observations, multi_rewards, multi_done, multi_truncations, infos = env.step(multi_actions)
-        next_state = multi_observations2state(multi_observations)
+        state = multi_observations2state(multi_observations)
+        next_state = multi_observations2state(multi_next_observations)
         #  如果跑够步数，那么把done标志位 置1
         if step_i >= NUM_STEP -1:
             multi_done = {agent_name: True for agent_name in agent_name_list}
@@ -105,12 +108,14 @@ for episode_i in range(NUM_EPISODE):
         for agent_i, agent_name in enumerate(agent_name_list):
             agent = agents[agent_i]
             single_obs = multi_observations[agent_name]
+            # print(f"total_step:{total_step}")
+            # print(f" {agent_name},multi_next_observations{multi_next_observations[agent_name]}")
             single_next_obs = multi_next_observations[agent_name]
             single_action = multi_actions[agent_name]
             single_reward = multi_rewards[agent_name]
             single_done = multi_done[agent_name]
-            agent.replay_buffer.add_memory(single_obs, single_action, single_reward,
-                                           single_next_obs, single_done)
+            agent.replay_buffer.add_memory(single_obs, single_next_obs, state, next_state, \
+                                           single_action, single_reward, single_done)
         # 2.4 update brain every fixed steps
         multibatch_obses = []
         multibatch_next_obses = []
@@ -188,7 +193,8 @@ for episode_i in range(NUM_EPISODE):
 
 
                 #Update actor Network
-                actor_loss = agent.critic.forward(batch_states_tensor, multibatch_online_actions_tensor).flatten() # 这个地方可能会出现问题
+                actor_loss = agent.critic.forward(batch_states_tensor,
+                                                  multibatch_online_actions_tensor.detach()).flatten() # 这个地方可能会出现问题
                 actor_loss = -torch.mean(actor_loss)
                 agent.actor.optimizer.zero_grad()
                 actor_loss.backward()
@@ -204,15 +210,15 @@ for episode_i in range(NUM_EPISODE):
 
         multi_observations = multi_next_observations
         episode_reward += sum(single_reward for single_reward in multi_rewards.values())
-        print(f"episode_reward: {episode_reward}")
+        print(f"total step:{total_step} | episode_reward: {episode_reward}")
 
     # 3 Render the env
-    if (episode_i + 1) % 100 == 0:
+    if (episode_i + 1) % 10 == 0:
         env = simple_tag_v3.parallel_env(render_mode="human",
                                          num_good = 1,
                                          num_adversaries = 3,
                                          num_obstacles = 0,
-                                         max_cycles = 25,
+                                         max_cycles = NUM_STEP,
                                          continuous_actions = True)
         for test_epi_i in range(10):
             multi_observations, infos = env.reset()
@@ -221,16 +227,17 @@ for episode_i in range(NUM_EPISODE):
                 for agent_i, agent_name in enumerate(agent_name_list):
                     agent = agents[agent_i]
                     single_obs = multi_observations[agent_name]
-                    single_action = agent.get_action(single_obs)  # 通过每个智能体自己的观测，分别得到每个agent的action
+                    single_obs = torch.tensor(data=single_obs, dtype=torch.float).unsqueeze(0).to(device)
+                    # single_action = agent.get_action(single_obs)  # 通过每个智能体自己的观测，分别得到每个agent的action
                     multi_actions[agent_name] = single_action
                     multi_next_observations, multi_rewards, multi_done, multi_truncations, infos = env.step(multi_actions)
                     multi_observations = multi_next_observations
 
     # 4 Save agents' model
-
     if episode_i == 0:
         hightest_reward = episode_reward
     if episode_reward > hightest_reward:
+        print(f"Highest reward updated at episode {episode_i}:{round(episode_reward, 2)}")
         hightest_reward = episode_reward
         for agent_i in range(NUM_AGENT):
             agent = agents[agent_i]

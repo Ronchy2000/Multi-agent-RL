@@ -14,6 +14,7 @@ import numpy as np
 import random
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cpu")
 print("device: {}".format(device))
 class ReplayBuffer():
     def __init__(self, capacity, obs_dim, state_dim, action_dim, batch_size):
@@ -92,7 +93,8 @@ class Critic(nn.Module):
         self.optimizer = torch.optim.Adam(self.parameters(), lr = lr_critic)
 
     def forward(self, state, action):
-        x = torch.cat([state, action])
+        # x = torch.cat([state, action])
+        x = torch.cat([state.to(device), action.to(device)], dim=1)
         q = self.model_critic(x)
         return q
     def save_checkpoint(self, checkpoint_file):
@@ -109,15 +111,15 @@ class Agent():
         self.action_dim = action_dim
 
         self.actor = Actor(lr_actor = alpha, input_dim = obs_dim, fc1_dim = fc1_dim, fc2_dim= fc2_dim, \
-                           action_dim = action_dim)
+                           action_dim = action_dim).to(device)
 
         self.target_actor = Actor(lr_actor=alpha, input_dim=obs_dim, fc1_dim=fc1_dim, fc2_dim=fc2_dim, \
-                           action_dim=action_dim)
+                           action_dim=action_dim).to(device)
 
         self.critic = Critic(lr_critic = beta, input_dim = state_dim, fc1_dim = fc1_dim, fc2_dim = fc2_dim, \
-                             num_agent = n_agent, action_dim = action_dim)
+                             num_agent = n_agent, action_dim = action_dim).to(device)
         self.target_critic = Critic(lr_critic=beta, input_dim=state_dim, fc1_dim=fc1_dim, fc2_dim=fc2_dim, \
-                             num_agent=n_agent, action_dim=action_dim)
+                             num_agent=n_agent, action_dim=action_dim).to(device)
         self.replay_buffer = ReplayBuffer(capacity=memory_size, obs_dim= obs_dim, state_dim = state_dim,\
                                           action_dim = action_dim, batch_size = batch_size)
     def get_action(self, obs):
