@@ -12,6 +12,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 import random
+from pettingzoo.mpe import simple_tag_v3
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # device = torch.device("cpu")
@@ -19,9 +21,9 @@ print("device: {}".format(device))
 class ReplayBuffer():
     def __init__(self, capacity, obs_dim, state_dim, action_dim, batch_size):
         self.capacity = capacity
-        self.obs_cap = np.empty((self.capacity, obs_dim))
+        self.obs_cap = np.empty((self.capacity, obs_dim)) #12, 12, 12, 10
         self.next_obs_cap = np.empty((self.capacity, obs_dim))
-        self.state_cap = np.empty((self.capacity, state_dim))
+        self.state_cap = np.empty((self.capacity, state_dim))  # 46
         self.next_state_cap = np.empty((self.capacity, state_dim))
         self.action_cap = np.empty((self.capacity, action_dim))
         self.reward_cap = np.empty((self.capacity, 1))
@@ -83,6 +85,10 @@ class Critic(nn.Module):
     def __init__(self, lr_critic, input_dim, fc1_dim, fc2_dim, num_agent, action_dim):
         super(Critic, self).__init__()
         # 含有两个隐藏层的模型
+        self.input_dim = input_dim
+        self.num_agent = num_agent
+        self.action_dim =action_dim
+        self.total_dim = input_dim + num_agent * action_dim
         self.model_critic = nn.Sequential(
             nn.Linear(input_dim + num_agent * action_dim, fc1_dim),
             nn.ReLU(),  # sequential中的ReLU不需要参数
@@ -93,8 +99,12 @@ class Critic(nn.Module):
         self.optimizer = torch.optim.Adam(self.parameters(), lr = lr_critic)
 
     def forward(self, state, action):
-        # x = torch.cat([state, action])
-        x = torch.cat([state.to(device), action.to(device)], dim=1)
+        print(f"input_dim + num_agent * action_dim= {self.total_dim} ")
+        print("self.input_dim:",self.input_dim)
+        print("self.num_agent:",self.num_agent)
+        print("self.action_dim:",self.action_dim)
+        x = torch.cat([state, action], dim = 1)
+        # x = torch.cat([state.to(device), action.to(device)], dim=1)
         q = self.model_critic(x)
         return q
     def save_checkpoint(self, checkpoint_file):
@@ -142,3 +152,20 @@ class Agent():
 
 
 
+if __name__ == "__main__":
+
+    env = simple_tag_v3.parallel_env(render_mode="human", num_good=1, num_adversaries=3, num_obstacles=0,
+                                     max_cycles=25, continuous_actions=True)
+    multi_observations, infos = env.reset()  # 返回多个agent的初始状态，每个agent的初始状态是一个字典，字典的key是agent的名字，value是agent的初始状态
+
+    while env.agents:
+        # this is where you would insert your policy
+        actions = {agent: env.action_space(agent).sample() for agent in env.agents}
+        print("actions:",actions) #  action: array.size = 5
+        multi_next_observations, rewards, terminations, truncations, infos = env.step(actions)
+        print("observations:",multi_next_observations)
+        # print("rewards:",rewards)
+        # print("terminations:",terminations)
+        # print("truncations:",truncations)
+        # print("infos:",infos)
+    env.close()
