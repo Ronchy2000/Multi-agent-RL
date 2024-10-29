@@ -77,7 +77,7 @@ for agent_i in range(NUM_AGENT):
     '''
     obs_dim0:12 ;obs_dim1:12;obs_dim2:12;obs_dim0:12;   问题出现在：！！！obs_dim3:10
     '''
-
+    print(f"初始化agent的obs_dim[agent_i]:{obs_dim[agent_i]}")
     agent = Agent(memory_size = MEMORY_SIZE, obs_dim = obs_dim[agent_i], state_dim = state_dim, n_agent = NUM_AGENT,
                   action_dim = action_dim[agent_i],alpha = LR_ACTOR, beta = LR_CRITIC, fc1_dim = HIDDEN_DIM,
                   fc2_dim = HIDDEN_DIM, gamma = GAMMA, tau = TAU, batch_size = BATCH_SIZE )
@@ -98,7 +98,6 @@ for episode_i in range(NUM_EPISODE):
         for agent_i, agent_name in enumerate(agent_name_list):
             agent = agents[agent_i]
             single_obs = multi_observations[agent_name]
-            # single_obs = torch.tensor(data=multi_observations[agent_name], dtype=torch.float).to(device)
             single_action = agent.get_action(single_obs)  #  通过每个智能体自己的观测，分别得到每个agent的action
             multi_actions[agent_name] = single_action
 
@@ -172,6 +171,10 @@ for episode_i in range(NUM_EPISODE):
         multibatch_actions_tensor = torch.cat(multibatch_actions, dim=1).to(device)
         multibatch_next_actions_tensor = torch.cat(multibatch_next_actions, dim=1).to(device)
         multibatch_online_actions_tensor = torch.cat(multibatch_online_actions, dim=1).to(device)
+
+
+
+
         # Update critic and actor Network
         if (total_step+1) % TARGET_UPDATE_INTERVAL == 0:
             for agent_i in range(NUM_AGENT):
@@ -185,16 +188,23 @@ for episode_i in range(NUM_EPISODE):
                 batch_rewards_tensor = multibatch_rewards[agent_i]
                 batch_dones_tensor = multibatch_dones[agent_i]
 
+                # print(f"batch_obses_tensor size: {batch_obses_tensor.size()}")
+                # print(f"batch_next_obses_tensor size: {batch_next_obses_tensor.size()}")
+                # print(f"batch_states_tensor size: {batch_states_tensor.size()}")
+                # print(f"batch_next_states_tensor size: {batch_next_states_tensor.size()}")
+                # print(f"batch_actions_tensor size: {batch_actions_tensor.size()}")
+
                 # target critic Network
-                print(f"batch_next_obses_tensor.size: {batch_next_obses_tensor.size()}")
+                print(f"batch_next_obses_tensor.size: {batch_next_states_tensor.size()}")
                 print(f"multibatch_next_actions_tensor.size: {multibatch_next_actions_tensor.size()}")
 
-                critic_target_q = agent.target_critic.forward(batch_next_obses_tensor,
+                critic_target_q = agent.target_critic.forward(batch_next_states_tensor,
                                                               multibatch_next_actions_tensor.detach())
                 y = (batch_rewards_tensor + (1 - batch_dones_tensor) * agent.gamma * critic_target_q).flatten()
-                # critic Network
-                critic_q = agent.critic.forward(batch_obses_tensor, multibatch_actions_tensor.detach()).flatten()
+                    # critic Network
+                critic_q = agent.critic.forward(batch_states_tensor, multibatch_actions_tensor.detach()).flatten()
 
+                #update critic
                 critic_loss = nn.MSELoss(y, critic_q)
                 agent.critic.optimizer.zero_grad()
                 critic_loss.backward()

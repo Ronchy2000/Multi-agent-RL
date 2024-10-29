@@ -104,6 +104,18 @@ class Critic(nn.Module):
         print("self.num_agent:",self.num_agent)
         print("self.action_dim:",self.action_dim)
         x = torch.cat([state, action], dim = 1)
+        print("x.torch.cat([state, action]: siez()——>",x.size())
+
+        # 计算总维度
+        batch_size = x.size(0)
+        total_dim = x.size(1)
+
+        # 确保维度正确
+        if total_dim == self.total_dim:
+            x = x.view(batch_size, total_dim)
+        else:
+            raise ValueError(f"Invalid dimensions for reshaping: expected {self.total_dim}, but got {total_dim}")
+
         # x = torch.cat([state.to(device), action.to(device)], dim=1)
         q = self.model_critic(x)
         return q
