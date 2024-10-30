@@ -74,7 +74,7 @@ class JSGraph():
         for (i,j) in self.nodesets:
             for (w,k) in self.nodesets:
                 #print((i,j),(w,k))
-                #A constant B moving (u,v)-(i,j) and (x,y)-(w,k)
+                #A constant B站 moving (u,v)-(i,j) and (x,y)-(w,k)
                 if i==w and j!=k and self.graph_1d[j][k]!=0 and self.graph_1d[j][k]!=float('inf') : # k belongs to N of j
                     support_node_jk = []
                     if type(self.graph_1d[j][k])==list:
@@ -87,10 +87,10 @@ class JSGraph():
                         dist = self.edge_cost(i,j,w,k)
                     ############################
                     if dist!=0 and dist!=float('inf'): 
-                        print("A Constant B moving")
+                        print("A Constant B站 moving")
                         print((i,w),(j,k),dist)  
                         self.addEdge_2d(i,j,w,k,dist)
-                # B constant, A moving
+                # B站 constant, A moving
                 elif i!=w and j==k and self.graph_1d[w][i]!=0 and self.graph_1d[w][i]!=float('inf') :
                     support_node_iw = []
                     if type(self.graph_1d[i][w])==list:
@@ -102,7 +102,7 @@ class JSGraph():
                         dist = self.edge_cost(i,j,w,k)
                     ############################### 
                     if dist!=0 and dist!=float('inf'):  
-                        print("B Constant A moving")
+                        print("B站 Constant A moving")
                         print((i,w),(j,k),dist)   
                         self.addEdge_2d(i,j,w,k,dist)  
                 elif self.graph_1d[j][k]!=0 and self.graph_1d[j][k]!=float('inf') and self.graph_1d[i][w]!=0 and self.graph_1d[i][w]!=float('inf') :   

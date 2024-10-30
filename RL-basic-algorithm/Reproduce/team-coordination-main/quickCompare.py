@@ -31,7 +31,7 @@ import numpy as np
 # nx.draw_networkx(graph)  # draw
 # plt.show()
 
-####### (B) 4 nodes, 3 edges with 1 risky edge each with 2 support nodes 
+####### (B站) 4 nodes, 3 edges with 1 risky edge each with 2 support nodes
 V = 4
 S11 = (0,0) # start: 0 node
 Sgg = (3,3) # goal: 3 node
