@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
+
 import torch.nn.functional as F
 import torch.optim as optim
 from matplotlib import pyplot as plt
@@ -44,7 +45,7 @@ UPDATE_INTERVAL = 100  # determines the number of steps before performing an upd
 MINIMAL_SIZE = 4000  # is a minimum threshold for the replay buffer size before starting the training.
 # Initialize Environment
 # env = simple_adversary_v3.parallel_env(N=2, max_cycles=25, continuous_actions=False)
-env = simple_tag_v3.parallel_env(num_good=1, num_adversaries=3, num_obstacles=0, max_cycles=25, continuous_actions=False)
+env = simple_tag_v3.parallel_env(num_good=1, num_adversaries=3, num_obstacles=0, max_cycles=25, continuous_actions=True)
 obs, infos = env.reset()
 '''
 test_simple_tag_env:
@@ -75,7 +76,9 @@ total_step = 0
 # Initialize MADDPG
 # 1. Get State and Action Dimensions from the Environment
 state_dims = [env.observation_space(env.agents[i]).shape[0] for i in range(env.num_agents)]
+print("state_dims:",state_dims)
 action_dims = [env.action_space(env.agents[i]).n for i in range(env.num_agents)]
+print("action_dims:",action_dims)
 critic_dim = sum(state_dims) + sum(action_dims)  # calculates the total dimension of the critic network's input
 # 2. Create Center Controller
 maddpg = MADDPG(state_dims, action_dims, critic_dim, HIDDEN_DIM, ACTOR_LR, CRITIC_LR, device, GAMMA, TAU)
