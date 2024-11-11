@@ -62,7 +62,7 @@ class MADDPG():
         action = {}
         for agent, o in obs.items():
             o = torch.from_numpy(o).unsqueeze(0).float().to(self.device)
-            a, _ = self.agents[agent].action(o)   # torch.Size([1, action_size])
+            a, _ = self.agents[agent].action(o)   # torch.Size([1, action_size])    #action函数：  action, logi = self.actor(obs)
             # NOTE that the output is a tensor, convert it to int before input to the environment
             action[agent] = a.squeeze(0).detach().cpu().numpy()
         return action
