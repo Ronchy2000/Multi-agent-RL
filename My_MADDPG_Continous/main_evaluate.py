@@ -2,6 +2,7 @@ from pettingzoo.mpe import simple_adversary_v3, simple_spread_v3, simple_tag_v3
 from main_parameters import main_parameters
 from utils.runner import RUNNER
 from agents.MADDPG_agent import MADDPG
+import torch
 
 def get_env(env_name, ep_len=25, render_mode = "None"):
     """create environment and get observation and action dimension of each agent in this environment"""
@@ -30,6 +31,8 @@ def get_env(env_name, ep_len=25, render_mode = "None"):
 
 
 if __name__ == '__main__':
+    device ='cpu'
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # 模型存储路径
     chkpt_dir='models/maddpg_models/'
     # 定义参数
@@ -46,7 +49,7 @@ if __name__ == '__main__':
     agent.load_model()
     print('---- Evaluating ----')
     env.reset()
-    runner = RUNNER(agent, env, args)
+    runner = RUNNER(agent, env, args, device)
     runner.evaluate() # 使用evaluate方法
     print('---- Done! ----')
 

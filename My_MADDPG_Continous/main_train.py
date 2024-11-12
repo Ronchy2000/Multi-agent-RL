@@ -3,7 +3,6 @@ from main_parameters import main_parameters
 from utils.runner import RUNNER
 from agents.MADDPG_agent import MADDPG
 import torch
-
 def get_env(env_name, ep_len=25, render_mode ="None"):
     """create environment and get observation and action dimension of each agent in this environment"""
     new_env = None
