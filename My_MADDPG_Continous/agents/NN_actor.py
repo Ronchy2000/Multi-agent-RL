@@ -36,8 +36,8 @@ class MLPNetworkActor(nn.Module):
         a_min = self.action_bound[0]
         a_max = self.action_bound[1]
         ''' 这三行为什么要这么处理？ 引入了bias项干嘛'''
-        k = torch.tensor( (a_max - a_min) /2)
-        bias = torch.tensor( (a_max + a_min) /2 )
+        k = torch.tensor( (a_max - a_min) /2 , device=x.device )
+        bias = torch.tensor( (a_max + a_min) /2, device=x.device )
         action = k * torch.tanh(x) + bias
         return action, logi
 

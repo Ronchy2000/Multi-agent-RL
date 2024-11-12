@@ -3,11 +3,18 @@ import visdom
 
 
 class RUNNER:
-    def __init__(self, agent, env, par):
+    def __init__(self, agent, env, par, device):
         self.agent = agent
         self.env = env
         self.par = par
 
+    # 将 agent 的模型放到指定设备上
+        for agent in self.agent.agents.values():
+            agent.actor.to(device)
+            agent.target_actor.to(device)
+            agent.critic.to(device)
+            agent.target_critic.to(device)
+    
     def train(self):
         # 使用visdom实时查看训练曲线
         viz = None

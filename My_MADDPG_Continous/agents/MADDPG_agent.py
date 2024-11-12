@@ -7,8 +7,8 @@ from agents.DDPG_agent import DDPG
 from agents.buffer import BUFFER
 
 class MADDPG():
-    device = 'cpu'
-    # device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    # device = 'cpu'
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     def __init__(self, dim_info, capacity, batch_size, actor_lr, critic_lr, action_bound, _chkpt_dir):
         # 状态（全局观测）与所有智能体动作维度的和 即critic网络的输入维度  dim_info =  [obs_dim, act_dim]
