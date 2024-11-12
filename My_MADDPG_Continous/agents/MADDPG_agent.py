@@ -10,7 +10,7 @@ class MADDPG():
     device = 'cpu'
     # device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    def __init__(self,dim_info, capacity, batch_size, actor_lr, critic_lr, action_bound):
+    def __init__(self, dim_info, capacity, batch_size, actor_lr, critic_lr, action_bound, _chkpt_dir):
         # 状态（全局观测）与所有智能体动作维度的和 即critic网络的输入维度  dim_info =  [obs_dim, act_dim]
         global_obs_act_dim = sum(sum(val) for val in dim_info.values())
         # 创建智能体与buffer，每个智能体有自己的buffer, actor, critic
@@ -19,7 +19,8 @@ class MADDPG():
         for agent_id, (obs_dim, act_dim) in dim_info.items():
             # print("dim_info -> agent_id:",agent_id)
             # 每一个智能体都是一个DDPG智能体
-            self.agents[agent_id] = DDPG(obs_dim, act_dim, global_obs_act_dim, actor_lr, critic_lr, self.device, action_bound[agent_id])
+            
+            self.agents[agent_id] = DDPG(obs_dim, act_dim, global_obs_act_dim, actor_lr, critic_lr, self.device, action_bound[agent_id], chkpt_name = (agent_id + '_'), chkpt_dir = _chkpt_dir)
             # buffer均只是存储自己的观测与动作
             self.buffers[agent_id] = BUFFER(capacity, obs_dim, act_dim, self.device)
         self.dim_info = dim_info
@@ -104,3 +105,31 @@ class MADDPG():
         for agent_id, agent in instance.agents.items():
             agent.actor.load_state_dict(data[agent_id])
         return instance
+    
+    def save_model(self):
+        for agent_id in self.dim_info.keys():
+            self.agents[agent_id].actor.save_checkpoint()
+            self.agents[agent_id].target_actor.save_checkpoint()
+            self.agents[agent_id].critic.save_checkpoint()
+            self.agents[agent_id].target_critic.save_checkpoint()
+
+        agent_id = list(self.dim_info.keys())[0]  # 获取第一个代理的 ID
+        agent = self.agents[agent_id]
+        for name, param in agent.actor.state_dict().items():
+        # 仅打印前几个值（例如前5个）
+            print(f"Layer: {name}, Shape: {param.shape}, Values: {param.flatten()[:5]}")  # flatten() 展开参数为一维数组
+
+
+    def load_model(self):
+        for agent_id in self.dim_info.keys():
+            self.agents[agent_id].actor.load_checkpoint()
+            self.agents[agent_id].target_actor.load_checkpoint()
+            self.agents[agent_id].critic.load_checkpoint()
+            self.agents[agent_id].target_critic.load_checkpoint()
+
+        agent_id = list(self.dim_info.keys())[0]  # 获取第一个代理的 ID
+        agent = self.agents[agent_id]
+        for name, param in agent.actor.state_dict().items():
+        # 仅打印前几个值（例如前5个）
+            print(f"Layer: {name}, Shape: {param.shape}, Values: {param.flatten()[:5]}")  # flatten() 展开参数为一维数组
+  

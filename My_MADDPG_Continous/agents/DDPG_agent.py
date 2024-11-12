@@ -1,3 +1,4 @@
+import os
 from copy import deepcopy
 from typing import List
 
@@ -7,9 +8,9 @@ from torch import nn, Tensor
 from torch.optim import Adam
 
 class DDPG():
-    def __init__(self,obs_dim, act_dim, global_obs_dim, actor_lr, critic_lr, device, action_bound):
-        self.actor = MLPNetworkActor(obs_dim, act_dim, action_bound).to(device)
-        self.critic = MLPNetworkCritic(global_obs_dim, 1).to(device)
+    def __init__(self, obs_dim, act_dim, global_obs_dim, actor_lr, critic_lr, device, action_bound,  chkpt_dir, chkpt_name):
+        self.actor = MLPNetworkActor(in_dim=obs_dim, out_dim=act_dim, hidden_dim = 64, action_bound=action_bound, chkpt_dir = chkpt_dir, chkpt_name = (chkpt_name + 'actor.pth')).to(device)
+        self.critic = MLPNetworkCritic(in_dim=global_obs_dim, out_dim=1, hidden_dim = 64, chkpt_dir = chkpt_dir, chkpt_name = (chkpt_name + 'critic.pth')).to(device)
         #优化器
         self.actor_optimizer = Adam(self.actor.parameters(), lr = actor_lr)
         self.critic_optimizer = Adam(self.critic.parameters(), lr = critic_lr)
@@ -46,11 +47,17 @@ class DDPG():
         nn.utils.clip_grad_norm(self.critic.parameters(), 0.5)  # TODO
         self.critic_optimizer.step()
 
-
+"""
+self.target_critic = CriticNetwork(*, *, 
+                                chkpt_dir=chkpt_dir,
+                                name=self.agent_name+'_target_critic')
+"""
 class MLPNetworkCritic(nn.Module):
-    def __init__(self, in_dim, out_dim, hidden_dim = 64, non_linear = nn.ReLU()):
+    def __init__(self, chkpt_name,  chkpt_dir, in_dim, out_dim, hidden_dim = 64, non_linear = nn.ReLU()):
         super(MLPNetworkCritic, self).__init__()
-    
+
+        self.chkpt_file = os.path.join(chkpt_dir, chkpt_name)
+
         self.net = nn.Sequential(
             nn.Linear(in_dim, hidden_dim),
             non_linear,
@@ -69,10 +76,20 @@ class MLPNetworkCritic(nn.Module):
     
     def forward(self, x):
         return self.net(x)
+    
+    def save_checkpoint(self):
+        os.makedirs(os.path.dirname(self.chkpt_file), exist_ok=True)
+        torch.save(self.state_dict(), self.chkpt_file)
+
+    def load_checkpoint(self):
+        self.load_state_dict(torch.load(self.chkpt_file))
 
 class MLPNetworkActor(nn.Module):
-    def __init__(self, in_dim, out_dim, action_bound, hidden_dim = 64, non_linear = nn.ReLU()):
+    def __init__(self,chkpt_name,  chkpt_dir, in_dim, out_dim, action_bound, hidden_dim = 64, non_linear = nn.ReLU()):
         super(MLPNetworkActor, self).__init__()
+
+        self.chkpt_file = os.path.join(chkpt_dir, chkpt_name)
+
         # different ,为什么要保持这两个信息？
         self.out_dim = out_dim
         self.action_bound = action_bound
@@ -103,3 +120,10 @@ class MLPNetworkActor(nn.Module):
         bias = torch.tensor( (a_max + a_min) /2 )
         action = k * torch.tanh(x) + bias
         return action, logi
+
+    def save_checkpoint(self):
+        os.makedirs(os.path.dirname(self.chkpt_file), exist_ok=True)
+        torch.save(self.state_dict(), self.chkpt_file)
+
+    def load_checkpoint(self):
+        self.load_state_dict(torch.load(self.chkpt_file))

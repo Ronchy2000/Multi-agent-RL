@@ -3,7 +3,7 @@ from main_parameters import main_parameters
 from utils.runner import RUNNER
 from agents.MADDPG_agent import MADDPG
 
-def get_env(env_name, ep_len=25):
+def get_env(env_name, ep_len=25, render_mode ="None"):
     """create environment and get observation and action dimension of each agent in this environment"""
     new_env = None
     if env_name == 'simple_adversary_v3':
@@ -11,7 +11,7 @@ def get_env(env_name, ep_len=25):
     if env_name == 'simple_spread_v3':
         new_env = simple_spread_v3.parallel_env(max_cycles=ep_len, render_mode="rgb_array")
     if env_name == 'simple_tag_v3':
-        new_env = simple_tag_v3.parallel_env(render_mode = "None", num_good=1, num_adversaries=3, num_obstacles=0, max_cycles=ep_len, continuous_actions=True)
+        new_env = simple_tag_v3.parallel_env(render_mode = render_mode, num_good=1, num_adversaries=3, num_obstacles=0, max_cycles=ep_len, continuous_actions=True)
 
     new_env.reset()
     _dim_info = {}
@@ -30,14 +30,23 @@ def get_env(env_name, ep_len=25):
 
 
 if __name__ == '__main__':
+    # 模型保存路径
+    chkpt_dir='models/maddpg_models/'
     # 定义参数
     args = main_parameters()
     # 创建环境
-    env, dim_info, action_bound = get_env(args.env_name, args.episode_length)
+    env, dim_info, action_bound = get_env(args.env_name, args.episode_length, args.render_mode)
     # print(env, dim_info, action_bound)
     # 创建MA-DDPG智能体 dim_info: 字典，键为智能体名字 内容为二维数组 分别表示观测维度和动作维度 是观测不是状态 需要注意
-    agent = MADDPG(dim_info, args.buffer_capacity, args.batch_size, args.actor_lr, args.critic_lr, action_bound)
+    agent = MADDPG(dim_info, args.buffer_capacity, args.batch_size, args.actor_lr, args.critic_lr, action_bound, _chkpt_dir = chkpt_dir)
     # 创建运行对象
     runner = RUNNER(agent, env, args)
     # 开始训练
     runner.train()
+    print("agent",agent)
+    print("--- saving trained models ---")
+    agent.save_model()
+    print("--- trained models saved ---")
+    
+
+

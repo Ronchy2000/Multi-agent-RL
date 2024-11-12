@@ -4,8 +4,9 @@ def main_parameters():
     parser = argparse.ArgumentParser()
     parser.add_argument("--env_name", type =str, default = "simple_tag_v3", help = "name of the env",
                         choices=['simple_adversary_v3', 'simple_spread_v3', 'simple_tag_v3'])
-    parser.add_argument("--episode_num", type = int, default = 500)
-    parser.add_argument("--episode_length", type = int, default = 2500)
+    parser.add_argument("--render_mode", type=str, default = "None", help = "None | human | rgb_array")
+    parser.add_argument("--episode_num", type = int, default = 25)
+    parser.add_argument("--episode_length", type = int, default = 25)
     parser.add_argument('--learn_interval', type=int, default=50,
                         help='steps interval between learning time')
     parser.add_argument('--random_steps', type=int, default=2e3, help='random steps before the agent start to learn')
