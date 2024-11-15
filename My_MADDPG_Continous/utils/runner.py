@@ -1,6 +1,6 @@
 import numpy as np
 import visdom
-
+import threading
 
 class RUNNER:
     def __init__(self, agent, env, par, device):
@@ -8,19 +8,35 @@ class RUNNER:
         self.env = env
         self.par = par
 
-    # 将 agent 的模型放到指定设备上
+        # 将 agent 的模型放到指定设备上
         for agent in self.agent.agents.values():
             agent.actor.to(device)
             agent.target_actor.to(device)
             agent.critic.to(device)
             agent.target_critic.to(device)
-    
-    def train(self):
-        # 使用visdom实时查看训练曲线
-        viz = None
+        '''
+        解决使用visdom过程中，输出控制台阻塞的问题。
+        '''
+        # 在独立线程中启动 Visdom
+        # if self.par.visdom:
+        #     self.visdom_thread = threading.Thread(target=self.start_visdom)
+        #     self.visdom_thread.daemon = True
+        #     self.visdom_thread.start()
+        # 初始化 Visdom 实例，避免重复创建
         if self.par.visdom:
-            viz = visdom.Visdom()
-            viz.close()
+            self.viz = visdom.Visdom()
+            self.viz.close()
+
+    # def start_visdom(self):
+    #     self.viz = visdom.Visdom()
+    #     self.viz.close()
+
+    def train(self):
+        # # 使用visdom实时查看训练曲线
+        # viz = None
+        # if self.par.visdom:
+        #     viz = visdom.Visdom()
+        #     viz.close()
         step = 0
         # 记录每个episode的和奖励 用于平滑，显示平滑奖励函数
         reward_sum_record = []
@@ -71,12 +87,12 @@ class RUNNER:
             for agent_id, r in agent_reward.items():
                 sum_reward += r
                 if self.par.visdom:
-                    viz.line(X=[episode + 1], Y=[r], win='sum reward of the agent ' + str(agent_id),
+                    self.viz.line(X=[episode + 1], Y=[r], win='sum reward of the agent ' + str(agent_id),
                              opts={'title': 'reward of the agent ' + str(agent_id) + ' in all episode'},
                              update='append')
             # 绘制所有智能体在当前episode的和奖励
             if self.par.visdom:
-                viz.line(X=[episode + 1], Y=[sum_reward], win='Sum reward of all agents',
+                self.viz.line(X=[episode + 1], Y=[sum_reward], win='Sum reward of all agents',
                          opts={'title': 'Sum reward of all agents in all episode'},
                          update='append')
             # 记录当前episode的所有智能体和奖励 为奖励平滑做准备
@@ -97,7 +113,7 @@ class RUNNER:
                     epi = np.linspace(episode - (self.par.size_win - 2),
                                       episode - (self.par.size_win - 2) + (self.par.size_win - 1), self.par.size_win,
                                       dtype=int)
-                    viz.line(X=epi, Y=self.get_running_reward(reward_sum_record), win='Average sum reward',
+                    self.viz.line(X=epi, Y=self.get_running_reward(reward_sum_record), win='Average sum reward',
                              opts={'title': 'Average sum reward'},
                              update='append')
                 reward_sum_record = []
@@ -133,11 +149,11 @@ class RUNNER:
 #============================================================================================================
 
     def evaluate(self):
-        # 使用visdom实时查看训练曲线
-        viz = None
-        if self.par.visdom:
-            viz = visdom.Visdom()
-            viz.close()
+        # # 使用visdom实时查看训练曲线
+        # viz = None
+        # if self.par.visdom:
+        #     viz = visdom.Visdom()
+        #     viz.close()
         step = 0
         # 记录每个episode的和奖励 用于平滑，显示平滑奖励函数
         reward_sum_record = []
@@ -156,12 +172,6 @@ class RUNNER:
                 step += 1
                 # 使用训练好的智能体选择动作（没有随机探索）
                 action = self.agent.select_action(obs)
-                # # 未到学习阶段 所有智能体随机选择动作 动作同样为字典 键为智能体名字 值为对应的动作 这里为随机选择动作
-                # if step < self.par.random_steps:
-                #     action = {agent_id: self.env.action_space(agent_id).sample() for agent_id in self.env.agents}
-                # # 开始学习 根据策略选择动作
-                # else:
-                    # action = self.agent.select_action(obs)
                 # 执行动作 获得下一状态 奖励 终止情况
                 # 下一状态：字典 键为智能体名字 值为对应的下一状态
                 # 奖励：字典 键为智能体名字 值为对应的奖励
@@ -173,39 +183,15 @@ class RUNNER:
                     agent_reward[agent_id] += r
                 obs = next_obs
 
-            # 记录、绘制每个智能体在当前episode中的和奖励
-            sum_reward = 0
-            for agent_id, r in agent_reward.items():
-                sum_reward += r
-                if self.par.visdom:
-                    viz.line(X=[episode + 1], Y=[r], win='sum reward of the agent ' + str(agent_id),
-                             opts={'title': 'reward of the agent ' + str(agent_id) + ' in all episode'},
-                             update='append')
-            # 绘制所有智能体在当前episode的和奖励
-            if self.par.visdom:
-                viz.line(X=[episode + 1], Y=[sum_reward], win='Sum reward of all agents',
-                         opts={'title': 'Sum reward of all agents in all episode'},
-                         update='append')
-            # 记录当前episode的所有智能体和奖励 为奖励平滑做准备
+             # 记录并绘制奖励
+            sum_reward = sum(agent_reward.values())
             reward_sum_record.append(sum_reward)
-            # 保存当前智能体在当前episode的奖励
-            for agent_id, r in agent_reward.items():
-                episode_rewards[agent_id][episode] = r
-            # 根据平滑窗口确定打印间隔 并进行平滑
-            if (episode + 1) % self.par.size_win == 0:
-                message = f'episode {episode + 1}, '
-                sum_reward = 0
-                for agent_id, r in agent_reward.items():
-                    message += f'{agent_id}: {r:>4f}; '
-                    sum_reward += r
-                message += f'sum reward: {sum_reward}'
-                print(message)
 
-                if self.par.visdom:
-                    epi = np.linspace(episode - (self.par.size_win - 2),
-                                      episode - (self.par.size_win - 2) + (self.par.size_win - 1), self.par.size_win,
-                                      dtype=int)
-                    viz.line(X=epi, Y=self.get_running_reward(reward_sum_record), win='Average sum reward',
-                             opts={'title': 'Average sum reward'},
-                             update='append')
-                reward_sum_record = []
+            if self.par.visdom:
+                for agent_id, r in agent_reward.items():
+                    self.viz.line(X=[episode + 1], Y=[r], win=f'sum reward of the agent {agent_id}',
+                                  opts={'title': f'reward of the agent {agent_id} in all episode'},
+                                  update='append')
+                self.viz.line(X=[episode + 1], Y=[sum_reward], win='Sum reward of all agents',
+                              opts={'title': 'Sum reward of all agents in all episode'},
+                              update='append')
