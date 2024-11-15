@@ -10,6 +10,9 @@ from pettingzoo.mpe._mpe_utils.scenario import BaseScenario
 from pettingzoo.mpe._mpe_utils.simple_env import SimpleEnv, make_env
 from pettingzoo.utils.conversions import parallel_wrapper_fn
 
+'''
+继承 raw_env, 修改部分功能。
+'''
 
 class Custom_raw_env(SimpleEnv, EzPickle):
     def __init__(
@@ -44,6 +47,39 @@ class Custom_raw_env(SimpleEnv, EzPickle):
         )
         self.metadata["name"] = "simple_tag_v3"
 
+    # rewrite step method:
+    def step(self, action):
+        print("Using rewrited step method.")
+        if (
+            self.terminations[self.agent_selection]
+            or self.truncations[self.agent_selection]
+        ):
+            self._was_dead_step(action)
+            return
+        cur_agent = self.agent_selection
+        current_idx = self._index_map[self.agent_selection]
+        next_idx = (current_idx + 1) % self.num_agents
+        self.agent_selection = self._agent_selector.next()
+
+        self.current_actions[current_idx] = action
+
+        if next_idx == 0:
+            self._execute_world_step()
+            self.steps += 1
+            if self.steps >= self.max_cycles:
+                for a in self.agents:
+                    self.truncations[a] = True
+        else:
+            self._clear_rewards()
+
+        self._cumulative_rewards[cur_agent] = 0
+        self._accumulate_rewards()
+
+        if self.render_mode == "human":
+            self.render()
+        
+
+        
 
 env = make_env(Custom_raw_env)
 parallel_env = parallel_wrapper_fn(env)
