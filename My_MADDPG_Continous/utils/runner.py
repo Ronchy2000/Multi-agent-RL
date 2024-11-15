@@ -16,20 +16,12 @@ class RUNNER:
             agent.target_critic.to(device)
         '''
         解决使用visdom过程中，输出控制台阻塞的问题。
-        '''
-        # 在独立线程中启动 Visdom
-        # if self.par.visdom:
-        #     self.visdom_thread = threading.Thread(target=self.start_visdom)
-        #     self.visdom_thread.daemon = True
-        #     self.visdom_thread.start()
-        # 初始化 Visdom 实例，避免重复创建
+        ''' #TODO
+
         if self.par.visdom:
             self.viz = visdom.Visdom()
             self.viz.close()
 
-    # def start_visdom(self):
-    #     self.viz = visdom.Visdom()
-    #     self.viz.close()
 
     def train(self):
         # # 使用visdom实时查看训练曲线
@@ -50,15 +42,15 @@ class RUNNER:
             # 每个智能体当前episode的奖励
             agent_reward = {agent_id: 0 for agent_id in self.env.agents}
             # 每个智能体与环境进行交互
-            while self.env.agents:
+            while self.env.agents:  #  加入围捕判断
                 # print(f"While num:{step}")
                 step += 1
-                # 未到学习阶段 所有智能体随机选择动作 动作同样为字典 键为智能体名字 值为对应的动作 这里为随机选择动作
+                # 收集经验。未到学习阶段 所有智能体随机选择动作 动作同样为字典 键为智能体名字 值为对应的动作 这里为随机选择动作
                 if step < self.par.random_steps:
                     action = {agent_id: self.env.action_space(agent_id).sample() for agent_id in self.env.agents}
                 # 开始学习 根据策略选择动作
                 else:
-                    action = self.agent.select_action(obs)
+                    action = self.agent.select_action(obs)  #TODO 加入噪声？
                 # 执行动作 获得下一状态 奖励 终止情况
                 # 下一状态：字典 键为智能体名字 值为对应的下一状态
                 # 奖励：字典 键为智能体名字 值为对应的奖励
