@@ -1,10 +1,28 @@
+# Python 编译文件
+**/__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# PyCharm 设置
 .idea/
 
-#忽略所有的__pycache__目录以及所有的.pyc、.pyo和.pyd文件
-**/__pycache__
-*.py[cod]
+# VSCode 设置
+.vscode/
 
-#如果你想忽略所有名为logs的文件夹，无论它们在项目中的位置如何，你可以在.gitignore文件中添加以下内容：
-# **/maddpg_models/
+#如果你想忽略所有名为maddpg_models的文件夹，无论它们在项目中的位置如何，你可以在.gitignore文件中添加以下内容：
+**/maddpg_models/
+# 保留 maddpg_models 文件夹本身
+!**/maddpg_models/.gitkeep  
 
+# 忽略所有名为 data 的文件夹中的内容，但保留 data 文件夹本身
+**/data/*
+!**/data/.gitkeep
+
+
+# 深度学习模型
 *.pth
+
+# 操作系统特定的文件
+.DS_Store    # macOS
+Thumbs.db    # Windows
