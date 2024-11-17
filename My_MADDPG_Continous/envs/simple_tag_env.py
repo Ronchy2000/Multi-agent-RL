@@ -70,6 +70,10 @@ class Custom_raw_env(SimpleEnv, EzPickle):
         if next_idx == 0:
             self._execute_world_step()
             self.steps += 1
+
+            self.check_capture_condition(threshold=0.1)  #围捕标志——半径
+
+            # 如果达到最大步数，标记 truncation 为 True
             if self.steps >= self.max_cycles:
                 for a in self.agents:
                     self.truncations[a] = True
@@ -82,7 +86,24 @@ class Custom_raw_env(SimpleEnv, EzPickle):
         if self.render_mode == "human":
             self.render()
         
-
+    def check_capture_condition(self,threshold = 0.1): # agent.size = 0.075 if agent.adversary else 0.05
+        """
+        检查所有围捕者是否都进入逃跑者的指定范围内。
+        Args:
+            threshold (float): 围捕者和逃跑者之间的最大允许距离。
+        """
+        agents = self.scenario.good_agents(self.world)  # 逃跑者
+        adversaries = self.scenario.adversaries(self.world)  # 围捕者
+        # 假设只有一个逃跑者，计算所有围捕者与该逃跑者的距离
+        for agent in agents:  
+            captured = all(  # Return True if all elements of the iterable are true.
+                np.linalg.norm(agent.state.p_pos - adv.state.p_pos) < threshold
+                for adv in adversaries
+            )
+            if captured:
+                # 如果所有围捕者都在范围内，标记所有智能体为终止状态
+                for a in self.agents:
+                    self.terminations[a] = True
         
 
 env = make_env(Custom_raw_env)
