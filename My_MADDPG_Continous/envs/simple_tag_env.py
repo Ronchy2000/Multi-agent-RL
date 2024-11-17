@@ -107,7 +107,7 @@ class Scenario(BaseScenario):
             agent.name = f"{base_name}_{base_index}"
             agent.collide = True
             agent.silent = True
-            agent.size = 0.075 if agent.adversary else 0.05
+            agent.size = 0.075 if agent.adversary else 0.05  # 智能体的大小，判断是否碰撞的界定。
             agent.accel = 3.0 if agent.adversary else 4.0
             agent.max_speed = 1.0 if agent.adversary else 1.3
         # add landmarks
@@ -166,7 +166,7 @@ class Scenario(BaseScenario):
     def adversaries(self, world):
         return [agent for agent in world.agents if agent.adversary]
 
-    def reward(self, agent, world):
+    def reward(self, agent, world):  # main_reward 也是一个数值，而不是元组
         # Agents are rewarded based on minimum agent distance to each landmark
         main_reward = (
             self.adversary_reward(agent, world)
@@ -176,6 +176,7 @@ class Scenario(BaseScenario):
         # print(f"main_reward{main_reward}")
         return main_reward
 
+    # 逃跑者reward设置
     def agent_reward(self, agent, world):
         # Agents are negatively rewarded if caught by adversaries
         rew = 0
@@ -193,9 +194,10 @@ class Scenario(BaseScenario):
         if agent.collide:
             for a in adversaries:
                 if self.is_collision(a, agent):
-                    rew -= 0  # default value = 10
+                    rew -= 0  # 即，不学习逃跑策略。 default value = 10  
 
         # agents are penalized for exiting the screen, so that they can be caught by the adversaries
+        # 设置环境边界。
         def bound(x):
             if x < 0.9:
                 return 0
@@ -209,6 +211,7 @@ class Scenario(BaseScenario):
 
         return rew
 
+    # 围捕者reward设置
     def adversary_reward(self, agent, world):
         # Adversaries are rewarded for collisions with agents
         rew = 0
@@ -218,19 +221,17 @@ class Scenario(BaseScenario):
         if (
             shape
         ):  # reward can optionally be shaped (decreased reward for increased distance from agents)
+            '''
+            'Cooperative control for multi-player pursuit-evasion games with reinforcement learning'中的奖励设置
+            '''
             for adv in adversaries:
-                # print("rew_a"   # a 只有一个，所以min无所谓
-                #     ,[np.sqrt(np.sum(np.square(a.state.p_pos - adv.state.p_pos)))
-                #     for a in agents])
-                rew -= 0.1 * min(  # a 只有一个，所以min无所谓
-                    np.sqrt(np.sum(np.square(a.state.p_pos - adv.state.p_pos)))
-                    for a in agents
-                )
-        if agent.collide:
-            for ag in agents:
-                for adv in adversaries:
-                    if self.is_collision(ag, adv):
-                        rew += 10
+                for agent in agents:# 逃跑者目前只有一个
+                    dist = np.sqrt(np.sum(np.square(agent.state.p_pos - adv.state.p_pos)))
+                    collision = 1 if self.is_collision(agent, adv) else 0  
+                    rew += collision - dist
+            for agent in agents:
+                speed_agent = np.sqrt(np.sum(np.square(agent.state.p_vel)))
+                rew -= speed_agent
         return rew
 
     def observation(self, agent, world):
