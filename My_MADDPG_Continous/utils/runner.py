@@ -224,15 +224,7 @@ class RUNNER:
                     agent_reward[agent_id] += r
                 obs = next_obs
 
-             # 记录并绘制奖励
             sum_reward = sum(agent_reward.values())
             reward_sum_record.append(sum_reward)
 
-            if self.par.visdom:
-                for agent_id, r in agent_reward.items():
-                    self.viz.line(X=[episode + 1], Y=[r], win=f'sum reward of the agent {agent_id}',
-                                  opts={'title': f'reward of the agent {agent_id} in all episode'},
-                                  update='append')
-                self.viz.line(X=[episode + 1], Y=[sum_reward], win='Sum reward of all agents',
-                              opts={'title': 'Sum reward of all agents in all episode'},
-                              update='append')
+            
