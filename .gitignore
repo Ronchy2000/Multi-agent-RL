@@ -11,3 +11,37 @@ RL-basic-algorithm/Graph based Multi-agent path planning/
 
 #忽略 .\Multi-agents-RL\Multi-agent Partial Environment\MADDPG\maddpg-pettingzoo-pytorch-master下的*
 **/results/
+
+
+#macOS
+.DS_Store
+Desktop.ini
+
+# Thumbnail cache files
+._*
+Thumbs.db
+
+# Files that might appear on external disks
+.Spotlight-V100
+.Trashes
+
+# Compiled Python files
+*.pyc
+
+#
+plot/*
+
+# Temp File
+*.swp
+*.swa
+*.swo
+
+# github merge file
+*.orig
+
+# virtualenv 
+venv
+__pycache__
+
+#vscode
+.vscode
