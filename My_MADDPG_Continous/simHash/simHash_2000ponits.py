@@ -55,4 +55,4 @@ for k in k_values:
     grouped_points = group_by_hash(points, hash_codes)  # 分组
     plot_simhash_grouping(points, grouped_points, k)
     # plt.pause(1)  # 暂停1秒，方便观察
-# plt.show() #统一在最后显示图像
+plt.show() #统一在最后显示图像

@@ -38,7 +38,7 @@ if __name__ == '__main__':
     # 定义参数
     args = main_parameters()
     args.render_mode = "human"
-    args.episode_num = 1
+    # args.episode_num = 1
 
     # 创建环境
     env, dim_info, action_bound = get_env(args.env_name, args.episode_length, args.render_mode)
