@@ -33,7 +33,10 @@ def get_env(env_name, ep_len=25, render_mode ="None"):
 
 
 if __name__ == '__main__':
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device('mps' if hasattr(torch.backends, 'mps') and torch.backends.mps.is_available() 
+                            else 'cuda' if torch.cuda.is_available() else 'cpu')
+    print("Using device:",device)
     # device = "cpu"
     # 模型保存路径
     chkpt_dir='models/maddpg_models/'
@@ -42,7 +45,7 @@ if __name__ == '__main__':
     # 创建环境
     env, dim_info, action_bound = get_env(args.env_name, args.episode_length, args.render_mode)
     # print(env, dim_info, action_bound)
-    # 创建MA-DDPG智能体 dim_info: 字典，键为智能体名字 内容为二维数组 分别表示观测维度和动作维度 是观测不是状态 需要注意
+    # 创建MA-DDPG智能体 dim_info: 字典，键为智能体名字 内容为二维数组 分别表示观测维度和动作维度 是观测不是状态 需要注意。
     agent = MADDPG(dim_info, args.buffer_capacity, args.batch_size, args.actor_lr, args.critic_lr, action_bound, _chkpt_dir = chkpt_dir, _device = device)
     # 创建运行对象
     runner = RUNNER(agent, env, args, device)
