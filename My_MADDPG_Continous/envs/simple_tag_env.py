@@ -10,6 +10,8 @@ from pettingzoo.mpe._mpe_utils.scenario import BaseScenario
 from pettingzoo.mpe._mpe_utils.simple_env import SimpleEnv, make_env
 from pettingzoo.utils.conversions import parallel_wrapper_fn
 
+import pygame  #Ronchy: 用于渲染动画环境
+
 '''
 继承 raw_env, 修改部分功能。
 '''
@@ -46,6 +48,83 @@ class Custom_raw_env(SimpleEnv, EzPickle):
             dynamic_rescaling=dynamic_rescaling,
         )
         self.metadata["name"] = "simple_tag_v3"
+        # Ronchy添加轨迹记录
+        self.history_positions = {agent.name: [] for agent in world.agents}
+        self.max_history_length = 50  # 最大轨迹长度
+
+
+
+    """
+    rewrite `_execute_world_step` method in:
+        simple_env -> class SimpleEnv()
+    """
+    def _execute_world_step(self):
+        # set action for each agent
+        for i, agent in enumerate(self.world.agents):
+            action = self.current_actions[i]
+            scenario_action = []
+            if agent.movable:
+                mdim = self.world.dim_p * 2 + 1
+                if self.continuous_actions:
+                    scenario_action.append(action[0:mdim])
+                    action = action[mdim:]
+                else:
+                    scenario_action.append(action % mdim)
+                    action //= mdim
+            if not agent.silent:
+                scenario_action.append(action)
+            self._set_action(scenario_action, agent, self.action_spaces[agent.name])
+
+        self.world.step()
+
+        # Ronchy add: 
+        def handle_collisions(): # 在 添加碰撞检查 (避免重叠，无弹开效果)
+            for i, agent1 in enumerate(self.world.agents):
+                for agent2 in self.world.agents[i+1:]:
+                    if self.scenario.is_collision(agent1, agent2):
+                        delta_pos = agent1.state.p_pos - agent2.state.p_pos
+                        dist = np.sqrt(np.sum(np.square(delta_pos)))
+                        dist_min = agent1.size + agent2.size
+
+                        if dist < dist_min:
+                            # 仅将重叠的智能体移动到刚好接触的位置
+                            overlap = dist_min - dist
+                            direction = delta_pos / (dist + 1e-8)  # 避免除零
+                            move_dist = overlap / 2
+                            agent1.state.p_pos += direction * move_dist
+                            agent2.state.p_pos -= direction * move_dist
+                # 检查与障碍物的碰撞
+                for landmark in self.world.landmarks:
+                    if landmark.collide:
+                        delta_pos = agent1.state.p_pos - landmark.state.p_pos
+                        dist = np.sqrt(np.sum(np.square(delta_pos)))
+                        dist_min = agent1.size + landmark.size
+
+                        if dist < dist_min:
+                            overlap = dist_min - dist
+                            direction = delta_pos / (dist + 1e-8)
+                            # 只移动智能体，障碍物不动
+                            agent1.state.p_pos += direction * overlap
+        
+        # Ronchy 多次迭代以处理复杂的碰撞情况
+        for _ in range(3):  # 通常3次迭代足够处理大多数情况
+            handle_collisions()
+        #--------#################-----------------#
+        global_reward = 0.0
+        if self.local_ratio is not None:
+            global_reward = float(self.scenario.global_reward(self.world))
+
+        for agent in self.world.agents:
+            agent_reward = float(self.scenario.reward(agent, self.world))
+            if self.local_ratio is not None:
+                reward = (
+                    global_reward * (1 - self.local_ratio)
+                    + agent_reward * self.local_ratio
+                )
+            else:
+                reward = agent_reward
+
+            self.rewards[agent.name] = reward
 
     """
     rewrite step method in: 
@@ -69,6 +148,13 @@ class Custom_raw_env(SimpleEnv, EzPickle):
 
         if next_idx == 0:
             self._execute_world_step()
+
+            # Ronchy记录轨迹
+            for agent in self.world.agents:
+                self.history_positions[agent.name].append(agent.state.p_pos.copy())
+                if len(self.history_positions[agent.name]) > self.max_history_length:
+                    self.history_positions[agent.name].pop(0)
+            
             self.steps += 1
 
             self.check_capture_condition(threshold=0.1)  #围捕标志——半径
@@ -280,7 +366,52 @@ class Scenario(BaseScenario):
             + other_vel
         )
 
-
+    # Ronchy: 重写render函数
+    def draw(self):
+       # 清空画布
+       self.screen.fill((255, 255, 255))
+       # 计算动态缩放
+       all_poses = [entity.state.p_pos for entity in self.world.entities]
+       cam_range = np.max(np.abs(np.array(all_poses)))
+       scaling_factor = 0.9 * self.original_cam_range / cam_range
+       # 绘制轨迹
+       for agent in self.world.agents:
+           if len(self.history_positions[agent.name]) >= 2:
+               points = []
+               for pos in self.history_positions[agent.name]:
+                   x, y = pos
+                   y *= -1
+                   x = (x / cam_range) * self.width // 2 * 0.9
+                   y = (y / cam_range) * self.height // 2 * 0.9
+                   x += self.width // 2
+                   y += self.height // 2
+                   points.append((int(x), int(y)))
+               
+               # 绘制渐变轨迹
+               for i in range(len(points) - 1):
+                   alpha = int(255 * (i + 1) / len(points))
+                   color = (0, 0, 255, alpha) if agent.adversary else (255, 0, 0, alpha)
+                   line_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+                   pygame.draw.line(line_surface, color, points[i], points[i + 1], 2)
+                   self.screen.blit(line_surface, (0, 0))
+       # 绘制实体
+       for entity in self.world.entities:
+           x, y = entity.state.p_pos
+           y *= -1
+           x = (x / cam_range) * self.width // 2 * 0.9
+           y = (y / cam_range) * self.height // 2 * 0.9
+           x += self.width // 2
+           y += self.height // 2
+           
+           radius = entity.size * 350 * scaling_factor
+           
+           if isinstance(entity, Agent):
+               color = (0, 0, 255) if entity.adversary else (255, 0, 0)
+               pygame.draw.circle(self.screen, color, (int(x), int(y)), int(radius))
+               pygame.draw.circle(self.screen, (0, 0, 0), (int(x), int(y)), int(radius), 1)
+           else:  # Landmark
+               pygame.draw.circle(self.screen, (128, 128, 128), (int(x), int(y)), int(radius))
+    
 #=======================================================================
 if __name__ =="__main__":
     print("Custom_raw_env",Custom_raw_env)
