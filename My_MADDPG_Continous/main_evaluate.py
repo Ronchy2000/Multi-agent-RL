@@ -3,6 +3,8 @@ from main_parameters import main_parameters
 from utils.runner import RUNNER
 from agents.MADDPG_agent import MADDPG
 import torch
+from envs import simple_tag_env
+
 
 def get_env(env_name, ep_len=25, render_mode = "None"):
     """create environment and get observation and action dimension of each agent in this environment"""
@@ -12,8 +14,8 @@ def get_env(env_name, ep_len=25, render_mode = "None"):
     if env_name == 'simple_spread_v3':
         new_env = simple_spread_v3.parallel_env(max_cycles=ep_len, render_mode="rgb_array")
     if env_name == 'simple_tag_v3':
-        new_env = simple_tag_v3.parallel_env(render_mode = render_mode, num_good=1, num_adversaries=3, num_obstacles=0, max_cycles=ep_len, continuous_actions=True)
-
+        # new_env = simple_tag_v3.parallel_env(render_mode = render_mode, num_good=1, num_adversaries=3, num_obstacles=0, max_cycles=ep_len, continuous_actions=True)
+        new_env = simple_tag_env.parallel_env(render_mode = render_mode, num_good=1, num_adversaries=3, num_obstacles=0, max_cycles=ep_len, continuous_actions=True)
     new_env.reset()
     _dim_info = {}
     action_bound = {}
@@ -33,6 +35,7 @@ def get_env(env_name, ep_len=25, render_mode = "None"):
 if __name__ == '__main__':
     device ='cpu'
     # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print("Using device:",device)
     # 模型存储路径
     chkpt_dir='models/maddpg_models/'
     # 定义参数

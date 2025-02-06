@@ -3,6 +3,7 @@
 # from pettingzoo.mpe.simple_tag_v3 import raw_env
 
 import numpy as np
+import gymnasium
 from gymnasium.utils import EzPickle
 
 from pettingzoo.mpe._mpe_utils.core import Agent, Landmark, World
@@ -51,12 +52,13 @@ class Custom_raw_env(SimpleEnv, EzPickle):
         # Ronchy添加轨迹记录
         self.history_positions = {agent.name: [] for agent in world.agents}
         self.max_history_length = 50  # 最大轨迹长度
-
+        # 重写 simple_env.py中的代码
+        
 
 
     """
     rewrite `_execute_world_step` method in:
-        simple_env -> class SimpleEnv()
+        simple_env <- class SimpleEnv()
     """
     def _execute_world_step(self):
         # set action for each agent
@@ -128,7 +130,7 @@ class Custom_raw_env(SimpleEnv, EzPickle):
 
     """
     rewrite step method in: 
-        simple_env -> class SimpleEnv()
+        simple_env <- class SimpleEnv()
     """ 
     def step(self, action): 
         # print("Using rewrited step method.")
@@ -171,7 +173,84 @@ class Custom_raw_env(SimpleEnv, EzPickle):
 
         if self.render_mode == "human":
             self.render()
-        
+    """
+    rewrite step method in: 
+        simple_env <- class SimpleEnv()
+    """ 
+    # Ronchy: 重写render函数
+    def enable_render(self, mode="human"):
+        if not self.renderOn and mode == "human":
+            self.screen = pygame.display.set_mode(self.screen.get_size())
+            self.clock = pygame.time.Clock()
+            self.renderOn = True
+    
+    def render(self):
+        if self.render_mode is None:
+            gymnasium.logger.warn(
+                "You are calling render method without specifying any render mode."
+            )
+            return
+
+        self.enable_render(self.render_mode)
+
+        self.draw()
+        if self.render_mode == "rgb_array":
+            observation = np.array(pygame.surfarray.pixels3d(self.screen))
+            return np.transpose(observation, axes=(1, 0, 2))
+        elif self.render_mode == "human":
+            pygame.display.flip()
+            self.clock.tick(self.metadata["render_fps"])
+            return
+
+    def draw(self):
+       # 清空画布
+       self.screen.fill((255, 255, 255))
+       # 计算动态缩放
+       all_poses = [entity.state.p_pos for entity in self.world.entities]
+    #    cam_range = np.max(np.abs(np.array(all_poses)))
+       cam_range = 2.5  # 固定显示范围为 ±2.5
+       scaling_factor = 0.9 * self.original_cam_range / cam_range
+       # 绘制轨迹
+       for agent in self.world.agents:
+           if len(self.history_positions[agent.name]) >= 2:
+               points = []
+               for pos in self.history_positions[agent.name]:
+                   x, y = pos
+                   y *= -1
+                   x = (x / cam_range) * self.width // 2 * 0.9
+                   y = (y / cam_range) * self.height // 2 * 0.9
+                   x += self.width // 2
+                   y += self.height // 2
+                   points.append((int(x), int(y)))
+               
+               # 绘制渐变轨迹
+               for i in range(len(points) - 1):
+                   alpha = int(255 * (i + 1) / len(points))
+                   color = (0, 0, 255, alpha) if agent.adversary else (255, 0, 0, alpha)
+                   line_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+                   pygame.draw.line(line_surface, color, points[i], points[i + 1], 2)
+                   self.screen.blit(line_surface, (0, 0))
+       # 绘制实体
+       for entity in self.world.entities:
+           x, y = entity.state.p_pos
+           y *= -1
+           x = (x / cam_range) * self.width // 2 * 0.9
+           y = (y / cam_range) * self.height // 2 * 0.9
+           x += self.width // 2
+           y += self.height // 2
+           
+           radius = entity.size * 350 * scaling_factor
+           
+           if isinstance(entity, Agent):
+               color = (0, 0, 255) if entity.adversary else (255, 0, 0)
+               pygame.draw.circle(self.screen, color, (int(x), int(y)), int(radius))
+               pygame.draw.circle(self.screen, (0, 0, 0), (int(x), int(y)), int(radius), 1)
+           else:  # Landmark
+               pygame.draw.circle(self.screen, (128, 128, 128), (int(x), int(y)), int(radius))
+
+
+
+
     def check_capture_condition(self,threshold = 0.1): # agent.size = 0.075 if agent.adversary else 0.05
         """
         检查所有围捕者是否都进入逃跑者的指定范围内。
@@ -195,6 +274,7 @@ class Custom_raw_env(SimpleEnv, EzPickle):
 env = make_env(Custom_raw_env)
 parallel_env = parallel_wrapper_fn(env)
 
+max_force = 1 # 根据论文新添加定义
 
 class Scenario(BaseScenario):
     def make_world(self, num_good=1, num_adversaries=3, num_obstacles=2):
@@ -214,9 +294,11 @@ class Scenario(BaseScenario):
             agent.name = f"{base_name}_{base_index}"
             agent.collide = True
             agent.silent = True
-            agent.size = 0.075 if agent.adversary else 0.05  # 智能体的大小，判断是否碰撞的界定。
-            agent.accel = 3.0 if agent.adversary else 4.0
-            agent.max_speed = 1.0 if agent.adversary else 1.3
+            agent.size = 0.025 if agent.adversary else 0.015  # 智能体的大小，判断是否碰撞的界定。 m
+            agent.initial_mass = 1.6 if agent.adversary else 0.8  # 智能体的质量 kg
+            agent.accel = max_force/agent.mass # 智能体的最大加速度
+            # agent.max_speed = 1.0 if agent.adversary else 1.3
+            agent.max_speed = 1.0 if agent.adversary else 1.0
         # add landmarks
         world.landmarks = [Landmark() for i in range(num_landmarks)]
         for i, landmark in enumerate(world.landmarks):
@@ -240,12 +322,14 @@ class Scenario(BaseScenario):
             landmark.color = np.array([0.25, 0.25, 0.25])
         # set random initial states
         for agent in world.agents:
-            agent.state.p_pos = np_random.uniform(-1, +1, world.dim_p)
+            # agent.state.p_pos = np_random.uniform(-1, +1, world.dim_p) # default: 2
+            agent.state.p_pos = np_random.uniform(-2.5, +2.5, world.dim_p)
             agent.state.p_vel = np.zeros(world.dim_p)
             agent.state.c = np.zeros(world.dim_c)
         for i, landmark in enumerate(world.landmarks):
             if not landmark.boundary:
-                landmark.state.p_pos = np_random.uniform(-0.9, +0.9, world.dim_p)
+                # landmark.state.p_pos = np_random.uniform(-0.9, +0.9, world.dim_p) # default: 1.8
+                landmark.state.p_pos = np_random.uniform(-2.4, +2.4, world.dim_p) # default: 4.8
                 landmark.state.p_vel = np.zeros(world.dim_p)
 
     def benchmark_data(self, agent, world):
@@ -365,52 +449,6 @@ class Scenario(BaseScenario):
             + other_pos
             + other_vel
         )
-
-    # Ronchy: 重写render函数
-    def draw(self):
-       # 清空画布
-       self.screen.fill((255, 255, 255))
-       # 计算动态缩放
-       all_poses = [entity.state.p_pos for entity in self.world.entities]
-       cam_range = np.max(np.abs(np.array(all_poses)))
-       scaling_factor = 0.9 * self.original_cam_range / cam_range
-       # 绘制轨迹
-       for agent in self.world.agents:
-           if len(self.history_positions[agent.name]) >= 2:
-               points = []
-               for pos in self.history_positions[agent.name]:
-                   x, y = pos
-                   y *= -1
-                   x = (x / cam_range) * self.width // 2 * 0.9
-                   y = (y / cam_range) * self.height // 2 * 0.9
-                   x += self.width // 2
-                   y += self.height // 2
-                   points.append((int(x), int(y)))
-               
-               # 绘制渐变轨迹
-               for i in range(len(points) - 1):
-                   alpha = int(255 * (i + 1) / len(points))
-                   color = (0, 0, 255, alpha) if agent.adversary else (255, 0, 0, alpha)
-                   line_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
-                   pygame.draw.line(line_surface, color, points[i], points[i + 1], 2)
-                   self.screen.blit(line_surface, (0, 0))
-       # 绘制实体
-       for entity in self.world.entities:
-           x, y = entity.state.p_pos
-           y *= -1
-           x = (x / cam_range) * self.width // 2 * 0.9
-           y = (y / cam_range) * self.height // 2 * 0.9
-           x += self.width // 2
-           y += self.height // 2
-           
-           radius = entity.size * 350 * scaling_factor
-           
-           if isinstance(entity, Agent):
-               color = (0, 0, 255) if entity.adversary else (255, 0, 0)
-               pygame.draw.circle(self.screen, color, (int(x), int(y)), int(radius))
-               pygame.draw.circle(self.screen, (0, 0, 0), (int(x), int(y)), int(radius), 1)
-           else:  # Landmark
-               pygame.draw.circle(self.screen, (128, 128, 128), (int(x), int(y)), int(radius))
     
 #=======================================================================
 if __name__ =="__main__":
