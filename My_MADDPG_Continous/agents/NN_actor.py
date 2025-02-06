@@ -45,5 +45,5 @@ class MLPNetworkActor(nn.Module):
         os.makedirs(os.path.dirname(self.chkpt_file), exist_ok=True)
         torch.save(self.state_dict(), self.chkpt_file)
 
-    def load_checkpoint(self):
-        self.load_state_dict(torch.load(self.chkpt_file))
+    def load_checkpoint(self, device = 'cpu'):
+        self.load_state_dict(torch.load(self.chkpt_file, map_location=torch.device(device)))

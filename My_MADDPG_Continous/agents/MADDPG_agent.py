@@ -103,7 +103,7 @@ class MADDPG():
     def load( cls, dim_info, file):
         """ init maddpg using the model saved in `file` """
         instance = cls(dim_info, 0, 0, 0, 0, os.path.dirname(file))
-        data = torch.load(file)
+        data = torch.load(file, map_location=instance.device)
         for agent_id, agent in instance.agents.items():
             agent.actor.load_state_dict(data[agent_id])
         return instance
@@ -124,10 +124,10 @@ class MADDPG():
 
     def load_model(self):
         for agent_id in self.dim_info.keys():
-            self.agents[agent_id].actor.load_checkpoint()
-            self.agents[agent_id].target_actor.load_checkpoint()
-            self.agents[agent_id].critic.load_checkpoint()
-            self.agents[agent_id].target_critic.load_checkpoint()
+            self.agents[agent_id].actor.load_checkpoint(device = self.device)
+            self.agents[agent_id].target_actor.load_checkpoint(device = self.device)
+            self.agents[agent_id].critic.load_checkpoint(device = self.device)
+            self.agents[agent_id].target_critic.load_checkpoint(device = self.device)
 
         agent_id = list(self.dim_info.keys())[0]  # 获取第一个代理的 ID
         agent = self.agents[agent_id]
