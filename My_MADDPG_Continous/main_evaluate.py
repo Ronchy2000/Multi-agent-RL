@@ -52,7 +52,7 @@ if __name__ == '__main__':
     agent.load_model()
     print('---- Evaluating ----')
     env.reset()
-    runner = RUNNER(agent, env, args, device)
+    runner = RUNNER(agent, env, args, device, mode = 'evaluate')
     runner.evaluate() # 使用evaluate方法
     print('---- Done! ----')
 

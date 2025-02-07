@@ -294,7 +294,7 @@ class Scenario(BaseScenario):
             agent.name = f"{base_name}_{base_index}"
             agent.collide = True
             agent.silent = True
-            agent.size = 0.025 if agent.adversary else 0.015  # 智能体的大小，判断是否碰撞的界定。 m
+            agent.size = 0.25 if agent.adversary else 0.15  # 智能体的大小，判断是否碰撞的界定。
             agent.initial_mass = 1.6 if agent.adversary else 0.8  # 智能体的质量 kg
             agent.accel = max_force/agent.mass # 智能体的最大加速度
             # agent.max_speed = 1.0 if agent.adversary else 1.3

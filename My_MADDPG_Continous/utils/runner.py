@@ -5,7 +5,7 @@ import os
 import threading
 
 class RUNNER:
-    def __init__(self, agent, env, par, device):
+    def __init__(self, agent, env, par, device, mode = 'evaluate'):
         self.agent = agent
         self.env = env
         self.par = par
@@ -20,9 +20,11 @@ class RUNNER:
         解决使用visdom过程中，输出控制台阻塞的问题。
         ''' #TODO
 
-        if self.par.visdom:
+        if mode == 'train' and self.par.visdom:
             self.viz = visdom.Visdom()
             self.viz.close()
+        else: # evaluate模式下不需要visdom
+            pass
 
 
     def train(self):

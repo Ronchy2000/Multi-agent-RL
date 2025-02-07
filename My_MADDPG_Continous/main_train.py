@@ -48,7 +48,7 @@ if __name__ == '__main__':
     # 创建MA-DDPG智能体 dim_info: 字典，键为智能体名字 内容为二维数组 分别表示观测维度和动作维度 是观测不是状态 需要注意。
     agent = MADDPG(dim_info, args.buffer_capacity, args.batch_size, args.actor_lr, args.critic_lr, action_bound, _chkpt_dir = chkpt_dir, _device = device)
     # 创建运行对象
-    runner = RUNNER(agent, env, args, device)
+    runner = RUNNER(agent, env, args, device, mode = 'train')
     # 开始训练
     runner.train()
     print("agent",agent)
