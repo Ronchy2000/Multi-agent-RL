@@ -51,10 +51,20 @@ class Custom_raw_env(SimpleEnv, EzPickle):
         self.metadata["name"] = "simple_tag_v3"
         # Ronchy添加轨迹记录
         self.history_positions = {agent.name: [] for agent in world.agents}
-        self.max_history_length = 50  # 最大轨迹长度
+        # self.max_history_length = 500  # 最大轨迹长度
         # 重写 simple_env.py中的代码
-        
 
+    def reset(self, seed=None, options=None):
+        # 重置环境状态并清空轨迹记录
+        super().reset(seed=seed, options=options)
+        # 清空轨迹
+        self.history_positions = {agent.name: [] for agent in self.world.agents}
+
+    def reset_world(self, world, np_random):
+        # 清除历史轨迹
+        self.history_positions = {agent.name: [] for agent in self.world.agents}  
+        # 调用Scenario的reset_world方法
+        super().scenario.reset_world(world, np_random)
 
     """
     rewrite `_execute_world_step` method in:
@@ -154,9 +164,9 @@ class Custom_raw_env(SimpleEnv, EzPickle):
             # Ronchy记录轨迹
             for agent in self.world.agents:
                 self.history_positions[agent.name].append(agent.state.p_pos.copy())
-                if len(self.history_positions[agent.name]) > self.max_history_length:
-                    self.history_positions[agent.name].pop(0)
-            
+                # if len(self.history_positions[agent.name]) > self.max_history_length: # 限制轨迹长度
+                #     self.history_positions[agent.name].pop(0)
+
             self.steps += 1
 
             self.check_capture_condition(threshold=0.1)  #围捕标志——半径
@@ -201,20 +211,20 @@ class Custom_raw_env(SimpleEnv, EzPickle):
             pygame.display.flip()
             self.clock.tick(self.metadata["render_fps"])
             return
-
+    
     def draw(self):
-       # 清空画布
-       self.screen.fill((255, 255, 255))
-       # 计算动态缩放
-       all_poses = [entity.state.p_pos for entity in self.world.entities]
-    #    cam_range = np.max(np.abs(np.array(all_poses)))
-       cam_range = 2.5  # 固定显示范围为 ±2.5
-       scaling_factor = 0.9 * self.original_cam_range / cam_range
-       # 绘制轨迹
-       for agent in self.world.agents:
-           if len(self.history_positions[agent.name]) >= 2:
-               points = []
-               for pos in self.history_positions[agent.name]:
+        # 清空画布
+        self.screen.fill((255, 255, 255))
+        # 计算动态缩放
+        all_poses = [entity.state.p_pos for entity in self.world.entities]
+    #     cam_range = np.max(np.abs(np.array(all_poses)))
+        cam_range = 2.5  # 固定显示范围为 ±2.5
+        scaling_factor = 0.7 * self.original_cam_range / cam_range
+        # 绘制轨迹
+        for agent in self.world.agents:
+            if len(self.history_positions[agent.name]) >= 2:
+                points = []
+                for pos in self.history_positions[agent.name]:
                    x, y = pos
                    y *= -1
                    x = (x / cam_range) * self.width // 2 * 0.9
@@ -223,30 +233,41 @@ class Custom_raw_env(SimpleEnv, EzPickle):
                    y += self.height // 2
                    points.append((int(x), int(y)))
                
-               # 绘制渐变轨迹
-               for i in range(len(points) - 1):
-                   alpha = int(255 * (i + 1) / len(points))
-                   color = (0, 0, 255, alpha) if agent.adversary else (255, 0, 0, alpha)
-                   line_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
-                   pygame.draw.line(line_surface, color, points[i], points[i + 1], 2)
-                   self.screen.blit(line_surface, (0, 0))
-       # 绘制实体
-       for entity in self.world.entities:
-           x, y = entity.state.p_pos
-           y *= -1
-           x = (x / cam_range) * self.width // 2 * 0.9
-           y = (y / cam_range) * self.height // 2 * 0.9
-           x += self.width // 2
-           y += self.height // 2
-           
-           radius = entity.size * 350 * scaling_factor
-           
-           if isinstance(entity, Agent):
-               color = (0, 0, 255) if entity.adversary else (255, 0, 0)
-               pygame.draw.circle(self.screen, color, (int(x), int(y)), int(radius))
-               pygame.draw.circle(self.screen, (0, 0, 0), (int(x), int(y)), int(radius), 1)
-           else:  # Landmark
-               pygame.draw.circle(self.screen, (128, 128, 128), (int(x), int(y)), int(radius))
+                # 绘制渐变轨迹
+                for i in range(len(points) - 1):
+                    alpha = int(255 * (i + 1) / len(points))
+                    color = (0, 0, 255, alpha) if agent.adversary else (255, 0, 0, alpha)
+                    line_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+                    pygame.draw.line(line_surface, color, points[i], points[i + 1], 4)  # 最后一位是线宽
+                    self.screen.blit(line_surface, (0, 0))
+        # 绘制实体
+        for entity in self.world.entities:
+            x, y = entity.state.p_pos
+            y *= -1
+            x = (x / cam_range) * self.width // 2 * 0.9
+            y = (y / cam_range) * self.height // 2 * 0.9
+            x += self.width // 2
+            y += self.height // 2
+
+            radius = entity.size * 140 * scaling_factor
+
+            if isinstance(entity, Agent):
+             # 设置透明度：例如，transparent_alpha=128 (半透明)
+                transparent_alpha = 200  # 透明度，范围从0（完全透明）到255（完全不透明）
+                color = (0, 0, 255, transparent_alpha) if entity.adversary else (255, 0, 0, transparent_alpha)
+                # 创建透明度支持的Surface
+                agent_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+
+                # pygame.draw.circle(self.screen, color, (int(x), int(y)), int(radius))
+                pygame.draw.circle(agent_surface, color, (int(x), int(y)), int(radius))
+
+                agent_surface.set_alpha(transparent_alpha)  # 设置透明度
+                self.screen.blit(agent_surface, (0, 0))
+
+                # pygame.draw.circle(self.screen, (0, 0, 0), (int(x), int(y)), int(radius), 1) # 绘制边框
+                pygame.draw.circle(self.screen, (255, 255, 255), (int(x), int(y)), int(radius), 1) # 绘制边框
+            else:  # Landmark
+                pygame.draw.circle(self.screen, (128, 128, 128), (int(x), int(y)), int(radius))
 
 
 
@@ -294,7 +315,7 @@ class Scenario(BaseScenario):
             agent.name = f"{base_name}_{base_index}"
             agent.collide = True
             agent.silent = True
-            agent.size = 0.25 if agent.adversary else 0.15  # 智能体的大小，判断是否碰撞的界定。
+            agent.size = 0.25 if agent.adversary else 0.15  # 智能体的半径，判断是否碰撞的界定
             agent.initial_mass = 1.6 if agent.adversary else 0.8  # 智能体的质量 kg
             agent.accel = max_force/agent.mass # 智能体的最大加速度
             # agent.max_speed = 1.0 if agent.adversary else 1.3
@@ -320,6 +341,7 @@ class Scenario(BaseScenario):
             # random properties for landmarks
         for i, landmark in enumerate(world.landmarks):
             landmark.color = np.array([0.25, 0.25, 0.25])
+        
         # set random initial states
         for agent in world.agents:
             # agent.state.p_pos = np_random.uniform(-1, +1, world.dim_p) # default: 2
