@@ -412,11 +412,11 @@ class Scenario(BaseScenario):
         # agents are penalized for exiting the screen, so that they can be caught by the adversaries
         # 设置环境边界。
         def bound(x):
-            if x < 0.9:
+            if x < 2.4:
                 return 0
-            if x < 1.0:
-                return (x - 0.9) * 10
-            return min(np.exp(2 * x - 2), 10)
+            if x < 2.5:
+                return (x - 2.4) * 10
+            return min(np.exp(2 * x - 5), 10)
 
         for p in range(world.dim_p):
             x = abs(agent.state.p_pos[p])
