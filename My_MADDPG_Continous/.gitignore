@@ -19,6 +19,8 @@
 **/data/*
 !**/data/.gitkeep
 
+**/logs/*
+!**/logs/.gitkeep
 
 # 深度学习模型
 *.pth

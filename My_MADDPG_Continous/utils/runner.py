@@ -10,6 +10,13 @@ class RUNNER:
         self.env = env
         self.par = par
 
+        # 添加奖励记录相关的属性
+        self.reward_sum_record = []  # 用于平滑的奖励记录
+        self.all_reward_record = []  # 保存所有奖励记录，用于最终统计
+        self.all_adversary_avg_rewards = []  # 追捕者平均奖励
+        self.all_sum_rewards = []  # 所有智能体总奖励
+        self.episode_rewards = {}  # 每个智能体的奖励历史
+
         # 将 agent 的模型放到指定设备上
         for agent in self.agent.agents.values():
             agent.actor.to(device)
@@ -35,13 +42,13 @@ class RUNNER:
         #     viz.close()
         step = 0
         # 记录每个episode的和奖励 用于平滑，显示平滑奖励函数
-        reward_sum_record = []
-        # 存储csv数据
-        all_adversary_avg_rewards = []  # 记录每轮episode的追捕者的平均奖励
-        all_sum_rewards = []  # 记录每轮episode的所有智能体的奖励和
+        # reward_sum_record = []
+        # # 存储csv数据
+        # all_adversary_avg_rewards = []  # 记录每轮episode的追捕者的平均奖励
+        # all_sum_rewards = []  # 记录每轮episode的所有智能体的奖励和
         
         # 记录每个智能体在每个episode的奖励
-        episode_rewards = {agent_id: np.zeros(self.par.episode_num) for agent_id in self.env.agents}
+        self.episode_rewards = {agent_id: np.zeros(self.par.episode_num) for agent_id in self.env.agents}
         # episode循环
         for episode in range(self.par.episode_num):
             # print(f"This is episode {episode}")
@@ -108,7 +115,7 @@ class RUNNER:
                          update='append')
                 
             # 记录当前episode围捕者的平均奖励
-            all_adversary_avg_rewards.append(avg_adversary_reward)
+            self.all_adversary_avg_rewards.append(avg_adversary_reward)
 
             # 绘制所有智能体在当前episode的和奖励
             if self.par.visdom:
@@ -117,12 +124,14 @@ class RUNNER:
                          update='append')
                 
             # 记录当前episode的所有智能体和奖励 存储到csv中
-            all_sum_rewards.append(sum_reward)
+            self.all_sum_rewards.append(sum_reward)
             # 记录当前episode的所有智能体和奖励 为奖励平滑做准备
-            reward_sum_record.append(sum_reward)
+            self.reward_sum_record.append(sum_reward)
+
+            self.all_reward_record.append(sum_reward)  # 保存完整记录
             # 保存当前智能体在当前episode的奖励
             for agent_id, r in agent_reward.items():
-                episode_rewards[agent_id][episode] = r  #  episode_rewards  字典： {agent_id:[episoed1_reward, episode2_reward,...]}
+                self.episode_rewards[agent_id][episode] = r  #  episode_rewards  字典： {agent_id:[episoed1_reward, episode2_reward,...]}
             # 根据平滑窗口确定打印间隔 并进行平滑
             if (episode + 1) % self.par.size_win == 0:  #  500 步平滑一次
                 message = f'episode {episode + 1}, '
@@ -136,22 +145,32 @@ class RUNNER:
                     epi = np.linspace(episode - (self.par.size_win - 2),
                                       episode - (self.par.size_win - 2) + (self.par.size_win - 1), self.par.size_win,
                                       dtype=int)
-                    self.viz.line(X=epi, Y=self.get_running_reward(reward_sum_record), win='Average sum reward',
+                    self.viz.line(X=epi, Y=self.get_running_reward(self.reward_sum_record), win='Average sum reward',
                              opts={'title': 'Average sum reward'},
                              update='append')
-                reward_sum_record = []
+                self.reward_sum_record = []
 
         # 保存数据到文件（CSV格式）
-        self.save_rewards_to_csv(all_adversary_avg_rewards, all_sum_rewards)
+        self.save_rewards_to_csv(self.all_adversary_avg_rewards, self.all_sum_rewards)
 
     def get_running_reward(self, arr):
+
+        if len(arr) == 0:  # 如果传入空数组，使用完整记录
+            arr = self.all_reward_record
+
         """calculate the running reward, i.e. average of last `window` elements from rewards"""
         window = self.par.size_win
         running_reward = np.zeros_like(arr)
-        for i in range(window - 1):
-            running_reward[i] = np.mean(arr[:i + 1])
-        for i in range(window - 1, len(arr)):
-            running_reward[i] = np.mean(arr[i - window + 1:i + 1])
+
+        # for i in range(window - 1):
+        #     running_reward[i] = np.mean(arr[:i + 1])
+        # for i in range(window - 1, len(arr)):
+        #     running_reward[i] = np.mean(arr[i - window + 1:i + 1])
+            # 确保不会访问超出数组范围的位置
+        for i in range(len(arr)):
+            # 对每个i，确保窗口大小不会超出数组的实际大小
+            start_idx = max(0, i - window + 1)
+            running_reward[i] = np.mean(arr[start_idx:i + 1])
         # print(f"running_reward{running_reward}")
         return running_reward
 
@@ -199,9 +218,9 @@ class RUNNER:
         #     viz.close()
         step = 0
         # 记录每个episode的和奖励 用于平滑，显示平滑奖励函数
-        reward_sum_record = []
+        self.reward_sum_record = []
         # 记录每个智能体在每个episode的奖励
-        episode_rewards = {agent_id: np.zeros(self.par.episode_num) for agent_id in self.env.agents}
+        self.episode_rewards = {agent_id: np.zeros(self.par.episode_num) for agent_id in self.env.agents}
         # episode循环
         for episode in range(self.par.episode_num):
             print(f"评估第 {episode + 1} 回合")
@@ -227,6 +246,6 @@ class RUNNER:
                 obs = next_obs
 
             sum_reward = sum(agent_reward.values())
-            reward_sum_record.append(sum_reward)
+            self.reward_sum_record.append(sum_reward)
 
             

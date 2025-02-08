@@ -9,6 +9,7 @@ import torch
 
 import time
 from datetime import timedelta
+from utils.logger import TrainingLogger  # 添加导入
 
 def get_env(env_name, ep_len=25, render_mode ="None"):
     """create environment and get observation and action dimension of each agent in this environment"""
@@ -63,10 +64,15 @@ if __name__ == '__main__':
     training_time = end_time - start_time
     # 转换为时分秒格式
     training_duration = str(timedelta(seconds=int(training_time)))
-
     print(f"\n===========训练完成!===========")
     print(f"训练设备: {device}")
     print(f"训练用时: {training_duration}")
+
+    # 使用logger保存训练日志
+       # 使用logger保存训练日志
+    logger = TrainingLogger()
+    current_time = logger.save_training_log(args, device, training_duration, runner)
+    print(f"完成时间: {current_time}")
 
     print("--- saving trained models ---")
     agent.save_model()
