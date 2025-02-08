@@ -6,7 +6,7 @@ import torch
 from envs import simple_tag_env
 
 
-def get_env(env_name, ep_len=25, render_mode = "None"):
+def get_env(env_name, ep_len=50, render_mode = "None"):
     """create environment and get observation and action dimension of each agent in this environment"""
     new_env = None
     if env_name == 'simple_adversary_v3':

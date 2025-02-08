@@ -23,7 +23,7 @@ class Custom_raw_env(SimpleEnv, EzPickle):
         num_good=1,
         num_adversaries=3,
         num_obstacles=2,
-        max_cycles=25,
+        max_cycles=50,
         continuous_actions=False,
         render_mode=None,
         dynamic_rescaling=False,
@@ -169,7 +169,7 @@ class Custom_raw_env(SimpleEnv, EzPickle):
 
             self.steps += 1
 
-            self.check_capture_condition(threshold=0.1)  #围捕标志——半径
+            self.check_capture_condition(threshold=0.5)  #围捕标志——半径
 
             # 如果达到最大步数，标记 truncation 为 True
             if self.steps >= self.max_cycles:
