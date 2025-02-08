@@ -6,6 +6,10 @@ from utils.runner import RUNNER
 
 from agents.MADDPG_agent import MADDPG
 import torch
+
+import time
+from datetime import datetime
+
 def get_env(env_name, ep_len=25, render_mode ="None"):
     """create environment and get observation and action dimension of each agent in this environment"""
     new_env = None
@@ -37,6 +41,7 @@ if __name__ == '__main__':
     device = torch.device('mps' if hasattr(torch.backends, 'mps') and torch.backends.mps.is_available() 
                             else 'cuda' if torch.cuda.is_available() else 'cpu')
     print("Using device:",device)
+    start_time = time.time() # 记录开始时间
     # device = "cpu"
     # 模型保存路径
     chkpt_dir='models/maddpg_models/'
@@ -52,6 +57,17 @@ if __name__ == '__main__':
     # 开始训练
     runner.train()
     print("agent",agent)
+
+    # 计算训练时间
+    end_time = time.time()
+    training_time = end_time - start_time
+    # 转换为时分秒格式
+    training_duration = str(timedelta(seconds=int(training_time)))
+
+    print(f"\n===========训练完成!===========")
+    print(f"训练设备: {device}")
+    print(f"训练用时: {training_duration}")
+
     print("--- saving trained models ---")
     agent.save_model()
     print("--- trained models saved ---")
