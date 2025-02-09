@@ -56,6 +56,13 @@ class Custom_raw_env(SimpleEnv, EzPickle):
         pygame.font.init()
         self.game_font = pygame.font.SysFont('arial', 16)  # 使用系统字体
 
+        """
+        time_step = 0.1  这个是在core.py中的World类中定义的,名称为 dt = 0.1
+        agent的运动都在core.py中的World类中的step()方法中进行
+        """
+        self.world.dt = 0.1 # time_step, default 0.1
+        self.world.damping = 0.2  # 阻尼系数 0.25是默认值
+
     def reset(self, seed=None, options=None):
         # 重置环境状态并清空轨迹记录
         super().reset(seed=seed, options=options)
