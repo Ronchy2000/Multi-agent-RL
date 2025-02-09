@@ -53,6 +53,8 @@ class Custom_raw_env(SimpleEnv, EzPickle):
         self.history_positions = {agent.name: [] for agent in world.agents}
         # self.max_history_length = 500  # 最大轨迹长度
         # 重写 simple_env.py中的代码
+        pygame.font.init()
+        self.game_font = pygame.font.SysFont('arial', 16)  # 使用系统字体
 
     def reset(self, seed=None, options=None):
         # 重置环境状态并清空轨迹记录
@@ -220,6 +222,9 @@ class Custom_raw_env(SimpleEnv, EzPickle):
     #     cam_range = np.max(np.abs(np.array(all_poses)))
         cam_range = 2.5  # 固定显示范围为 ±2.5
         scaling_factor = 0.7 * self.original_cam_range / cam_range
+        # 绘制坐标轴
+        self.draw_grid_and_axes()
+
         # 绘制轨迹
         for agent in self.world.agents:
             if len(self.history_positions[agent.name]) >= 2:
@@ -268,9 +273,48 @@ class Custom_raw_env(SimpleEnv, EzPickle):
                 pygame.draw.circle(self.screen, (255, 255, 255), (int(x), int(y)), int(radius), 1) # 绘制边框
             else:  # Landmark
                 pygame.draw.circle(self.screen, (128, 128, 128), (int(x), int(y)), int(radius))
-
-
-
+        pygame.display.flip()
+    
+    """绘制坐标轴"""
+    def draw_grid_and_axes(self):
+        cam_range = 2.5
+        # 计算屏幕边界位置
+        margin = 40  # 边距
+        plot_width = self.width - 2 * margin
+        plot_height = self.height - 2 * margin
+     
+        # 绘制边框
+        pygame.draw.rect(self.screen, (0, 0, 0), 
+                        (margin, margin, plot_width, plot_height), 1)
+     
+        # 绘制网格线
+        grid_size = 0.5  # 网格间隔
+        for x in np.arange(-2.5, 2.6, grid_size):
+            screen_x = int((x + 2.5) / 5.0 * plot_width + margin)
+            pygame.draw.line(self.screen, (220, 220, 220),
+                            (screen_x, margin),
+                            (screen_x, margin + plot_height), 1)
+            # 绘制刻度
+            if abs(x) % 1.0 < 0.01:  # 整数位置
+                pygame.draw.line(self.screen, (0, 0, 0),
+                               (screen_x, margin + plot_height),
+                               (screen_x, margin + plot_height + 5), 1)
+                text = self.game_font.render(f"{x:.0f}", True, (0, 0, 0))
+                self.screen.blit(text, (screen_x - 5, margin + plot_height + 10))
+     
+        for y in np.arange(-2.5, 2.6, grid_size):
+            screen_y = int((-y + 2.5) / 5.0 * plot_height + margin)
+            pygame.draw.line(self.screen, (220, 220, 220),
+                            (margin, screen_y),
+                            (margin + plot_width, screen_y), 1)
+            # 绘制刻度
+            if abs(y) % 1.0 < 0.01:  # 整数位置
+                pygame.draw.line(self.screen, (0, 0, 0),
+                               (margin - 5, screen_y),
+                               (margin, screen_y), 1)
+                text = self.game_font.render(f"{y:.0f}", True, (0, 0, 0))
+                text_rect = text.get_rect()
+                self.screen.blit(text, (margin - 25, screen_y - 8))
 
     def check_capture_condition(self,threshold = 0.1): # agent.size = 0.075 if agent.adversary else 0.05
         """
@@ -441,7 +485,7 @@ class Scenario(BaseScenario):
                 for agent in agents:# 逃跑者目前只有一个
                     dist = np.sqrt(np.sum(np.square(agent.state.p_pos - adv.state.p_pos)))
                     collision = 1 if self.is_collision(agent, adv) else 0  
-                    rew += collision - dist
+                    rew += 10 * collision - dist * 0.1  # 削减距离负奖励
             for agent in agents:
                 speed_agent = np.sqrt(np.sum(np.square(agent.state.p_vel)))
                 rew -= speed_agent
