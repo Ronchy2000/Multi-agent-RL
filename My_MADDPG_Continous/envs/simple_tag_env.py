@@ -147,6 +147,52 @@ class Custom_raw_env(SimpleEnv, EzPickle):
 
             self.rewards[agent.name] = reward
 
+    # set env action for a particular agent
+    def _set_action(self, action, agent, action_space, time=None):
+        """
+        pettiongzoo中的 agent的动作 被分为 action.u 和 action.c 两部分,
+        分别代表physical action和communication action。
+        action维数为5, 第0位没有用
+        第1,2位表示x方向加速和减速
+        第3,4位表示y方向加速和减速
+        """
+        agent.action.u = np.zeros(self.world.dim_p) # default:2
+        agent.action.c = np.zeros(self.world.dim_c) # default:2
+
+        if agent.movable:
+            # physical action
+            agent.action.u = np.zeros(self.world.dim_p)
+            if self.continuous_actions:
+                # Process continuous action as in OpenAI MPE
+                # Note: this ordering preserves the same movement direction as in the discrete case
+                agent.action.u[0] += action[0][2] - action[0][1]
+                agent.action.u[1] += action[0][4] - action[0][3]
+            else:
+                # process discrete action
+                if action[0] == 1:
+                    agent.action.u[0] = -1.0
+                if action[0] == 2:
+                    agent.action.u[0] = +1.0
+                if action[0] == 3:
+                    agent.action.u[1] = -1.0
+                if action[0] == 4:
+                    agent.action.u[1] = +1.0
+            sensitivity = 5.0
+            if agent.accel is not None:
+                sensitivity = agent.accel
+            agent.action.u *= sensitivity
+            action = action[1:]
+        if not agent.silent:  # 默认为True，这里被跳过。
+            # communication action
+            if self.continuous_actions:
+                agent.action.c = action[0]
+            else:
+                agent.action.c = np.zeros(self.world.dim_c)
+                agent.action.c[action[0]] = 1.0
+            action = action[1:]
+        # make sure we used all elements of action
+        assert len(action) == 0
+
     """
     rewrite step method in: 
         simple_env <- class SimpleEnv()
@@ -368,7 +414,7 @@ class Scenario(BaseScenario):
             agent.silent = True
             agent.size = 0.25 if agent.adversary else 0.15  # 智能体的半径，判断是否碰撞的界定
             agent.initial_mass = 1.6 if agent.adversary else 0.8  # 智能体的质量 kg
-            agent.accel = max_force/agent.mass # 智能体的最大加速度
+            agent.accel = max_force/agent.initial_mass # 智能体的最大加速度
             # agent.max_speed = 1.0 if agent.adversary else 1.3
             agent.max_speed = 1.0 if agent.adversary else 1.0
         # add landmarks
