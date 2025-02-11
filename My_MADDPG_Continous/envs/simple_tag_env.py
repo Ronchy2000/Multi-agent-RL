@@ -52,16 +52,53 @@ class Custom_raw_env(SimpleEnv, EzPickle):
         # Ronchy添加轨迹记录
         self.history_positions = {agent.name: [] for agent in world.agents}
         # self.max_history_length = 500  # 最大轨迹长度
-        # 重写 simple_env.py中的代码
+        # 重载 simple_env.py中的代码
         pygame.font.init()
         self.game_font = pygame.font.SysFont('arial', 16)  # 使用系统字体
 
-        """
-        time_step = 0.1  这个是在core.py中的World类中定义的,名称为 dt = 0.1
-        agent的运动都在core.py中的World类中的step()方法中进行
-        """
-        self.world.dt = 0.1 # time_step, default 0.1
-        self.world.damping = 0.2  # 阻尼系数 0.25是默认值
+        # 重载continuous_actions空间
+        # set spaces
+        self.action_spaces = dict()
+        self.observation_spaces = dict()
+        state_dim = 0
+        for agent in self.world.agents:  #每个智能体都有自己的观测空间和动作空间
+            if agent.movable: 
+                if self.continuous_actions == True:
+                    space_dim = self.world.dim_p  # dim_p: default 2  -> position dimensionality  
+                elif self.continuous_actions == False:
+                    space_dim = self.world.dim_p * 2 + 1  # default: 5  # 1个维度表示静止，4个维度表示4个方向的运动，离散值
+            else:
+                space_dim = 1 # 1个维度表示静止
+            # 通信动作
+            if agent.silent == False:  #Scenario类中默认为True
+                if self.continuous_actions:
+                    space_dim += self.world.dim_c
+                else:
+                    space_dim *= self.world.dim_c
+            obs_dim = len(self.scenario.observation(agent, self.world))  # 观测维度， Scenario类中 observation()创建观测空间
+            state_dim += obs_dim  # 所有智能体的观测空间累积，就是 状态空间维数
+
+            if self.continuous_actions: # continuous actions
+                self.action_spaces[agent.name] = gymnasium.spaces.Box(
+                    low= -1.0, high=1.0, shape=(space_dim,), dtype=np.float32 # 限制在[-1,1]之间，这个是控制输入的限幅
+                )
+            else:  # discrete actions
+                self.action_spaces[agent.name] = gymnasium.spaces.Discrete(space_dim)
+            # 定义单个agent的观测空间
+            self.observation_spaces[agent.name] = gymnasium.spaces.Box(
+                low = -np.float32(np.inf), # 最低限制
+                high = +np.float32(np.inf), # 最高限制
+                shape = (obs_dim,),
+                dtype = np.float32,
+            )
+        # 定义多智能体状态空间 公用1个状态空间。
+        self.state_space = gymnasium.spaces.Box(
+            low = -np.float32(np.inf),
+            high = +np.float32(np.inf),
+            shape = (state_dim,),
+            dtype = np.float32,
+        )
+
 
     def reset(self, seed=None, options=None):
         # 重置环境状态并清空轨迹记录
@@ -84,52 +121,53 @@ class Custom_raw_env(SimpleEnv, EzPickle):
         for i, agent in enumerate(self.world.agents):
             action = self.current_actions[i]
             scenario_action = []
-            if agent.movable:
-                mdim = self.world.dim_p * 2 + 1
+            mdim = self.world.dim_p if self.continuous_actions else self.world.dim_p * 2 + 1  # 连续 2，离散 5
+            if agent.movable: # default: True
                 if self.continuous_actions:
-                    scenario_action.append(action[0:mdim])
-                    action = action[mdim:]
+                    scenario_action.append(action[0:mdim])  # phisical action
+                    action = action[mdim:] # communication action
                 else:
                     scenario_action.append(action % mdim)
                     action //= mdim
-            if not agent.silent:
+            if not agent.silent: # default: True
                 scenario_action.append(action)
-            self._set_action(scenario_action, agent, self.action_spaces[agent.name])
+            # set action for agent  action_spaces[agent.name]已经被划分成 scenario_action和action了，所以此处action_spaces[agent.name]不再使用
+            self._set_action(scenario_action, agent, self.action_spaces[agent.name], time = None)
 
-        self.world.step()
+        self.world.step() #core.py  在world实例中 执行动力学
 
         # Ronchy add: 
-        def handle_collisions(): # 在 添加碰撞检查 (避免重叠，无弹开效果)
-            for i, agent1 in enumerate(self.world.agents):
-                for agent2 in self.world.agents[i+1:]:
-                    if self.scenario.is_collision(agent1, agent2):
-                        delta_pos = agent1.state.p_pos - agent2.state.p_pos
-                        dist = np.sqrt(np.sum(np.square(delta_pos)))
-                        dist_min = agent1.size + agent2.size
+        # def handle_collisions(): # 在 添加碰撞检查 (避免重叠，无弹开效果)
+        #     for i, agent1 in enumerate(self.world.agents):
+        #         for agent2 in self.world.agents[i+1:]:
+        #             if self.scenario.is_collision(agent1, agent2):
+        #                 delta_pos = agent1.state.p_pos - agent2.state.p_pos
+        #                 dist = np.sqrt(np.sum(np.square(delta_pos)))
+        #                 dist_min = agent1.size + agent2.size
 
-                        if dist < dist_min:
-                            # 仅将重叠的智能体移动到刚好接触的位置
-                            overlap = dist_min - dist
-                            direction = delta_pos / (dist + 1e-8)  # 避免除零
-                            move_dist = overlap / 2
-                            agent1.state.p_pos += direction * move_dist
-                            agent2.state.p_pos -= direction * move_dist
-                # 检查与障碍物的碰撞
-                for landmark in self.world.landmarks:
-                    if landmark.collide:
-                        delta_pos = agent1.state.p_pos - landmark.state.p_pos
-                        dist = np.sqrt(np.sum(np.square(delta_pos)))
-                        dist_min = agent1.size + landmark.size
+        #                 if dist < dist_min:
+        #                     # 仅将重叠的智能体移动到刚好接触的位置
+        #                     overlap = dist_min - dist
+        #                     direction = delta_pos / (dist + 1e-8)  # 避免除零
+        #                     move_dist = overlap / 2
+        #                     agent1.state.p_pos += direction * move_dist
+        #                     agent2.state.p_pos -= direction * move_dist
+        #         # 检查与障碍物的碰撞
+        #         for landmark in self.world.landmarks:
+        #             if landmark.collide:
+        #                 delta_pos = agent1.state.p_pos - landmark.state.p_pos
+        #                 dist = np.sqrt(np.sum(np.square(delta_pos)))
+        #                 dist_min = agent1.size + landmark.size
 
-                        if dist < dist_min:
-                            overlap = dist_min - dist
-                            direction = delta_pos / (dist + 1e-8)
-                            # 只移动智能体，障碍物不动
-                            agent1.state.p_pos += direction * overlap
+        #                 if dist < dist_min:
+        #                     overlap = dist_min - dist
+        #                     direction = delta_pos / (dist + 1e-8)
+        #                     # 只移动智能体，障碍物不动
+        #                     agent1.state.p_pos += direction * overlap
         
-        # Ronchy 多次迭代以处理复杂的碰撞情况
-        for _ in range(3):  # 通常3次迭代足够处理大多数情况
-            handle_collisions()
+        # # Ronchy 多次迭代以处理复杂的碰撞情况
+        # for _ in range(3):  # 通常3次迭代足够处理大多数情况
+        #     handle_collisions()
         #--------#################-----------------#
         global_reward = 0.0
         if self.local_ratio is not None:
@@ -148,25 +186,27 @@ class Custom_raw_env(SimpleEnv, EzPickle):
             self.rewards[agent.name] = reward
 
     # set env action for a particular agent
+    # self._set_action(scenario_action, agent, self.action_spaces[agent.name])
+    # scenario_action 物理动作实参
     def _set_action(self, action, agent, action_space, time=None):
         """
         pettiongzoo中的 agent的动作 被分为 action.u 和 action.c 两部分,
         分别代表physical action和communication action。
+        默认值：
         action维数为5, 第0位没有用
         第1,2位表示x方向加速和减速
         第3,4位表示y方向加速和减速
         """
-        agent.action.u = np.zeros(self.world.dim_p) # default:2
-        agent.action.c = np.zeros(self.world.dim_c) # default:2
-
+        #此处是指agent.action = agent.action.u -> scenarios_action + agent.action.c -> communication_action
+        agent.action.u = np.zeros(self.world.dim_p) # default:2  phisiacal action, 加速度的维数
+        agent.action.c = np.zeros(self.world.dim_c) # default:2  communication action的维数
         if agent.movable:
-            # physical action
-            agent.action.u = np.zeros(self.world.dim_p)
+            agent.action.u = np.zeros(self.world.dim_p) #  default:2
             if self.continuous_actions:
                 # Process continuous action as in OpenAI MPE
                 # Note: this ordering preserves the same movement direction as in the discrete case
-                agent.action.u[0] += action[0][2] - action[0][1]
-                agent.action.u[1] += action[0][4] - action[0][3]
+                agent.action.u[0] = action[0]/agent.initial_mass # Accel in x direction
+                agent.action.u[1] = action[1]/agent.initial_mass  # Accel in y direction
             else:
                 # process discrete action
                 if action[0] == 1:
@@ -177,27 +217,44 @@ class Custom_raw_env(SimpleEnv, EzPickle):
                     agent.action.u[1] = -1.0
                 if action[0] == 4:
                     agent.action.u[1] = +1.0
-            sensitivity = 5.0
-            if agent.accel is not None:
-                sensitivity = agent.accel
-            agent.action.u *= sensitivity
-            action = action[1:]
-        if not agent.silent:  # 默认为True，这里被跳过。
-            # communication action
-            if self.continuous_actions:
-                agent.action.c = action[0]
-            else:
-                agent.action.c = np.zeros(self.world.dim_c)
-                agent.action.c[action[0]] = 1.0
-            action = action[1:]
+        #     # Ronchy 修改加速度逻辑
+        #     sensitivity = 1.0  # default: 5.0
+        #     if agent.accel is not None:
+        #         sensitivity = agent.accel
+        #     agent.action.u *= sensitivity
+        #     action = action[1:]
+
+        # if not agent.silent:  # 默认为True，这里被跳过。
+        #     # communication action
+        #     if self.continuous_actions:
+        #         agent.action.c = action[0]
+        #     else:
+        #         agent.action.c = np.zeros(self.world.dim_c)
+        #         agent.action.c[action[0]] = 1.0
+        #     action = action[1:]
         # make sure we used all elements of action
-        assert len(action) == 0
+        # assert len(action) == 0 # Ronchy: 保证action被完全使用。如果 action 数组不为空，说明有动作维度没有被正确处理，程序会抛出 AssertionError
 
     """
     rewrite step method in: 
         simple_env <- class SimpleEnv()
+
+        simple_tag_env.step(action)   # 在算法上直接调用env.step(action)即可
+            -> _execute_world_step()  
+            -> _set_action(action) # 把合外力变成加速度。（原版是 乘以 sensitivity; 即agent.accel）
+            -> world.step()  # 调用 core.py 中的 World.step()  # 实现agent 的动力学
+        -simple_tag_env.step() ：
+            - 环境层面的步进
+            - 处理动作的接收和预处理
+            - 管理奖励、状态转换等高层逻辑
+            - 处理轨迹记录、终止条件等
+        - core.py 中的 World.step() ：  # 需要在Scenario类中重载
+            - 物理引擎层面的步进
+            - 实现具体的动力学计算
+            - 处理力的应用和状态积分
+            - 更新物理状态（位置、速度等）
     """ 
-    def step(self, action): 
+    def step(self, action):   # 环境层面的步进
         # print("Using rewrited step method.")
         #  如果有任何智能体的 terminated 状态为 True，它们将从 self.env.agents 中移除
         if ( 
@@ -242,7 +299,7 @@ class Custom_raw_env(SimpleEnv, EzPickle):
     rewrite step method in: 
         simple_env <- class SimpleEnv()
     """ 
-    # Ronchy: 重写render函数
+    # Ronchy: 重载render函数
     def enable_render(self, mode="human"):
         if not self.renderOn and mode == "human":
             self.screen = pygame.display.set_mode(self.screen.get_size())
@@ -392,13 +449,20 @@ class Custom_raw_env(SimpleEnv, EzPickle):
 env = make_env(Custom_raw_env)
 parallel_env = parallel_wrapper_fn(env)
 
-max_force = 1 # 根据论文新添加定义
 
 class Scenario(BaseScenario):
     def make_world(self, num_good=1, num_adversaries=3, num_obstacles=2):
         world = World()
         # set any world properties first
-        world.dim_c = 2
+        world.dim_c = 0  # Ronchy set 0, communication channel dimensionality,default 2
+        world.dim_p = 2  # position dimensionality, default 2
+        """
+        time_step = 0.1  这个是在core.py中的World类中定义的,名称为 dt = 0.1
+        agent的运动都在core.py中的World类中的step()方法中进行
+        """
+        world.dt = 0.1 # time_step, default 0.1
+        world.damping = 0.2  # 阻尼系数 0.25是默认值
+
         num_good_agents = num_good
         num_adversaries = num_adversaries
         num_agents = num_adversaries + num_good_agents
@@ -414,7 +478,7 @@ class Scenario(BaseScenario):
             agent.silent = True
             agent.size = 0.25 if agent.adversary else 0.15  # 智能体的半径，判断是否碰撞的界定
             agent.initial_mass = 1.6 if agent.adversary else 0.8  # 智能体的质量 kg
-            agent.accel = max_force/agent.initial_mass # 智能体的最大加速度
+            agent.accel = None # 不使用该参数
             # agent.max_speed = 1.0 if agent.adversary else 1.3
             agent.max_speed = 1.0 if agent.adversary else 1.0
         # add landmarks
