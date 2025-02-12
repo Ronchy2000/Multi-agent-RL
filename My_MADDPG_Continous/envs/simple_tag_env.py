@@ -11,6 +11,8 @@ from pettingzoo.mpe._mpe_utils.scenario import BaseScenario
 from pettingzoo.mpe._mpe_utils.simple_env import SimpleEnv, make_env
 from pettingzoo.utils.conversions import parallel_wrapper_fn
 
+from custom_agents_dynamics import CustomWorld # Ronchy自定义的World类，用于测试自定义的智能体动力学模型
+
 import pygame  #Ronchy: 用于渲染动画环境
 
 '''
@@ -122,6 +124,7 @@ class Custom_raw_env(SimpleEnv, EzPickle):
             action = self.current_actions[i]
             scenario_action = []
             mdim = self.world.dim_p if self.continuous_actions else self.world.dim_p * 2 + 1  # 连续 2，离散 5
+            print(f"_execute_world_step : mdim:{mdim}")
             if agent.movable: # default: True
                 if self.continuous_actions:
                     scenario_action.append(action[0:mdim])  # phisical action
@@ -452,7 +455,8 @@ parallel_env = parallel_wrapper_fn(env)
 
 class Scenario(BaseScenario):
     def make_world(self, num_good=1, num_adversaries=3, num_obstacles=2):
-        world = World()
+        # world = World() # core.py 中的World类
+        world = CustomWorld() # Ronchy: 使用自定义的World类,重载了动力学逻辑
         # set any world properties first
         world.dim_c = 0  # Ronchy set 0, communication channel dimensionality,default 2
         world.dim_p = 2  # position dimensionality, default 2
@@ -632,6 +636,8 @@ class Scenario(BaseScenario):
             + other_pos
             + other_vel
         )
+    
+    
     
 #=======================================================================
 if __name__ =="__main__":
