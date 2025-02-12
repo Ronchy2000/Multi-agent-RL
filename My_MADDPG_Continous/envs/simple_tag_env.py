@@ -54,10 +54,12 @@ class Custom_raw_env(SimpleEnv, EzPickle):
         # Ronchy添加轨迹记录
         self.history_positions = {agent.name: [] for agent in world.agents}
         # self.max_history_length = 500  # 最大轨迹长度
+
         # 重载 simple_env.py中的代码
         pygame.font.init()
         self.game_font = pygame.font.SysFont('arial', 16)  # 使用系统字体
 
+        self.max_force = 1.0  # 最大力
         # 重载continuous_actions空间
         # set spaces
         self.action_spaces = dict()
@@ -208,8 +210,8 @@ class Custom_raw_env(SimpleEnv, EzPickle):
             if self.continuous_actions:
                 # Process continuous action as in OpenAI MPE
                 # Note: this ordering preserves the same movement direction as in the discrete case
-                agent.action.u[0] = action[0]/agent.initial_mass # Accel in x direction
-                agent.action.u[1] = action[1]/agent.initial_mass  # Accel in y direction
+                agent.action.u[0] = action[0] # Force in x direction
+                agent.action.u[1] = action[1]  # Force in y direction
             else:
                 # process discrete action
                 if action[0] == 1:
@@ -220,6 +222,11 @@ class Custom_raw_env(SimpleEnv, EzPickle):
                     agent.action.u[1] = -1.0
                 if action[0] == 4:
                     agent.action.u[1] = +1.0
+        
+        # Ronchy 添加力限幅
+        #self.max_force = 1.0  # 根据需求调整
+        agent.action.u = np.clip(agent.action.u, -self.max_force, self.max_force)
+
         #     # Ronchy 修改加速度逻辑
         #     sensitivity = 1.0  # default: 5.0
         #     if agent.accel is not None:

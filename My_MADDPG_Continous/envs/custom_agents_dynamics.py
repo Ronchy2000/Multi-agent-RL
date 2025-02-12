@@ -13,7 +13,15 @@ class CustomWorld(World):
         super().__init__() # 调用父类的构造函数
         self.dt = 0.1 # 时间步长
         self.damping = 0.2 # 阻尼系数
-    
+        # contact response parameters
+        self.contact_force = 1e2 # 控制碰撞强度（默认1e2，值越大反弹越强）
+        self.contact_margin = 1e-3 # 控制碰撞"柔软度"（默认1e-3，值越小越接近刚体）
+        """
+        常见问题示例
+        实体重叠穿透	contact_force太小	增大contact_force至1e3或更高
+        碰撞后震荡	damping太低	增大阻尼系数（如0.5）
+        微小距离抖动	contact_margin不合理	调整到1e-2~1e-4之间
+        """
     """ 
         重载底层动力学逻辑
         主要是integrate_state()函数
@@ -41,11 +49,17 @@ class CustomWorld(World):
         for i, entity in enumerate(self.entities):
             if not entity.movable:
                 continue
-            entity.state.p_pos += entity.state.p_vel * self.dt  # 更新位置
-            entity.state.p_vel = entity.state.p_vel * (1 - self.damping) # 更新速度
+            # 速度阻尼衰减
+            entity.state.p_vel *= (1 - self.damping)  # 正确应用阻尼
+             # 动力学 -> 运动学
             if p_force[i] is not None:
-                entity.state.p_vel += (p_force[i] / entity.mass) * self.dt
+                acceleration = p_force[i] / entity.mass # F = ma
+                entity.state.p_vel += acceleration * self.dt # v = v_0 + a * t
+            # 更新位置
+            entity.state.p_pos += entity.state.p_vel * self.dt  # 更新位置
+            # 速度限幅
             if entity.max_speed is not None:
+                ########
                 speed = np.sqrt(
                     np.square(entity.state.p_vel[0]) + np.square(entity.state.p_vel[1])
                 )
@@ -58,9 +72,14 @@ class CustomWorld(World):
                         )
                         * entity.max_speed
                     )
+                ########可替换为下列代码 ，效果相同
+                # speed = np.linalg.norm(entity.state.p_vel)  # 计算向量模长
+                # if speed > entity.max_speed:
+                #     entity.state.p_vel = entity.state.p_vel * (entity.max_speed / speed)  # 向量缩放                   
 
 
     # get collision forces for any contact between two entities
+    # TODO: 碰撞逻辑待细化
     def get_collision_force(self, entity_a, entity_b):
         if (not entity_a.collide) or (not entity_b.collide):
             return [None, None]  # not a collider
@@ -68,12 +87,12 @@ class CustomWorld(World):
             return [None, None]  # don't collide against itself
         # compute actual distance between entities
         delta_pos = entity_a.state.p_pos - entity_b.state.p_pos
-        dist = np.sqrt(np.sum(np.square(delta_pos)))
+        dist = np.sqrt(np.sum(np.square(delta_pos))) #用norm更简洁
         # minimum allowable distance
-        dist_min = entity_a.size + entity_b.size
+        dist_min = entity_a.size + entity_b.size  # 两个实体的半径之和
         # softmax penetration
-        k = self.contact_margin
-        penetration = np.logaddexp(0, -(dist - dist_min) / k) * k
+        k = self.contact_margin 
+        penetration = np.logaddexp(0, -(dist - dist_min) / k) * k  #渗透深度， 当 dist < dist_min 时产生虚拟渗透量
         force = self.contact_force * delta_pos / dist * penetration
         force_a = +force if entity_a.movable else None
         force_b = -force if entity_b.movable else None
