@@ -619,22 +619,26 @@ class Scenario(BaseScenario):
                 rew -= speed_agent
         return rew
 
-    def observation(self, agent, world):
+    def observation(self, agent, world):  # 返回值，自动适配智能体的观测空间维数
+        """
+            智能体及地标的观测空间
+            TODO:需要按需重载。
+        """
         # get positions of all entities in this agent's reference frame
         entity_pos = []
         for entity in world.landmarks:
-            if not entity.boundary:
-                entity_pos.append(entity.state.p_pos - agent.state.p_pos)
+            if not entity.boundary:  # default: False ,要执行的代码块
+                entity_pos.append(entity.state.p_pos - agent.state.p_pos)  #表示地标相对于智能体的位置。这样返回的每个地标位置将是一个 2D 向量，表示该地标与智能体之间的相对位置。
         # communication of all other agents
-        comm = []
-        other_pos = []
-        other_vel = []
+        comm = [] # default: self.c = None
+        other_pos = [] # 其他智能体（包扩逃跑者）相对于智能体的位置——相对位置
+        other_vel = [] # 逃跑者的速度
         for other in world.agents:
             if other is agent:
                 continue
-            comm.append(other.state.c)
-            other_pos.append(other.state.p_pos - agent.state.p_pos)
-            if not other.adversary:
+            comm.append(other.state.c)  # default: self.c = None
+            other_pos.append(other.state.p_pos - agent.state.p_pos) 
+            if not other.adversary:  # adversary，追逐者的值是True，逃跑者的值是False
                 other_vel.append(other.state.p_vel)
         return np.concatenate(
             [agent.state.p_vel]
@@ -649,3 +653,54 @@ class Scenario(BaseScenario):
 #=======================================================================
 if __name__ =="__main__":
     print("Custom_raw_env",Custom_raw_env)
+    # 创建测试环境
+    # env = make_env(Custom_raw_env)
+    # parallel_env = parallel_wrapper_fn(env) # 启用并行环境
+    # parallel_env.reset()
+
+    num_good = 1
+    num_adversaries = 3
+    num_obstacles = 0
+
+        # 创建并初始化环境
+    env = Custom_raw_env(
+        num_good=num_good, 
+        num_adversaries=num_adversaries, 
+        num_obstacles=num_obstacles, 
+        continuous_actions=True,  # 设置为 True 使用连续动作空间
+        render_mode="None"
+    )
+
+    env.reset()
+
+    # 打印环境和智能体信息
+    print("环境初始化完成。")
+    print(f"环境名称: {env.metadata['name']}")
+    print(f"智能体数量: {len(env.agents)}")
+
+   # 遍历每个智能体并打印其初始状态
+    for agent_name in env.agents:
+        # 获取当前智能体的观察空间和动作空间
+        obs_space = env.observation_space(agent_name)
+        action_space = env.action_space(agent_name)
+
+        # 获取当前智能体的观测
+        observation = env.observe(agent_name)
+
+        # 获取当前智能体的动作空间范围（低和高值）
+        action_low = action_space.low
+        action_high = action_space.high
+
+        # 打印信息
+        print(f"\n==== {agent_name} ====")
+        print(f"观测空间维度: {obs_space.shape}")
+        print(f"动作空间维度: {action_space.shape}")
+        print(f"动作空间的低值: {action_low}")
+        print(f"动作空间的高值: {action_high}")
+
+        # 打印智能体的初始观测
+        print(f"初始观测: {observation}")
+        
+        # 如果你想测试环境的一个动作，可以给智能体一个随机动作，并打印
+        random_action = action_space.sample()  # 从动作空间中采样一个随机动作
+        print(f"随机选择的动作: {random_action}")
