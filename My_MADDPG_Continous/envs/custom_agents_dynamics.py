@@ -9,8 +9,9 @@ from pettingzoo.mpe._mpe_utils.core import EntityState, AgentState, Action, Enti
 from pettingzoo.mpe._mpe_utils.core import World
 
 class CustomWorld(World):
-    def __init__(self):
+    def __init__(self, world_size = 2.5 ): #
         super().__init__() # 调用父类的构造函数
+        self.world_size = world_size # Ronchy 添加世界大小
         self.dt = 0.1 # 时间步长
         self.damping = 0.2 # 阻尼系数
         # contact response parameters
@@ -57,6 +58,9 @@ class CustomWorld(World):
                 entity.state.p_vel += acceleration * self.dt # v = v_0 + a * t
             # 更新位置
             entity.state.p_pos += entity.state.p_vel * self.dt  # 更新位置
+            # 限制位置在世界大小范围内
+            entity.state.p_pos = np.clip(entity.state.p_pos, -self.world_size, self.world_size) # Ronchy 添加世界大小限制
+
             # 速度限幅
             if entity.max_speed is not None:
                 ########
