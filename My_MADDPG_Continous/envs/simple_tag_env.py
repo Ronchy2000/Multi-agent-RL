@@ -400,7 +400,7 @@ class Custom_raw_env(SimpleEnv, EzPickle):
     
     """绘制坐标轴"""
     def draw_grid_and_axes(self):
-        cam_range = 2.5
+        cam_range = self.world_size  # 使用环境实际大小
         # 计算屏幕边界位置
         margin = 40  # 边距
         plot_width = self.width - 2 * margin
@@ -412,8 +412,8 @@ class Custom_raw_env(SimpleEnv, EzPickle):
      
         # 绘制网格线
         grid_size = 0.5  # 网格间隔
-        for x in np.arange(-2.5, 2.6, grid_size):
-            screen_x = int((x + 2.5) / 5.0 * plot_width + margin)
+        for x in np.arange(-self.world_size, self.world_size + grid_size, grid_size):
+            screen_x = int((x + self.world_size) / (2 * self.world_size) * plot_width + margin)
             pygame.draw.line(self.screen, (220, 220, 220),
                             (screen_x, margin),
                             (screen_x, margin + plot_height), 1)
@@ -425,8 +425,8 @@ class Custom_raw_env(SimpleEnv, EzPickle):
                 text = self.game_font.render(f"{x:.0f}", True, (0, 0, 0))
                 self.screen.blit(text, (screen_x - 5, margin + plot_height + 10))
      
-        for y in np.arange(-2.5, 2.6, grid_size):
-            screen_y = int((-y + 2.5) / 5.0 * plot_height + margin)
+        for y in np.arange(-self.world_size, self.world_size + grid_size, grid_size):
+            screen_y = int((-y + self.world_size) / (2 * self.world_size) * plot_height + margin)
             pygame.draw.line(self.screen, (220, 220, 220),
                             (margin, screen_y),
                             (margin + plot_width, screen_y), 1)
@@ -439,13 +439,14 @@ class Custom_raw_env(SimpleEnv, EzPickle):
                 text_rect = text.get_rect()
                 self.screen.blit(text, (margin - 25, screen_y - 8))
 
-    def check_capture_condition(self,threshold = 0.1): # agent.size = 0.075 if agent.adversary else 0.05
+    def check_capture_condition(self,threshold = None): # agent.size = 0.075 if agent.adversary else 0.05
         """
         检查所有围捕者是否都进入逃跑者的指定范围内。
         Args:
             threshold (float): 围捕者和逃跑者之间的最大允许距离。
         """
-        threshold = self.world_size * 0.7
+        if threshold is None:
+            threshold = self.world_size * 0.2 # 使用世界大小的20%作为默认捕获范围
         agents = self.scenario.good_agents(self.world)  # 逃跑者
         adversaries = self.scenario.adversaries(self.world)  # 围捕者
         # 假设只有一个逃跑者，计算所有围捕者与该逃跑者的距离
@@ -492,7 +493,9 @@ class Scenario(BaseScenario):
             agent.name = f"{base_name}_{base_index}"
             agent.collide = True
             agent.silent = True
-            agent.size = 0.25 if agent.adversary else 0.15  # 智能体的半径，判断是否碰撞的界定
+            base_size = _world_size * 0.1 # 基础大小为世界大小的10%
+            # agent.size = 0.25 if agent.adversary else 0.15  # 智能体的半径，判断是否碰撞的界定
+            agent.size = base_size if agent.adversary else base_size*0.6  # 智能体的半径，判断是否碰撞的界定
             agent.initial_mass = 1.6 if agent.adversary else 0.8  # 智能体的质量 kg
             agent.accel = None # 不使用该参数
             # agent.max_speed = 1.0 if agent.adversary else 1.3
@@ -522,13 +525,13 @@ class Scenario(BaseScenario):
         # set random initial states
         for agent in world.agents:
             # agent.state.p_pos = np_random.uniform(-1, +1, world.dim_p) # default: 2
-            agent.state.p_pos = np_random.uniform(-world.world_size, +world.world_size, world.dim_p)
+            agent.state.p_pos = np_random.uniform(-world.world_size * 0.9, +world.world_size * 0.9, world.dim_p) #  # 留出10%边界
             agent.state.p_vel = np.zeros(world.dim_p)
             agent.state.c = np.zeros(world.dim_c)
         for i, landmark in enumerate(world.landmarks):
             if not landmark.boundary:
                 # landmark.state.p_pos = np_random.uniform(-0.9, +0.9, world.dim_p) # default: 1.8
-                landmark.state.p_pos = np_random.uniform(-world.world_size+0.1, +world.world_size-0.1, world.dim_p) # default: 4.8
+                landmark.state.p_pos = np_random.uniform(-world.world_size * 0.8, +world.world_size * 0.8, world.dim_p) # 留出20%边界
                 landmark.state.p_vel = np.zeros(world.dim_p)
 
     def benchmark_data(self, agent, world):
@@ -609,7 +612,7 @@ class Scenario(BaseScenario):
                 return 0
             if x < full_boundary:
                 return (x - boundary_start) * 10
-            return min(np.exp(2 * x - 5 * full_boundary), 10)
+            return min(np.exp(2 * x - 2 * full_boundary), 10)
         
         # ==== 必须添加实际边界计算 ====
         for p in range(world.dim_p):  # 遍历每个坐标轴 (x, y)
