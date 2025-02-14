@@ -32,7 +32,8 @@ def get_env(env_name, ep_len=25, render_mode ="None"):
         _dim_info[agent_id].append(new_env.action_space(agent_id).shape[0])
         action_bound[agent_id].append(new_env.action_space(agent_id).low)
         action_bound[agent_id].append(new_env.action_space(agent_id).high)
-
+    print("_dim_info:",_dim_info)
+    print("action_bound:",action_bound)
     return new_env, _dim_info, action_bound
 
 

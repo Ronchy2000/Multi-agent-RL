@@ -28,7 +28,7 @@ class CustomWorld(World):
     """
     def step(self):
         # set actions for scripted agents
-        print("Using world -> step()")
+        # print("Using world -> step()") # 重载成功！
         for agent in self.scripted_agents:
             agent.action = agent.action_callback(agent, self)
         # gather forces applied to entities

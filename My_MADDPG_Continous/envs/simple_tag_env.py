@@ -126,7 +126,7 @@ class Custom_raw_env(SimpleEnv, EzPickle):
             action = self.current_actions[i]
             scenario_action = []
             mdim = self.world.dim_p if self.continuous_actions else self.world.dim_p * 2 + 1  # 连续 2，离散 5
-            print(f"_execute_world_step : mdim:{mdim}")
+            # print(f"_execute_world_step : mdim:{mdim}") # mdim: 2
             if agent.movable: # default: True
                 if self.continuous_actions:
                     scenario_action.append(action[0:mdim])  # phisical action  mdim: 2  ,此处的Scenario_action是二维列表了.[action[0:2], acrionp[2:]],[[物理动作]，[通信动作]]
