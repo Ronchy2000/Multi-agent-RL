@@ -11,7 +11,7 @@ from pettingzoo.mpe._mpe_utils.scenario import BaseScenario
 from pettingzoo.mpe._mpe_utils.simple_env import SimpleEnv, make_env
 from pettingzoo.utils.conversions import parallel_wrapper_fn
 
-from custom_agents_dynamics import CustomWorld # Ronchy自定义的World类，用于测试自定义的智能体动力学模型
+from .custom_agents_dynamics import CustomWorld # Ronchy自定义的World类，用于测试自定义的智能体动力学模型
 
 import pygame  #Ronchy: 用于渲染动画环境
 

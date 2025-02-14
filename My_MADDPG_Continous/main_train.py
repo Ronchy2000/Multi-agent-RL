@@ -1,5 +1,5 @@
 from pettingzoo.mpe import simple_adversary_v3, simple_spread_v3, simple_tag_v3
-from envs import simple_tag_env
+from envs import simple_tag_env, custom_agents_dynamics
 
 from main_parameters import main_parameters
 from utils.runner import RUNNER
