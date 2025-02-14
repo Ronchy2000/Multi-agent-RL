@@ -671,9 +671,12 @@ class Scenario(BaseScenario):
                 # 归一化速度
                 norm_vel = other.state.p_vel / other.max_speed
                 other_vel.append(norm_vel)
+        # 自身状态归一化
+        norm_self_vel = agent.state.p_vel / world.world_size
+        norm_self_pos = agent.state.p_pos / world.world_size
         return np.concatenate(
-            [agent.state.p_vel]
-            + [agent.state.p_pos]
+            [norm_self_vel]
+            + [norm_self_pos]
             + entity_pos
             + other_pos
             + other_vel
