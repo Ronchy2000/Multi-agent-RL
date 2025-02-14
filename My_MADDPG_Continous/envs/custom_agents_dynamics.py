@@ -59,7 +59,7 @@ class CustomWorld(World):
             # 更新位置
             entity.state.p_pos += entity.state.p_vel * self.dt  # 更新位置
             # 限制位置在世界大小范围内
-            entity.state.p_pos = np.clip(entity.state.p_pos, -self.world_size, self.world_size) # Ronchy 添加世界大小限制
+            # entity.state.p_pos = np.clip(entity.state.p_pos, -self.world_size, self.world_size) # Ronchy 添加世界大小限制
 
             # 速度限幅
             if entity.max_speed is not None:

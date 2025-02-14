@@ -29,6 +29,7 @@ class Custom_raw_env(SimpleEnv, EzPickle):
         continuous_actions=False,
         render_mode=None,
         dynamic_rescaling=False,
+        world_size = 2.5, # Ronchy添加 world_size参数 ,地图大小 world_size x world_size
     ):
         EzPickle.__init__(
             self,
@@ -40,7 +41,7 @@ class Custom_raw_env(SimpleEnv, EzPickle):
             render_mode=render_mode,
         )
         scenario = Scenario()
-        world = scenario.make_world(num_good, num_adversaries, num_obstacles)
+        world = scenario.make_world(num_good, num_adversaries, num_obstacles, _world_size = world_size) # Ronchy添加 world_size参数
         SimpleEnv.__init__(
             self,
             scenario=scenario,
@@ -50,6 +51,7 @@ class Custom_raw_env(SimpleEnv, EzPickle):
             continuous_actions=continuous_actions,
             dynamic_rescaling=dynamic_rescaling,
         )
+        self.world_size = world_size  # Ronchy添加 world_size参数, 地图大小 world_size x world_size
         self.metadata["name"] = "simple_tag_v3"
         # Ronchy添加轨迹记录
         self.history_positions = {agent.name: [] for agent in world.agents}
@@ -341,7 +343,7 @@ class Custom_raw_env(SimpleEnv, EzPickle):
         # 计算动态缩放
         all_poses = [entity.state.p_pos for entity in self.world.entities]
     #     cam_range = np.max(np.abs(np.array(all_poses)))
-        cam_range = 2.5  # 固定显示范围为 ±2.5
+        cam_range = self.world_size  # 使用环境实际大小
         scaling_factor = 0.7 * self.original_cam_range / cam_range
         # 绘制坐标轴
         self.draw_grid_and_axes()
@@ -443,6 +445,7 @@ class Custom_raw_env(SimpleEnv, EzPickle):
         Args:
             threshold (float): 围捕者和逃跑者之间的最大允许距离。
         """
+        threshold = self.world_size * 0.7
         agents = self.scenario.good_agents(self.world)  # 逃跑者
         adversaries = self.scenario.adversaries(self.world)  # 围捕者
         # 假设只有一个逃跑者，计算所有围捕者与该逃跑者的距离
@@ -462,10 +465,11 @@ parallel_env = parallel_wrapper_fn(env)
 
 
 class Scenario(BaseScenario):
-    def make_world(self, num_good=1, num_adversaries=3, num_obstacles=2):
+    def make_world(self, num_good=1, num_adversaries=3, num_obstacles=2, _world_size=2.5):
         # world = World() # core.py 中的World类
         world = CustomWorld() # Ronchy: 使用自定义的World类,重载了动力学逻辑
         # set any world properties first
+        world.world_size =  _world_size # Ronchy添加世界大小
         world.dim_c = 0  # Ronchy set 0, communication channel dimensionality,default 2
         world.dim_p = 2  # position dimensionality, default 2
         """
@@ -518,13 +522,13 @@ class Scenario(BaseScenario):
         # set random initial states
         for agent in world.agents:
             # agent.state.p_pos = np_random.uniform(-1, +1, world.dim_p) # default: 2
-            agent.state.p_pos = np_random.uniform(-2.5, +2.5, world.dim_p)
+            agent.state.p_pos = np_random.uniform(-world.world_size, +world.world_size, world.dim_p)
             agent.state.p_vel = np.zeros(world.dim_p)
             agent.state.c = np.zeros(world.dim_c)
         for i, landmark in enumerate(world.landmarks):
             if not landmark.boundary:
                 # landmark.state.p_pos = np_random.uniform(-0.9, +0.9, world.dim_p) # default: 1.8
-                landmark.state.p_pos = np_random.uniform(-2.4, +2.4, world.dim_p) # default: 4.8
+                landmark.state.p_pos = np_random.uniform(-world.world_size+0.1, +world.world_size-0.1, world.dim_p) # default: 4.8
                 landmark.state.p_vel = np.zeros(world.dim_p)
 
     def benchmark_data(self, agent, world):
@@ -583,18 +587,35 @@ class Scenario(BaseScenario):
                     rew -= 0  # 即，不学习逃跑策略。 default value = 10  
 
         # agents are penalized for exiting the screen, so that they can be caught by the adversaries
-        # 设置环境边界。
+        # 设置环境边界, 我在world中限制了边界，pos无法超出，该奖励需要测试，看是否还需要
+        # def bound(x):
+        #     if x < 2.4:
+        #         return 0
+        #     if x < 2.5:
+        #         return (x - 2.4) * 10
+        #     return min(np.exp(2 * x - 5), 10)
+
+        # for p in range(world.dim_p):
+        #     x = abs(agent.state.p_pos[p])
+        #     rew -= bound(x)
+
+        # return rew
+        # 修改为动态边界（假设边界为 world.world_size 的 96% 开始衰减）
+        # 边界惩罚的新定义
         def bound(x):
-            if x < 2.4:
+            boundary_start = world.world_size * 0.96 
+            full_boundary = world.world_size
+            if x < boundary_start:
                 return 0
-            if x < 2.5:
-                return (x - 2.4) * 10
-            return min(np.exp(2 * x - 5), 10)
-
-        for p in range(world.dim_p):
-            x = abs(agent.state.p_pos[p])
-            rew -= bound(x)
-
+            if x < full_boundary:
+                return (x - boundary_start) * 10
+            return min(np.exp(2 * x - 5 * full_boundary), 10)
+        
+        # ==== 必须添加实际边界计算 ====
+        for p in range(world.dim_p):  # 遍历每个坐标轴 (x, y)
+            x = abs(agent.state.p_pos[p])  # 获取坐标绝对值
+            rew -= bound(x)  # 应用边界惩罚函数
+            
         return rew
 
     # 围捕者reward设置
