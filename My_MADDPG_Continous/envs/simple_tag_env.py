@@ -62,6 +62,7 @@ class Custom_raw_env(SimpleEnv, EzPickle):
         self.game_font = pygame.font.SysFont('arial', 16)  # 使用系统字体
 
         self.max_force = 1.0  # 最大力
+        self.capture_threshold = self.world_size * 0.2 # 围捕阈值: 使用世界大小的20%作为默认捕获范围
         # 重载continuous_actions空间
         # set spaces
         self.action_spaces = dict()
@@ -294,7 +295,7 @@ class Custom_raw_env(SimpleEnv, EzPickle):
 
             self.steps += 1
 
-            self.check_capture_condition(threshold=0.5)  #围捕标志——半径
+            self.check_capture_condition(threshold=self.capture_threshold)  #围捕标志——半径
 
             # 如果达到最大步数，标记 truncation 为 True
             if self.steps >= self.max_cycles:
@@ -347,7 +348,14 @@ class Custom_raw_env(SimpleEnv, EzPickle):
         scaling_factor = 0.7 * self.original_cam_range / cam_range
         # 绘制坐标轴
         self.draw_grid_and_axes()
-
+        # 在逃跑者位置绘制capture_threshold 圆圈
+        for agent in self.scenario.good_agents(self.world):
+            x, y = agent.state.p_pos
+            y *= -1
+            threshold_pixels = int(self.capture_threshold * 140 * scaling_factor)  # 与实体渲染同步缩放
+            pygame.draw.circle(self.screen, (0,200,0,100), 
+                              (int(x),int(y)), threshold_pixels, 2)
+        
         # 绘制轨迹
         for agent in self.world.agents:
             if len(self.history_positions[agent.name]) >= 2:
