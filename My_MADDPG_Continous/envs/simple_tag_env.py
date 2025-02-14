@@ -653,7 +653,9 @@ class Scenario(BaseScenario):
         entity_pos = []
         for entity in world.landmarks:
             if not entity.boundary:  # default: False ,要执行的代码块
-                entity_pos.append(entity.state.p_pos - agent.state.p_pos)  #表示地标相对于智能体的位置。这样返回的每个地标位置将是一个 2D 向量，表示该地标与智能体之间的相对位置。
+                # 归一化相对位置
+                relative_entity_pos = (entity.state.p_pos - agent.state.p_pos) / world.world_size
+                entity_pos.append(relative_entity_pos)  #表示地标相对于智能体的位置。这样返回的每个地标位置将是一个 2D 向量，表示该地标与智能体之间的相对位置。
         # communication of all other agents
         comm = [] # default: self.c = None
         other_pos = [] # 其他智能体（包扩逃跑者）相对于智能体的位置——相对位置
@@ -661,10 +663,14 @@ class Scenario(BaseScenario):
         for other in world.agents:
             if other is agent:
                 continue
-            comm.append(other.state.c)  # default: self.c = None
-            other_pos.append(other.state.p_pos - agent.state.p_pos) 
+            comm.append(other.state.c / world.world_size)  # default: self.c = None
+            # 归一化相对位置
+            relative_pos = (other.state.p_pos - agent.state.p_pos) / world.world_size
+            other_pos.append(relative_pos)
             if not other.adversary:  # adversary，追逐者的值是True，逃跑者的值是False
-                other_vel.append(other.state.p_vel)
+                # 归一化速度
+                norm_vel = other.state.p_vel / other.max_speed
+                other_vel.append(norm_vel)
         return np.concatenate(
             [agent.state.p_vel]
             + [agent.state.p_pos]
