@@ -14,8 +14,8 @@ def main_parameters():
     parser.add_argument('--gamma', type=float, default=0.7, help='discount factor')
     parser.add_argument('--buffer_capacity', type=int, default=int(1e6), help='capacity of replay buffer')
     parser.add_argument('--batch_size', type=int, default=64, help='batch-size of replay buffer')  # 1024
-    parser.add_argument('--actor_lr', type=float, default=0.0001, help='learning rate of actor') # .00002
-    parser.add_argument('--critic_lr', type=float, default=0.003, help='learning rate of critic') # .002
+    parser.add_argument('--actor_lr', type=float, default=0.00002, help='learning rate of actor') # .00002
+    parser.add_argument('--critic_lr', type=float, default=0.002, help='learning rate of critic') # .002
     # The parameters for the communication network
     # TODO
     parser.add_argument('--visdom', type=bool, default=True, help="Open the visdom")
