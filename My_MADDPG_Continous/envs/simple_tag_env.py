@@ -129,7 +129,7 @@ class Custom_raw_env(SimpleEnv, EzPickle):
             print(f"_execute_world_step : mdim:{mdim}")
             if agent.movable: # default: True
                 if self.continuous_actions:
-                    scenario_action.append(action[0:mdim])  # phisical action
+                    scenario_action.append(action[0:mdim])  # phisical action  mdim: 2  ,此处的Scenario_action是二维列表了.[action[0:2], acrionp[2:]],[[物理动作]，[通信动作]]
                     action = action[mdim:] # communication action
                 else:
                     scenario_action.append(action % mdim)
@@ -210,8 +210,9 @@ class Custom_raw_env(SimpleEnv, EzPickle):
             if self.continuous_actions:
                 # Process continuous action as in OpenAI MPE
                 # Note: this ordering preserves the same movement direction as in the discrete case
-                agent.action.u[0] = action[0] # Force in x direction
-                agent.action.u[1] = action[1]  # Force in y direction
+                # print("_set_action: action",action)
+                agent.action.u[0] = action[0][0] # Force in x direction
+                agent.action.u[1] = action[0][1]  # Force in y direction
             else:
                 # process discrete action
                 if action[0] == 1:
