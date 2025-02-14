@@ -638,10 +638,10 @@ class Scenario(BaseScenario):
                 for agent in agents:# 逃跑者目前只有一个
                     dist = np.sqrt(np.sum(np.square(agent.state.p_pos - adv.state.p_pos)))
                     collision = 1 if self.is_collision(agent, adv) else 0  
-                    rew += 10 * collision - dist * 0.1  # 削减距离负奖励
-            for agent in agents:
+                    rew += 10 * collision - dist / world.world_size  # 增大碰撞，归一化距离计算奖励
+            for agent in agents:  # 逃跑者
                 speed_agent = np.sqrt(np.sum(np.square(agent.state.p_vel)))
-                rew -= speed_agent
+                rew -= 0.5 * speed_agent / agent.max_speed  # 逃跑者速度惩罚归一化
         return rew
 
     def observation(self, agent, world):  # 返回值，自动适配智能体的观测空间维数
