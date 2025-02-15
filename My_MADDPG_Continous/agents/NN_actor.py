@@ -43,9 +43,19 @@ class MLPNetworkActor(nn.Module):
         action = k * torch.tanh(x) + bias
         return action, logi
 
-    def save_checkpoint(self):
-        os.makedirs(os.path.dirname(self.chkpt_file), exist_ok=True)
-        torch.save(self.state_dict(), self.chkpt_file)
+    def save_checkpoint(self, is_target=False):
+        
+        if is_target:
+            target_chkpt_name = self.chkpt_file.replace('actor', 'target_actor')
+            os.makedirs(os.path.dirname(target_chkpt_name), exist_ok=True)
+            torch.save(self.state_dict(), target_chkpt_name)
+        else:
+            os.makedirs(os.path.dirname(self.chkpt_file), exist_ok=True)
+            torch.save(self.state_dict(), self.chkpt_file)
 
-    def load_checkpoint(self, device = 'cpu'):
-        self.load_state_dict(torch.load(self.chkpt_file, map_location=torch.device(device)))
+    def load_checkpoint(self, device = 'cpu', is_target = False): # 默认加载target
+        if is_target:
+            target_chkpt_name = self.chkpt_file.replace('actor', 'target_actor')
+            self.load_state_dict(torch.load(target_chkpt_name, map_location=torch.device(device)))
+        else:
+            self.load_state_dict(torch.load(self.chkpt_file, map_location=torch.device(device)))

@@ -17,6 +17,12 @@ class DDPG():
         self.actor_optimizer = Adam(self.actor.parameters(), lr = actor_lr)
         self.critic_optimizer = Adam(self.critic.parameters(), lr = critic_lr)
         # 创建相对于的target网络
+        """
+        使用 deepcopy 创建 target 网络是一个更好的选择，原因如下：
+        初始化一致性：
+            - deepcopy 确保 target 网络和原网络完全相同的初始参数
+            - 重新创建网络可能因为随机初始化导致参数不一致
+        """
         self.target_actor = deepcopy(self.actor)
         self.target_critic = deepcopy(self.critic)
 

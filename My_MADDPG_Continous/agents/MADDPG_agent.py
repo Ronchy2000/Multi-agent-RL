@@ -110,10 +110,10 @@ class MADDPG():
     
     def save_model(self):
         for agent_id in self.dim_info.keys():
-            self.agents[agent_id].actor.save_checkpoint()
-            self.agents[agent_id].target_actor.save_checkpoint()
-            self.agents[agent_id].critic.save_checkpoint()
-            self.agents[agent_id].target_critic.save_checkpoint()
+            self.agents[agent_id].actor.save_checkpoint(is_target = False)
+            self.agents[agent_id].target_actor.save_checkpoint(is_target = True)
+            self.agents[agent_id].critic.save_checkpoint(is_target = False)
+            self.agents[agent_id].target_critic.save_checkpoint(is_target = True)
 
         agent_id = list(self.dim_info.keys())[0]  # 获取第一个代理的 ID
         agent = self.agents[agent_id]
@@ -124,10 +124,10 @@ class MADDPG():
 
     def load_model(self):
         for agent_id in self.dim_info.keys():
-            self.agents[agent_id].actor.load_checkpoint(device = self.device)
-            self.agents[agent_id].target_actor.load_checkpoint(device = self.device)
-            self.agents[agent_id].critic.load_checkpoint(device = self.device)
-            self.agents[agent_id].target_critic.load_checkpoint(device = self.device)
+            self.agents[agent_id].actor.load_checkpoint(device = self.device, is_target = False)
+            self.agents[agent_id].target_actor.load_checkpoint(device = self.device, is_target = True)
+            self.agents[agent_id].critic.load_checkpoint(device = self.device, is_target = False)
+            self.agents[agent_id].target_critic.load_checkpoint(device = self.device, is_target = True)
 
         agent_id = list(self.dim_info.keys())[0]  # 获取第一个代理的 ID
         agent = self.agents[agent_id]
