@@ -7,10 +7,8 @@ from datetime import datetime
 class MLPNetworkActor(nn.Module):
     def __init__(self,chkpt_name,  chkpt_dir, in_dim, out_dim, action_bound, hidden_dim = 64, non_linear = nn.ReLU()):
         super(MLPNetworkActor, self).__init__()
-        # 创建带时间戳到文件夹
-        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M')
-        save_dir = os.path.join(chkpt_dir, timestamp)
-        self.chkpt_file = os.path.join(save_dir, chkpt_name)
+        self.chkpt_dir = chkpt_dir
+        self.chkpt_name = chkpt_name
 
         # different ,为什么要保持这两个信息？
         self.out_dim = out_dim
@@ -43,8 +41,18 @@ class MLPNetworkActor(nn.Module):
         action = k * torch.tanh(x) + bias
         return action, logi
 
-    def save_checkpoint(self, is_target=False):
-        
+    def save_checkpoint(self, is_target=False, timestamp = False):
+        # 使用时间戳保存功能
+        if timestamp is True:
+             # 使用时间戳创建新文件夹
+             current_timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M')
+             save_dir = os.path.join(self.chkpt_dir, current_timestamp)
+        else:
+            # 直接保存在主目录下，不使用时间戳
+            save_dir = self.chkpt_dir
+        # 创建保存路径
+        self.chkpt_file = os.path.join(save_dir, self.chkpt_name)
+
         if is_target:
             target_chkpt_name = self.chkpt_file.replace('actor', 'target_actor')
             os.makedirs(os.path.dirname(target_chkpt_name), exist_ok=True)
@@ -53,9 +61,18 @@ class MLPNetworkActor(nn.Module):
             os.makedirs(os.path.dirname(self.chkpt_file), exist_ok=True)
             torch.save(self.state_dict(), self.chkpt_file)
 
-    def load_checkpoint(self, device = 'cpu', is_target = False): # 默认加载target
+    def load_checkpoint(self, device = 'cpu', is_target = False, timestamp = None): # 默认加载target
+        if timestamp and isinstance(timestamp, str):
+            # 如果提供了有效的时间戳字符串，从对应文件夹加载
+            load_dir = os.path.join(self.chkpt_dir, timestamp)
+        else:
+            # 否则从主目录加载
+            load_dir = self.chkpt_dir
+
+        self.chkpt_file = os.path.join(load_dir, self.chkpt_name)
+
         if is_target:
-            target_chkpt_name = self.chkpt_file.replace('actor', 'target_actor')
-            self.load_state_dict(torch.load(target_chkpt_name, map_location=torch.device(device)))
+                target_chkpt_name = self.chkpt_file.replace('actor', 'target_actor')
+                self.load_state_dict(torch.load(target_chkpt_name, map_location=torch.device(device)))
         else:
             self.load_state_dict(torch.load(self.chkpt_file, map_location=torch.device(device)))

@@ -11,10 +11,8 @@ self.target_critic = CriticNetwork(*, *,
 class MLPNetworkCritic(nn.Module):
     def __init__(self, chkpt_name,  chkpt_dir, in_dim, out_dim, hidden_dim = 64, non_linear = nn.ReLU()):
         super(MLPNetworkCritic, self).__init__()
-        # 创建时间戳文件夹
-        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M')
-        save_dir = os.path.join(chkpt_dir, timestamp)
-        self.chkpt_file = os.path.join(save_dir, chkpt_name)
+        self.chkpt_dir = chkpt_dir
+        self.chkpt_name = chkpt_name
 
         self.net = nn.Sequential(
             nn.Linear(in_dim, hidden_dim),
@@ -35,18 +33,37 @@ class MLPNetworkCritic(nn.Module):
     def forward(self, x):
         return self.net(x)
     
-    def save_checkpoint(self, is_target = False):
+    def save_checkpoint(self, is_target = False, timestamp = False):
+        if timestamp is True:
+            # 使用时间戳创建新文件夹
+            current_timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M')
+            save_dir = os.path.join(self.chkpt_dir, current_timestamp)
+        else:
+            # 直接保存在主目录下
+            save_dir = self.chkpt_dir
+        
+        self.chkpt_file = os.path.join(save_dir, self.chkpt_name)
+
         if is_target:
-            target_chkpt_name = self.chkpt_file.replace('actor', 'target_actor')
+            target_chkpt_name = self.chkpt_file.replace('critic', 'target_critic')
             os.makedirs(os.path.dirname(target_chkpt_name), exist_ok=True)
             torch.save(self.state_dict(), target_chkpt_name)
         else:
             os.makedirs(os.path.dirname(self.chkpt_file), exist_ok=True)
             torch.save(self.state_dict(), self.chkpt_file)
 
-    def load_checkpoint(self, device = 'cpu', is_target = False):
+    def load_checkpoint(self, device = 'cpu', is_target = False, timestamp = None):
+        if timestamp and isinstance(timestamp, str):
+            # 如果提供了有效的时间戳字符串，从对应文件夹加载
+            load_dir = os.path.join(self.chkpt_dir, timestamp)
+        else:
+            # 否则从主目录加载
+            load_dir = self.chkpt_dir
+        
+        self.chkpt_file = os.path.join(load_dir, self.chkpt_name)
+
         if is_target:
-            target_chkpt_name = self.chkpt_file.replace('actor', 'target_actor')
+            target_chkpt_name = self.chkpt_file.replace('critic', 'target_critic')
             self.load_state_dict(torch.load(target_chkpt_name, map_location=torch.device(device)))
         else:
             self.load_state_dict(torch.load(self.chkpt_file, map_location=torch.device(device)))
