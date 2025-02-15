@@ -3,6 +3,7 @@ import visdom
 import csv
 import os
 import threading
+from datetime import datetime
 
 class RUNNER:
     def __init__(self, agent, env, par, device, mode = 'evaluate'):
@@ -190,7 +191,11 @@ class RUNNER:
         return sma_rewards
     
     """保存围捕者平均奖励和所有智能体总奖励到 CSV 文件"""
-    def save_rewards_to_csv(self, adversary_rewards, sum_rewards, filename="data_rewards.csv"):
+    def save_rewards_to_csv(self, adversary_rewards, sum_rewards, filename="None"): # filename="data_rewards.csv"
+        # 获取当前时间戳
+        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M')
+        if filename is None:
+            filename = f"data_rewards_{timestamp}.csv"
         # 获取 runner.py 所在目录，并生成与 utils 同级的 plot 目录路径
         current_dir = os.path.dirname(os.path.abspath(__file__))  # 获取当前文件（runner.py）的绝对路径
         plot_dir = os.path.join(current_dir, '..', 'plot', 'data')  # 获取与 utils 同级的 plot 文件夹
