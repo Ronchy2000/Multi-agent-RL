@@ -329,6 +329,24 @@ class Custom_raw_env(SimpleEnv, EzPickle):
 
         self.enable_render(self.render_mode)
 
+        # 添加事件处理, 解决windows渲染报错
+        """
+        Mac 上不需要特别处理事件是因为 macOS 的窗口管理系统和事件处理机制与 Windows 不同。Mac 系统有更好的窗口管理机制，即使不处理事件队列也不会导致程序无响应。
+         这样的设计可以：
+                1. 在 Windows 上避免无响应
+                2. 在 Mac 上也能正常工作
+                3. 提供更好的用户体验（比如正确响应窗口关闭按钮）
+                所以建议保留这段事件处理代码，这样你的程序在任何平台上都能正常工作。
+        """
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                return
+            if event.type == pygame.WINDOWCLOSE:
+                pygame.quit()
+                return
+        pygame.event.pump()  # 确保事件系统正常运行
+        #--------
         self.draw()
         if self.render_mode == "rgb_array":
             observation = np.array(pygame.surfarray.pixels3d(self.screen))
