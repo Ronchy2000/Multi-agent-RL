@@ -10,7 +10,7 @@ class MLPNetworkActor(nn.Module):
         # 创建带时间戳到文件夹
         timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M')
         save_dir = os.path.join(chkpt_dir, timestamp)
-        self.chkpt_file = os.path.join(chkpt_dir, chkpt_name)
+        self.chkpt_file = os.path.join(save_dir, chkpt_name)
 
         # different ,为什么要保持这两个信息？
         self.out_dim = out_dim

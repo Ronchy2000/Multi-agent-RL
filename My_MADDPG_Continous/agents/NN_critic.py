@@ -14,7 +14,7 @@ class MLPNetworkCritic(nn.Module):
         # 创建时间戳文件夹
         timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M')
         save_dir = os.path.join(chkpt_dir, timestamp)
-        self.chkpt_file = os.path.join(chkpt_dir, chkpt_name)
+        self.chkpt_file = os.path.join(save_dir, chkpt_name)
 
         self.net = nn.Sequential(
             nn.Linear(in_dim, hidden_dim),
