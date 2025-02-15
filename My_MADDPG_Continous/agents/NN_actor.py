@@ -2,12 +2,14 @@ import torch
 import torch.nn as nn
 import torch.functional as F
 import os
-
+from datetime import datetime
 
 class MLPNetworkActor(nn.Module):
     def __init__(self,chkpt_name,  chkpt_dir, in_dim, out_dim, action_bound, hidden_dim = 64, non_linear = nn.ReLU()):
         super(MLPNetworkActor, self).__init__()
-
+        # 创建带时间戳到文件夹
+        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M')
+        save_dir = os.path.join(chkpt_dir, timestamp)
         self.chkpt_file = os.path.join(chkpt_dir, chkpt_name)
 
         # different ,为什么要保持这两个信息？

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.functional as F
 import os
-
+from datetime import datetime
 """
 self.target_critic = CriticNetwork(*, *, 
                                 chkpt_dir=chkpt_dir,
@@ -11,7 +11,9 @@ self.target_critic = CriticNetwork(*, *,
 class MLPNetworkCritic(nn.Module):
     def __init__(self, chkpt_name,  chkpt_dir, in_dim, out_dim, hidden_dim = 64, non_linear = nn.ReLU()):
         super(MLPNetworkCritic, self).__init__()
-
+        # 创建时间戳文件夹
+        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M')
+        save_dir = os.path.join(chkpt_dir, timestamp)
         self.chkpt_file = os.path.join(chkpt_dir, chkpt_name)
 
         self.net = nn.Sequential(
