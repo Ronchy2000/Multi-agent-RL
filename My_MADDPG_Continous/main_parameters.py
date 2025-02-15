@@ -18,7 +18,7 @@ def main_parameters():
     parser.add_argument('--critic_lr', type=float, default=0.002, help='learning rate of critic') # .002
     # The parameters for the communication network
     # TODO
-    parser.add_argument('--visdom', type=bool, default=True, help="Open the visdom")
+    parser.add_argument('--visdom', type=bool, default=False, help="Open the visdom")
     parser.add_argument('--size_win', type=int, default=200, help="Open the visdom") # 1000
 
 

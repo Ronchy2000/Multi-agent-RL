@@ -108,9 +108,9 @@ class RUNNER:
             for agent_id, r in agent_reward.items():
                 if agent_id.startswith('adversary_'):        
                     adversary_rewards_list.append(r)
+            # 计算围捕者的平均奖励
+            avg_adversary_reward  =  np.mean(adversary_rewards_list)
             if self.par.visdom:
-                # 计算围捕者的平均奖励
-                avg_adversary_reward  =  np.mean(adversary_rewards_list)
                 self.viz.line(X=[episode + 1], Y=[avg_adversary_reward], win='adversary average reward',
                          opts={'title': 'Average reward of adversaries'},
                          update='append')
