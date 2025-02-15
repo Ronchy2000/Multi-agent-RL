@@ -352,10 +352,18 @@ class Custom_raw_env(SimpleEnv, EzPickle):
         for agent in self.scenario.good_agents(self.world):
             x, y = agent.state.p_pos
             y *= -1
-            threshold_pixels = int(self.capture_threshold * 140 * scaling_factor)  # 与实体渲染同步缩放
-            pygame.draw.circle(self.screen, (0,200,0,100), 
-                              (int(x),int(y)), threshold_pixels, 2)
-        
+            # 使用与实体相同的坐标转换逻辑
+            x = (x / cam_range) * self.width // 2 * 0.9
+            y = (y / cam_range) * self.height // 2 * 0.9
+            x += self.width // 2
+            y += self.height // 2
+            
+            # 创建透明surface来绘制捕获圈
+            circle_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+            threshold_pixels = int(self.capture_threshold / cam_range * self.width // 2 * 0.9)  # 与实体渲染使用相同的缩放逻辑
+            pygame.draw.circle(circle_surface, (0, 200, 0, 50), (int(x), int(y)), threshold_pixels, 2)  # 最后一个参数2是线宽
+            self.screen.blit(circle_surface, (0, 0))
+    
         # 绘制轨迹
         for agent in self.world.agents:
             if len(self.history_positions[agent.name]) >= 2:
