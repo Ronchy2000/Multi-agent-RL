@@ -110,10 +110,10 @@ class MADDPG():
     
     def save_model(self):
         for agent_id in self.dim_info.keys():
-            self.agents[agent_id].actor.save_checkpoint(is_target = False)
-            self.agents[agent_id].target_actor.save_checkpoint(is_target = True)
-            self.agents[agent_id].critic.save_checkpoint(is_target = False)
-            self.agents[agent_id].target_critic.save_checkpoint(is_target = True)
+            self.agents[agent_id].actor.save_checkpoint(is_target = False, timestamp = True)
+            self.agents[agent_id].target_actor.save_checkpoint(is_target = True, timestamp = True)
+            self.agents[agent_id].critic.save_checkpoint(is_target = False, timestamp = True)
+            self.agents[agent_id].target_critic.save_checkpoint(is_target = True, timestamp = True)
 
         agent_id = list(self.dim_info.keys())[0]  # 获取第一个代理的 ID
         agent = self.agents[agent_id]
