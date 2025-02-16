@@ -191,7 +191,7 @@ class RUNNER:
         return sma_rewards
     
     """保存围捕者平均奖励和所有智能体总奖励到 CSV 文件"""
-    def save_rewards_to_csv(self, adversary_rewards, sum_rewards, filename="None"): # filename="data_rewards.csv"
+    def save_rewards_to_csv(self, adversary_rewards, sum_rewards, filename = None): # filename="data_rewards.csv"
         # 获取当前时间戳
         timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M')
         if filename is None:
