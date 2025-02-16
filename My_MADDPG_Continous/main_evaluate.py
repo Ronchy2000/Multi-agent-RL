@@ -38,6 +38,8 @@ if __name__ == '__main__':
     print("Using device:",device)
     # 模型存储路径
     chkpt_dir='models/maddpg_models/'
+    load_timestamp = "2025-02-16_18-41"
+    model_timestamp = None if load_timestamp == '' else load_timestamp
     # 定义参数
     args = main_parameters()
     args.render_mode = "human"
@@ -47,7 +49,7 @@ if __name__ == '__main__':
     env, dim_info, action_bound = get_env(args.env_name, args.episode_length, args.render_mode)
     # print(env, dim_info, action_bound)
     # 创建MA-DDPG智能体 dim_info: 字典，键为智能体名字 内容为二维数组 分别表示观测维度和动作维度 是观测不是状态 需要注意
-    agent = MADDPG(dim_info, args.buffer_capacity, args.batch_size, args.actor_lr, args.critic_lr, action_bound, _chkpt_dir = chkpt_dir)
+    agent = MADDPG(dim_info, args.buffer_capacity, args.batch_size, args.actor_lr, args.critic_lr, action_bound, _chkpt_dir = chkpt_dir, _model_timestamp = model_timestamp)
     print("--- Loading models ---")
     agent.load_model()
     print('---- Evaluating ----')

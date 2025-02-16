@@ -10,9 +10,9 @@ class MADDPG():
     # device = 'cpu'
     # device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    def __init__(self, dim_info, capacity, batch_size, actor_lr, critic_lr, action_bound, _chkpt_dir, _device = 'cpu'):
+    def __init__(self, dim_info, capacity, batch_size, actor_lr, critic_lr, action_bound, _chkpt_dir, _device = 'cpu', _model_timestamp = None):
         self.device = _device
-
+        self.model_timestamp = _model_timestamp
         # 状态（全局观测）与所有智能体动作维度的和 即critic网络的输入维度  dim_info =  [obs_dim, act_dim]
         global_obs_act_dim = sum(sum(val) for val in dim_info.values())
         # 创建智能体与buffer，每个智能体有自己的buffer, actor, critic
@@ -124,10 +124,10 @@ class MADDPG():
 
     def load_model(self):
         for agent_id in self.dim_info.keys():
-            self.agents[agent_id].actor.load_checkpoint(device = self.device, is_target = False)
-            self.agents[agent_id].target_actor.load_checkpoint(device = self.device, is_target = True)
-            self.agents[agent_id].critic.load_checkpoint(device = self.device, is_target = False)
-            self.agents[agent_id].target_critic.load_checkpoint(device = self.device, is_target = True)
+            self.agents[agent_id].actor.load_checkpoint(device = self.device, is_target = False, timestamp = self.model_timestamp)
+            self.agents[agent_id].target_actor.load_checkpoint(device = self.device, is_target = True, timestamp = self.model_timestamp)
+            self.agents[agent_id].critic.load_checkpoint(device = self.device, is_target = False, timestamp = self.model_timestamp)
+            self.agents[agent_id].target_critic.load_checkpoint(device = self.device, is_target = True, timestamp = self.model_timestamp)
 
         agent_id = list(self.dim_info.keys())[0]  # 获取第一个代理的 ID
         agent = self.agents[agent_id]
