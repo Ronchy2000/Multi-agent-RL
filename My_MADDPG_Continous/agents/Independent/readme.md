@@ -19,3 +19,9 @@
 缺点：
 - 忽略智能体间的交互
 - 难以学习协作行为
+
+
+| 2025.2.18 updated.
+<br>
+1. reward独立.
+2. 智能体独自决策，没有信息共享。  action = actor(obs);   Q = critic(obs, action). （应该没错）
