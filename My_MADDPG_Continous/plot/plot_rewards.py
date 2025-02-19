@@ -80,7 +80,7 @@ def set_font_for_plot():
     if system_platform == "Darwin":  # MacOS
         font = 'Arial Unicode MS'
     elif system_platform == "Windows":  # Windows
-        font = 'Arial'
+        font = 'SimHei'
     else:  # Linux
         font = 'DejaVu Sans'
     
