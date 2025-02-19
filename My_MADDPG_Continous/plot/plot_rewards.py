@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import os
 from datetime import datetime
 import numpy as np
+import platform
 '''
 注意：
 作者用pands==2.2.3出错了。
@@ -72,11 +73,28 @@ def exponential_moving_average(data, alpha=0.1):
 #     # 显示图形
 #     plt.show()
 
+def set_font_for_plot():
+    """根据平台动态设置字体"""
+    system_platform = platform.system()
+    print("system_platform:", system_platform)
+    if system_platform == "Darwin":  # MacOS
+        font = 'Arial Unicode MS'
+    elif system_platform == "Windows":  # Windows
+        font = 'Arial'
+    else:  # Linux
+        font = 'DejaVu Sans'
+    
+    # 设置matplotlib的字体
+    plt.rcParams['font.sans-serif'] = [font]
+    plt.rcParams['axes.unicode_minus'] = False  # 正常显示负号
+
 def different_plot_rewards(csv_file, window_size=50, alpha=0.1):
     df = pd.read_csv(csv_file)
-    plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
-    plt.rcParams['axes.unicode_minus'] = False
-    
+
+    # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
+    # plt.rcParams['axes.unicode_minus'] = False
+    set_font_for_plot()  # 设置字体
+
     # 计算平滑后的数据
     adv_ma = moving_average(df['Adversary Average Reward'].values, window_size)
     adv_ema = exponential_moving_average(df['Adversary Average Reward'].values, alpha)
