@@ -2,11 +2,12 @@ import argparse
 
 def main_parameters():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--env_name", type =str, default = "simple_tag_v3", help = "name of the env",
-                        choices=['simple_adversary_v3', 'simple_spread_v3', 'simple_tag_v3'])
+    ############################################ 选择环境 ############################################
+    parser.add_argument("--env_name", type =str, default = "simple_tag_v3", help = "name of the env",   
+                        choices=['simple_adversary_v3', 'simple_spread_v3', 'simple_tag_v3', 'simple_tag_env']) 
     parser.add_argument("--render_mode", type=str, default = "None", help = "None | human | rgb_array")
-    parser.add_argument("--episode_num", type = int, default = 10000) # 5000
-    parser.add_argument("--episode_length", type = int, default = 100) #50
+    parser.add_argument("--episode_num", type = int, default = 1000) # 5000
+    parser.add_argument("--episode_length", type = int, default = 50) #50
     parser.add_argument('--learn_interval', type=int, default=50,
                         help='steps interval between learning time')
     parser.add_argument('--random_steps', type=int, default=500, help='random steps before the agent start to learn') #  2e3
