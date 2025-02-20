@@ -1,5 +1,5 @@
 # This is Ronchy's MADDPG project.
-
+| This repo is no longer actively maintained, but feel free to use it - it should still work!
 
 ## How to use? 
 1. Run `setupPettingzoo.py` to install neccesary packages.
