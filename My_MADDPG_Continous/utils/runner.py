@@ -221,13 +221,14 @@ class RUNNER:
         # if self.par.visdom:
         #     viz = visdom.Visdom()
         #     viz.close()
-        step = 0
+        # step = 0
         # 记录每个episode的和奖励 用于平滑，显示平滑奖励函数
         self.reward_sum_record = []
         # 记录每个智能体在每个episode的奖励
         self.episode_rewards = {agent_id: np.zeros(self.par.episode_num) for agent_id in self.env.agents}
         # episode循环
         for episode in range(self.par.episode_num):
+            step = 0  # 每回合step重置
             print(f"评估第 {episode + 1} 回合")
             # 初始化环境 返回初始状态 为一个字典 键为智能体名字 即env.agents中的内容，内容为对应智能体的状态
             obs, _ = self.env.reset()  # 重置环境，开始新回合
