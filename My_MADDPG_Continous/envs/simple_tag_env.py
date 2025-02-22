@@ -676,6 +676,21 @@ class Scenario(BaseScenario):
             for agent in agents:  # 逃跑者
                 speed_agent = np.sqrt(np.sum(np.square(agent.state.p_vel)))
                 rew -= 0.5 * speed_agent / agent.max_speed  # 逃跑者速度惩罚归一化
+
+        def bound(x):
+            boundary_start = world.world_size * 0.96 
+            full_boundary = world.world_size
+            if x < boundary_start:
+                return 0
+            if x < full_boundary:
+                return (x - boundary_start) * 10
+            return min(np.exp(2 * x - 2 * full_boundary), 10)
+        
+        # ==== 必须添加实际边界计算 ====
+        for p in range(world.dim_p):  # 遍历每个坐标轴 (x, y)
+            x = abs(agent.state.p_pos[p])  # 获取坐标绝对值
+            rew -= bound(x)  # 应用边界惩罚函数
+            
         return rew
 
     def observation(self, agent, world):  # 返回值，自动适配智能体的观测空间维数
