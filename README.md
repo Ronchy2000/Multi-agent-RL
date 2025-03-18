@@ -1,5 +1,5 @@
 # 强化学习与多智能体强化学习项目集
-[English](./README.md) | 中文文档
+[English](./README_en.md) | 中文文档
 
 ![项目总状态](https://img.shields.io/badge/状态-维护模式-blue) ![Python](https://img.shields.io/badge/Python-3.12%2B-blue) ![强化学习](https://img.shields.io/badge/强化学习-基础到高级-orange) ![多智能体](https://img.shields.io/badge/多智能体-MADDPG实现-success)
 
