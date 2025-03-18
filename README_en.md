@@ -1,19 +1,19 @@
 # Reinforcement Learning and Multi-Agent Reinforcement Learning Projects
 
-English | [中文文档](./README.md)
+🇺🇸 English | [🇨🇳 中文文档](./README.md)
 
-![Project Status](https://img.shields.io/badge/status-maintenance-blue) ![Python](https://img.shields.io/badge/Python-3.12%2B-blue) ![RL](https://img.shields.io/badge/RL-basic%20to%20advanced-orange) ![MARL](https://img.shields.io/badge/MARL-MADDPG%20implemented-success)
+![Project Status](https://img.shields.io/badge/status-maintenance-blue) ![Python](https://img.shields.io/badge/Python-3.11.8%2B-blue) ![RL](https://img.shields.io/badge/RL-basic%20to%20advanced-orange) ![MARL](https://img.shields.io/badge/MARL-MADDPG%20implemented-success)
 
 This repository contains multiple projects related to Reinforcement Learning (RL) and Multi-Agent Reinforcement Learning (MARL), including both reproductions of classic algorithms and personal research implementations. Through these projects, I aim to build a complete learning path from basic reinforcement learning to multi-agent reinforcement learning.
 
-| Project | Status | Completion | Tech Stack |
-|------|------|--------|--------|
-| [RL_Learning-main](./RL_Learning-main/) | ![Status](https://img.shields.io/badge/status-completed-success) | ![Completion](https://img.shields.io/badge/completion-90%25-green) | ![Tech](https://img.shields.io/badge/tech-basic%20RL%20algorithms-blue) |
-| [My_MADDPG_Continous](./My_MADDPG_Continous/) | ![Status](https://img.shields.io/badge/status-completed-success) | ![Completion](https://img.shields.io/badge/completion-100%25-brightgreen) | ![Tech](https://img.shields.io/badge/tech-continuous%20MADDPG-blue) |
-| [My_MPE](./My_MPE/) | ![Status](https://img.shields.io/badge/status-completed-success) | ![Completion](https://img.shields.io/badge/completion-100%25-brightgreen) | ![Tech](https://img.shields.io/badge/tech-discrete%20MADDPG-blue) |
-| [RL-basic-algorithm](./RL-basic-algorithm/) | ![Status](https://img.shields.io/badge/status-paused-orange) | ![Completion](https://img.shields.io/badge/completion-40%25-yellow) | ![Tech](https://img.shields.io/badge/tech-Q--learning%2FDQN%2FPPO-blue) |
-| [动手学强化学习](./动手学强化学习/) | ![Status](https://img.shields.io/badge/status-reference-informational) | ![Completion](https://img.shields.io/badge/completion-100%25-brightgreen) | ![Tech](https://img.shields.io/badge/tech-DQN%20to%20DDPG-blue) |
-| [pytorch-DRL-master](./pytorch-DRL-master/) | ![Status](https://img.shields.io/badge/status-reference-informational) | ![Completion](https://img.shields.io/badge/completion-100%25-brightgreen) | ![Tech](https://img.shields.io/badge/tech-PyTorch%2FDRL-blue) |
+| Project | Status | Completion | Tech Stack | Documentation |
+|------|------|--------|--------|----------|
+| [RL_Learning-main](./RL_Learning-main/) | ![Status](https://img.shields.io/badge/status-completed-success) | ![Completion](https://img.shields.io/badge/completion-90%25-green) | ![Tech](https://img.shields.io/badge/tech-basic%20RL%20algorithms-blue) | [Implemented Algorithms](./RL_Learning-main/README.md#implemented-algorithms) |
+| [My_MADDPG_Continous](./My_MADDPG_Continous/) | ![Status](https://img.shields.io/badge/status-completed-success) | ![Completion](https://img.shields.io/badge/completion-100%25-brightgreen) | ![Tech](https://img.shields.io/badge/tech-continuous%20MADDPG-blue) | [README](./My_MADDPG_Continous/README.md) |
+| [My_MPE](./My_MPE/) | ![Status](https://img.shields.io/badge/status-completed-success) | ![Completion](https://img.shields.io/badge/completion-100%25-brightgreen) | ![Tech](https://img.shields.io/badge/tech-discrete%20MADDPG-blue) | [README](./My_MPE/README.md) |
+| [RL-basic-algorithm](./RL-basic-algorithm/) | ![Status](https://img.shields.io/badge/status-paused-orange) | ![Completion](https://img.shields.io/badge/completion-40%25-yellow) | ![Tech](https://img.shields.io/badge/tech-Q--learning%2FDQN%2FPPO-blue) | [README](./RL-basic-algorithm/README.md) |
+| [动手学强化学习](./动手学强化学习/) | ![Status](https://img.shields.io/badge/status-reference-informational) | ![Completion](https://img.shields.io/badge/completion-100%25-brightgreen) | ![Tech](https://img.shields.io/badge/tech-DQN%20to%20DDPG-blue) | [README](./动手学强化学习/README.md) |
+| [pytorch-DRL-master](./pytorch-DRL-master/) | ![Status](https://img.shields.io/badge/status-reference-informational) | ![Completion](https://img.shields.io/badge/completion-100%25-brightgreen) | ![Tech](https://img.shields.io/badge/tech-PyTorch%2FDRL-blue) | [README](./pytorch-DRL-master/README.md) |
 
 ## Learning Path and Project Connections
 

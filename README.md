@@ -1,18 +1,18 @@
 # 强化学习与多智能体强化学习项目集
-[English](./README_en.md) | 中文文档
+[ 🇺🇸 English](./README_en.md) | 🇨🇳 中文文档
 
-![项目总状态](https://img.shields.io/badge/状态-维护模式-blue) ![Python](https://img.shields.io/badge/Python-3.12%2B-blue) ![强化学习](https://img.shields.io/badge/强化学习-基础到高级-orange) ![多智能体](https://img.shields.io/badge/多智能体-MADDPG实现-success)
+![项目总状态](https://img.shields.io/badge/状态-维护模式-blue) ![Python](https://img.shields.io/badge/Python-3.11.8%2B-blue) ![强化学习](https://img.shields.io/badge/强化学习-基础到高级-orange) ![多智能体](https://img.shields.io/badge/多智能体-MADDPG实现-success)
 
 本仓库包含强化学习（RL）和多智能体强化学习（MARL）相关的多个项目，既有经典算法的复现，也有个人的研究实现。通过这些项目，我希望构建从基础强化学习到多智能体强化学习的完整学习路径。
 
-| 项目 | 状态 | 完成度 | 技术栈 |
-|------|------|--------|--------|
-| [RL_Learning-main](./RL_Learning-main/) | ![状态](https://img.shields.io/badge/状态-已完成-success) | ![完成度](https://img.shields.io/badge/完成度-90%25-green) | ![技术](https://img.shields.io/badge/技术-基础RL算法-blue) |
-| [My_MADDPG_Continous](./My_MADDPG_Continous/) | ![状态](https://img.shields.io/badge/状态-已完成-success) | ![完成度](https://img.shields.io/badge/完成度-100%25-brightgreen) | ![技术](https://img.shields.io/badge/技术-连续MADDPG-blue) |
-| [My_MPE](./My_MPE/) | ![状态](https://img.shields.io/badge/状态-已完成-success) | ![完成度](https://img.shields.io/badge/完成度-100%25-brightgreen) | ![技术](https://img.shields.io/badge/技术-离散MADDPG-blue) |
-| [RL-basic-algorithm](./RL-basic-algorithm/) | ![状态](https://img.shields.io/badge/状态-暂停开发-orange) | ![完成度](https://img.shields.io/badge/完成度-40%25-yellow) | ![技术](https://img.shields.io/badge/技术-Q学习/DQN/PPO-blue) |
-| [动手学强化学习](./动手学强化学习/) | ![状态](https://img.shields.io/badge/状态-参考实现-informational) | ![完成度](https://img.shields.io/badge/完成度-100%25-brightgreen) | ![技术](https://img.shields.io/badge/技术-DQN到DDPG-blue) |
-| [pytorch-DRL-master](./pytorch-DRL-master/) | ![状态](https://img.shields.io/badge/状态-参考实现-informational) | ![完成度](https://img.shields.io/badge/完成度-100%25-brightgreen) | ![技术](https://img.shields.io/badge/技术-PyTorch/DRL-blue) |
+| 项目 | 状态 | 完成度 | 技术栈 | 文档索引 |
+|------|------|--------|--------|----------|
+| [RL_Learning-main](./RL_Learning-main/) | ![状态](https://img.shields.io/badge/状态-已完成-success) | ![完成度](https://img.shields.io/badge/完成度-90%25-green) | ![技术](https://img.shields.io/badge/技术-基础RL算法-blue) | [已实现算法](./RL_Learning-main/README.md#已实现算法) |
+| [My_MADDPG_Continous](./My_MADDPG_Continous/) | ![状态](https://img.shields.io/badge/状态-已完成-success) | ![完成度](https://img.shields.io/badge/完成度-100%25-brightgreen) | ![技术](https://img.shields.io/badge/技术-连续MADDPG-blue) | [中文文档](./My_MADDPG_Continous/README_zh.md#项目特色) |
+| [My_MPE](./My_MPE/) | ![状态](https://img.shields.io/badge/状态-已完成-success) | ![完成度](https://img.shields.io/badge/完成度-100%25-brightgreen) | ![技术](https://img.shields.io/badge/技术-离散MADDPG-blue) | [README](./My_MPE/README.md) |
+| [RL-basic-algorithm](./RL-basic-algorithm/) | ![状态](https://img.shields.io/badge/状态-暂停开发-orange) | ![完成度](https://img.shields.io/badge/完成度-40%25-yellow) | ![技术](https://img.shields.io/badge/技术-Q学习/DQN/PPO-blue) | [README](./RL-basic-algorithm/README.md) |
+| [动手学强化学习](./动手学强化学习/) | ![状态](https://img.shields.io/badge/状态-参考实现-informational) | ![完成度](https://img.shields.io/badge/完成度-100%25-brightgreen) | ![技术](https://img.shields.io/badge/技术-DQN到DDPG-blue) | [README](./动手学强化学习/README.md) |
+| [pytorch-DRL-master](./pytorch-DRL-master/) | ![状态](https://img.shields.io/badge/状态-参考实现-informational) | ![完成度](https://img.shields.io/badge/完成度-100%25-brightgreen) | ![技术](https://img.shields.io/badge/技术-PyTorch/DRL-blue) | [README](./pytorch-DRL-master/README.md) |
 
 ## 学习路径与项目关联
 本仓库中的项目构成了一条从基础强化学习到多智能体强化学习的完整学习路径：
