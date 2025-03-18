@@ -2,6 +2,7 @@
 import pkg_resources
 import sys
 import platform
+import os
 from subprocess import call
 
 def check_and_install_pettingzoo():
@@ -27,7 +28,19 @@ def check_and_install_pettingzoo():
         
         # 获取当前虚拟环境的 Python 解释器路径
         python_executable = sys.executable
-        pip_executable = python_executable.replace("python", "pip")  # 获取 pip 路径
+        
+        # 根据操作系统确定 pip 路径
+        if platform.system() == "Windows":
+            # Windows 系统下，pip 通常在 Scripts 目录下
+            pip_executable = os.path.join(os.path.dirname(python_executable), "Scripts", "pip.exe")
+        else:
+            # macOS/Linux 系统下
+            pip_dir = os.path.dirname(python_executable)
+            pip_executable = os.path.join(pip_dir, "pip")
+            if not os.path.exists(pip_executable):
+                pip_executable = python_executable.replace("python", "pip")
+        
+        print(f"Using pip executable: {pip_executable}")
 
         # 尝试安装 pettingzoo==1.24.4
         try:
@@ -41,7 +54,14 @@ def check_and_install_pettingzoo():
                 print("Installation of pettingzoo==1.24.4 failed. Trying GitHub installation...")
                 # 如果安装失败，尝试从 GitHub 安装
                 try:
-                    result = call([pip_executable, "install", "\"pettingzoo[mpe] @ git+https://github.com/Farama-Foundation/PettingZoo.git\""])
+                    # 根据操作系统调整命令格式
+                    if platform.system() == "Windows":
+                        # Windows 下不使用引号
+                        result = call([pip_executable, "install", "pettingzoo[mpe] @ git+https://github.com/Farama-Foundation/PettingZoo.git"])
+                    else:
+                        # macOS/Linux 下使用引号
+                        result = call([pip_executable, "install", "pettingzoo[mpe] @ git+https://github.com/Farama-Foundation/PettingZoo.git"])
+                    
                     if result == 0:
                         print("================================")
                         print("Successfully installed pettingzoo from GitHub.")
