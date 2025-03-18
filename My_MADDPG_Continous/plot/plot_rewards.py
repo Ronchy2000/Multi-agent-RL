@@ -163,7 +163,7 @@ def different_plot_rewards(csv_file, window_size=50, alpha=0.1):
 
 if __name__ == "__main__":
     # CSV文件路径（相对于当前脚本的路径）
-    csv_file = os.path.join(os.path.dirname(__file__), 'data', 'data_rewards.csv')
+    csv_file = os.path.join(os.path.dirname(__file__), 'data', 'data_rewards_2025-02-25_04-39.csv')
     print("csv_file name:",csv_file)
 
     if os.path.exists(csv_file):

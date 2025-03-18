@@ -41,9 +41,9 @@ def get_env(env_name, ep_len=25, render_mode ="None"):
 
 if __name__ == '__main__':
     # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    device = torch.device('mps' if hasattr(torch.backends, 'mps') and torch.backends.mps.is_available() 
-                            else 'cuda' if torch.cuda.is_available() else 'cpu')
-    # device = "cpu"
+    # device = torch.device('mps' if hasattr(torch.backends, 'mps') and torch.backends.mps.is_available() 
+    #                         else 'cuda' if torch.cuda.is_available() else 'cpu')
+    device = "cpu"
     print("Using device:",device)
     start_time = time.time() # 记录开始时间
     

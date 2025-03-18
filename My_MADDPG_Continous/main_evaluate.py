@@ -14,8 +14,8 @@ def get_env(env_name, ep_len=50, render_mode = "None"):
     if env_name == 'simple_spread_v3':
         new_env = simple_spread_v3.parallel_env(max_cycles=ep_len, render_mode="rgb_array")
     if env_name == 'simple_tag_v3':
-        # new_env = simple_tag_v3.parallel_env(render_mode = render_mode, num_good=1, num_adversaries=3, num_obstacles=0, max_cycles=ep_len, continuous_actions=True)
-        new_env = simple_tag_env.parallel_env(render_mode = render_mode, num_good=1, num_adversaries=3, num_obstacles=0, max_cycles=ep_len, continuous_actions=True)
+        new_env = simple_tag_v3.parallel_env(render_mode = render_mode, num_good=1, num_adversaries=3, num_obstacles=0, max_cycles=ep_len, continuous_actions=True)
+        # new_env = simple_tag_env.parallel_env(render_mode = render_mode, num_good=1, num_adversaries=3, num_obstacles=0, max_cycles=ep_len, continuous_actions=True)
     new_env.reset()
     _dim_info = {}
     action_bound = {}
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     print("Using device:",device)
     # 模型存储路径
     chkpt_dir='models/maddpg_models/'
-    load_timestamp = "2025-02-16_18-41"
+    load_timestamp = "2025-02-20_01-48"
     model_timestamp = None if load_timestamp == '' else load_timestamp
     # 定义参数
     args = main_parameters()

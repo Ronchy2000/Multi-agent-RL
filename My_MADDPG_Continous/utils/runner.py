@@ -80,12 +80,12 @@ class RUNNER:
                 for agent_id, r in reward.items():
                     agent_reward[agent_id] += r
                 # 开始学习 有学习开始条件 有学习频率
-                if step >= self.par.random_steps:
-                    # 学习
-                    self.agent.learn(self.par.batch_size, self.par.gamma)
+                # if step >= self.par.random_steps:
+                #     # 学习
+                #     self.agent.learn(self.par.batch_size, self.par.gamma)
                 if step >= self.par.random_steps and step % self.par.learn_interval == 0:
                     # # 学习
-                    # self.agent.learn(self.par.batch_size, self.par.gamma)
+                    self.agent.learn(self.par.batch_size, self.par.gamma)
                     # 更新网络
                     self.agent.update_target(self.par.tau)  #  不应该是到了学习间隔以后才更新 target网络吗？
                 # 状态更新
