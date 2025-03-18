@@ -92,9 +92,10 @@ python scripts/chapter8/dqn.py
 
 感谢西湖大学赵世钰老师的精彩课程和原作者jwk1rose的开源贡献。
 
-
-
 ---
+
+[🇨🇳 中文文档](#chinese) | [🇺🇸 English](#english)
+
 <a id="english"></a>
 # RL_Learning 🎉️
 
