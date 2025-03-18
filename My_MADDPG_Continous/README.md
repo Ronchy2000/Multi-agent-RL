@@ -1,8 +1,10 @@
-[中文文档](README_zh.md) | [View in Chinese](README_zh.md)
+[🇨🇳 中文文档](README_zh.md) | [🇺🇸 English](README.md)
 
 # This is Ronchy's MADDPG project.
 
-![Status](https://img.shields.io/badge/status-archived-red) ![MADDPG](https://img.shields.io/badge/MADDPG-implemented-success)![Python](https://img.shields.io/badge/python-3.12%2B-blue)
+![Status](https://img.shields.io/badge/status-archived-red) ![MADDPG](https://img.shields.io/badge/MADDPG-implemented-success) ![Python](https://img.shields.io/badge/python-3.11.8%2B-blue)
+
+> **⚠️ Important Note**: Before using, please check the 🔍 [**Known Issues & Solutions**](KNOWN_ISSUES.md) document to understand common problems and their solutions, especially Windows rendering issues and PettingZoo version compatibility.
 
 > **Note**: This repo is no longer actively maintained, but feel free to use it - it should still work!
 >
@@ -35,16 +37,33 @@ My_MADDPG_Continous/
 │── main_evaluate.py          # Unified evaluate model entry
 └── main_parameters.py        # Unified parameters config
 ```
+## Other Common Issues
+For other common issues and their solutions, please check the Issues section of this repository.
+
 
 ## 🛠️ Getting Started
 ### Prerequisites
 ```bash
 # 1. Create and activate virtual environment (recommended)
-      # omit...
-# 2. Install core dependencies
-pip install -r requirements.txt
+# Note: Replace "MPE" with your preferred environment name
+conda env create -f utils/conda-environment.yml -n MPE  
+#then, activate env.
+conda activate MPE
 
-# 3. Install PettingZoo(only required once)
+# 2. Install core dependencies
+pip install -r utils/pip-requirements.txt
+
+# 3. Install PyTorch
+# Visit https://pytorch.org/ to select the appropriate installation command for your system
+# For example:
+pip3 install torch torchvision torchaudio
+
+# 4. Install PettingZoo 1.24.4
+# Important: This project requires PettingZoo 1.24.4, but the official PyPI repository only offers version 1.24.3
+# You must install from GitHub source to get version 1.24.4 using:
+pip install "pettingzoo[mpe] @ git+https://github.com/Farama-Foundation/PettingZoo.git"
+
+# Alternatively, you can use the provided installation script:
 python utils/setupPettingzoo.py
 ```
 
@@ -121,6 +140,16 @@ logs/
 ├── training_log.json       # Human-readable training report
 └── plot_data_20240515.pkl  # Raw metrics for post-analysis
 ```
+
+## 🐛 Known Issues & Solutions
+We have compiled a detailed document of known issues and their solutions, including:
+- **Windows Rendering Unresponsiveness**: Fixes for PettingZoo rendering issues
+- **PettingZoo Version Compatibility**: This project requires version 1.24.4
+- **Visdom Server Connection Issues**: Ensuring visualization services run properly
+
+👉 **[Click to view the complete Known Issues & Solutions document](KNOWN_ISSUES.md)**
+
+If you encounter issues not mentioned in the document, please submit them in the Issues section and we will address them promptly.
 
 
 ## 🤝 Contributing

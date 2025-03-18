@@ -1,6 +1,11 @@
+[🇨🇳 中文文档](README_zh.md) | [🇺🇸 English](README.md)
+
 # 多智能体深度强化学习MADDPG算法
 
-![项目状态](https://img.shields.io/badge/状态-不再维护-red) ![MADDPG](https://img.shields.io/badge/MADDPG-已实现-success)![Python](https://img.shields.io/badge/python-3.12%2B-blue)
+![项目状态](https://img.shields.io/badge/状态-不再维护-red) ![MADDPG](https://img.shields.io/badge/MADDPG-已实现-success)![Python](https://img.shields.io/badge/python-3.11.8%2B-blue)
+
+> **⚠️ 重要提示**：使用前请查看🔍 [**已知问题与解决方案KNOWN_ISSUES.md**](KNOWN_ISSUES.md)文档，了解常见问题的解决方法，特别是Windows系统的渲染卡死问题和PettingZoo版本兼容性问题。
+
 
 > 当前状态：MADDPG算法已在 `/agents/*.py` 中实现
 
@@ -35,13 +40,31 @@ My_MADDPG_Continous/
 ## 🛠️ 快速开始
 
 ### 环境配置
-```bash
-# 创建并激活虚拟环境（推荐）
-略
-# 安装核心依赖
-pip install -r requirements.txt
 
-# 安装PettingZoo（仅需一次）
+# 创建并激活虚拟环境（推荐）
+1. 使用conda-environment.yml创建新环境
+```bash
+# 注意：将"MPE"替换为您喜欢的环境名称
+conda env create -f utils/conda-environment.yml -n MPE
+# 激活刚创建的环境
+conda activate MPE
+```
+2. pip安装核心依赖
+```bash
+pip install -r utils/pip-requirements.txt
+```
+3. 从PyTorch官网安装对应版本的PyTorch
+```bash
+# 请访问 https://pytorch.org 选择适合您系统的安装命令
+# 例如：
+pip3 install torch torchvision torchaudio
+```
+4. 安装PettingZoo 1.24.4版本
+```bash
+# 重要说明：本项目需要PettingZoo 1.24.4版本，但官方PyPI仓库最新版本仅为1.24.3
+# 必须从GitHub源码安装才能获取1.24.4版本，安装命令为：
+pip install "pettingzoo[mpe] @ git+https://github.com/Farama-Foundation/PettingZoo.git"
+# 或者，您可以直接运行提供的安装脚本：
 python utils/setupPettingzoo.py
 ```
 
@@ -140,6 +163,16 @@ logs/
   - 碰撞参数：
     - 接触力：1e2（控制碰撞强度）
     - 接触边界：1e-3（控制碰撞柔软度）
+
+
+## 🐛 已知问题与解决方案
+我们整理了一份详细的已知问题及其解决方案文档，包括：
+- **Windows系统渲染无响应问题**：修复PettingZoo的渲染问题
+- **PettingZoo版本兼容性问题**：本项目需要1.24.4版本
+- **Visdom服务器连接问题**：确保可视化服务正常运行
+👉 **[点击查看完整的已知问题与解决方案文档](KNOWN_ISSUES.md)**
+
+如果您遇到文档中未提及的问题，请在Issues中提交，我们将尽快解决。
 
 ## 🤝 贡献
 如遇到任何问题，欢迎提交Issue或Pull Request。
