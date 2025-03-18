@@ -42,7 +42,6 @@ dependencies:
   - pybind11-abi=4
   - pysocks=1.7.1
   - python=3.11.8
-  - pytorch=2.2.2
   - pyyaml=6.0.2
   - requests=2.32.3
   - setuptools=75.1.0
@@ -50,8 +49,6 @@ dependencies:
   - sympy=1.13.3
   - tbb=2021.8.0
   - tk=8.6.14
-  - torchaudio=2.2.2
-  - torchvision=0.17.2
   - typing_extensions=4.12.2
   - wheel=0.44.0
   - xz=5.4.6
