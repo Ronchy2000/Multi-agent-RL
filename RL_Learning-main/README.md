@@ -1,25 +1,193 @@
-转载自：https://github.com/jwk1rose/RL_Learning
+[🇨🇳 中文文档](#chinese) | [🇺🇸 English](#english)
 
->本人正在重构所有代码ing...
 
 # RL_Learning 🎉️
+<a id="chinese"></a>
+![Python](https://img.shields.io/badge/Python-3.7%2B-blue) ![状态](https://img.shields.io/badge/状态-重构中-orange) ![算法](https://img.shields.io/badge/算法-基础RL算法-green)
+
+
+> 原始代码来源: https://github.com/jwk1rose/RL_Learning  
+> 本人正在重构代码，尽量分解为更多独立模块并添加详细注释。
 
 ## 简介 📖
+本项目为西湖大学赵世钰老师的强化学习课程代码实践，目前完成了1-9章的大部分代码，包括仿真环境的搭建、值迭代，策略迭代、蒙特卡洛、时序差分、状态值近似、DQN、Reinforce 等算法的实现。尽可能地追求复现，但是作者代码水平有限，不免存在许多bug以及效率低下之处，请大家仅作参考。
 
-本项目为西湖大学赵世钰老师的强化学习课程代码实践，目前完成了1-9章的大部分代码，包括仿真环境的搭建 值迭代，策略迭代 蒙特卡洛 时序差分 状态值近似 DQN Reinforce 等算法的实现。尽可能的追求复现，但是作者代码水平有限，不免存在许多bug以及效率低下之处，请大家仅作参考。
+非常幸运能够发现这一门课，因为这门课我知道了RL。比较过市面上很多其他的资料，不管是课程还是教材的质量都是顶尖的。像赵老师一样愿意耗费如此心血，制作如此高质量的视频的老师已经很少了。谨以此开源仓库向赵老师致敬✋。
 
-非常幸运能够发现这一门课，因为这门课我知道了RL。
+## 项目结构
 
-比较过市面上很多其他的资料，不管是课程还是教材的质量都是顶尖的。
+```tree
+RL_Learning-main/
+├── scripts/            # 算法实现脚本
+│   ├── Chapter4_Value iteration and Policy iteration/  # 第4章：值迭代和策略迭代
+│   ├── Chapter5_Monte Carlo Methods/                  # 第5章：蒙特卡洛方法
+│   ├── Chapter6_Stochastic_approximation/            # 第6章：随机近似
+│   ├── Chapter7_Temporal-Difference learning/        # 第7章：时序差分学习
+│   ├── Chapter8_Value Function Approximaton/         # 第8章：值函数近似
+│   ├── Chapter9_Policy Gradient/                     # 第9章：策略梯度
+│   ├── Chapter10_Actor Critic/                       # 第10章：演员-评论家方法
+│   ├── grid_env.py                                   # 网格环境
+│   ├── model.py                                      # 神经网络模型
+│   ├── render.py                                     # 渲染工具
+│   └── solver.py                                     # 求解器基类
+└── README.md           # 项目说明
+```
 
-像赵老师一样愿意耗费如此心血，制作如此高质量的视频的老师已经很少了。
+## 已实现算法
 
-谨以此开源仓库向赵老师致敬✋，当然，这个仓库目前还不够。
+| 算法 | 状态 | 位置 | 说明 |
+|------|------|------|------|
+| 值迭代 (Value Iteration) | ✅ | `scripts/Chapter4_Value iteration and Policy iteration/` | 基于动态规划的最优值函数求解 |
+| 策略迭代 (Policy Iteration) | ✅ | `scripts/Chapter4_Value iteration and Policy iteration/` | 基于动态规划的最优策略求解 |
+| 蒙特卡洛方法 (Monte Carlo) | ✅ | `scripts/Chapter5_Monte Carlo Methods/` | 基于采样的值函数估计 |
+| 时序差分学习 (TD Learning) | ✅ | `scripts/Chapter7_Temporal-Difference learning/` | 结合动态规划和蒙特卡洛的方法 |
+| Q-learning | ✅ | `scripts/Chapter7_Temporal-Difference learning/` | 经典的离线强化学习算法 |
+| n-step Sarsa | ✅ | `scripts/Chapter7_Temporal-Difference learning/` | 多步时序差分学习 |
+| 状态值函数近似 (Value Approximation) | ✅ | `scripts/Chapter8_Value Function Approximaton/` | 使用函数近似代替表格型表示 |
+| DQN (Deep Q-Network) | ✅ | `scripts/Chapter8_Value Function Approximaton/` | 深度Q网络算法 |
+| Reinforce 算法 | ✅ | `scripts/Chapter9_Policy Gradient/` | 基础策略梯度算法 |
+| Actor-Critic | ✅ | `scripts/Chapter10_Actor Critic/` | 结合策略梯度和值函数近似的方法 |
 
-本人代码以及RL水平有限，仅作参考。
 
-[代码演示视频地址](https://www.bilibili.com/video/BV1HX4y1H7uR)
 
-项目持续更新中 🚶
+## 更新日志
 
-[赵世钰老师课程地址](https://www.bilibili.com/video/BV1sd4y167NS) 💌
+**2024.6.7**  
+重大更新！原作者的渲染坐标与状态设置不一致，现已统一坐标为：  
+![img.png](../img.png)
+
+## 环境配置
+
+```bash
+# 创建虚拟环境
+conda create -n rl_learning python=3.7
+conda activate rl_learning
+
+# 安装依赖
+pip install numpy matplotlib torch gym tensorboard
+```
+
+## 使用示例
+```bash
+# 运行值迭代算法
+python scripts/chapter4/value_iteration.py
+
+# 运行DQN算法
+python scripts/chapter8/dqn.py
+```
+
+## 参考资料
+
+- [赵世钰老师课程地址](https://www.bilibili.com/video/BV1sd4y167NS) 💌
+- [强化学习的数学基础](https://github.com/MathFoundationRL/Book-Mathematical-Foundation-of-Reinforcement-Learning)
+
+## 贡献指南
+
+欢迎对本项目进行贡献！您可以通过以下方式参与：
+1. 提交Issue报告bug或提出改进建议
+2. 提交Pull Request修复bug或添加新功能
+3. 完善文档和注释
+
+## 致谢
+
+感谢西湖大学赵世钰老师的精彩课程和原作者jwk1rose的开源贡献。
+
+
+
+---
+<a id="english"></a>
+# RL_Learning 🎉️
+
+![Python](https://img.shields.io/badge/Python-3.7%2B-blue) ![Status](https://img.shields.io/badge/status-refactoring-orange) ![Algorithms](https://img.shields.io/badge/algorithms-basic%20RL-green)
+
+> Original code source: https://github.com/jwk1rose/RL_Learning  
+> I am refactoring the code, trying to divide it into more independent modules and adding detailed comments.
+
+## Introduction 📖
+This project implements the reinforcement learning course code from Professor Shiyu Zhao at Westlake University. It covers most of the code from chapters 1-9, including the construction of simulation environments, value iteration, policy iteration, Monte Carlo methods, temporal difference learning, state value approximation, DQN, Reinforce, and other algorithms. While striving for accurate reproduction, the author's coding skills are limited, so there may be bugs and inefficiencies. Please use it only as a reference.
+
+I was very fortunate to discover this course, as it introduced me to reinforcement learning. Compared to many other resources available, both the course and textbook quality are top-notch. Professors like Prof. Zhao who are willing to invest so much effort in creating such high-quality videos are rare nowadays. I dedicate this open-source repository to honor Professor Zhao✋.
+
+
+## Project Structure
+
+```tree
+RL_Learning-main/
+├── scripts/            # Algorithm implementation scripts
+│   ├── Chapter4_Value iteration and Policy iteration/  # Chapter 4: Value Iteration and Policy Iteration
+│   ├── Chapter5_Monte Carlo Methods/                  # Chapter 5: Monte Carlo Methods
+│   ├── Chapter6_Stochastic_approximation/            # Chapter 6: Stochastic Approximation
+│   ├── Chapter7_Temporal-Difference learning/        # Chapter 7: Temporal Difference Learning
+│   ├── Chapter8_Value Function Approximaton/         # Chapter 8: Value Function Approximation
+│   ├── Chapter9_Policy Gradient/                     # Chapter 9: Policy Gradient
+│   ├── Chapter10_Actor Critic/                       # Chapter 10: Actor-Critic Methods
+│   ├── grid_env.py                                   # Grid environment
+│   ├── model.py                                      # Neural network models
+│   ├── render.py                                     # Rendering tools
+│   └── solver.py                                     # Base solver class
+└── README.md           # Project description
+```
+
+## Implemented Algorithms
+
+| Algorithm | Status | Location | Description |
+|------|------|------|------|
+| Value Iteration | ✅ | `scripts/Chapter4_Value iteration and Policy iteration/` | Optimal value function solving based on dynamic programming |
+| Policy Iteration | ✅ | `scripts/Chapter4_Value iteration and Policy iteration/` | Optimal policy solving based on dynamic programming |
+| Monte Carlo Methods | ✅ | `scripts/Chapter5_Monte Carlo Methods/` | Value function estimation based on sampling |
+| TD Learning | ✅ | `scripts/Chapter7_Temporal-Difference learning/` | Methods combining dynamic programming and Monte Carlo |
+| Q-learning | ✅ | `scripts/Chapter7_Temporal-Difference learning/` | Classic off-policy reinforcement learning algorithm |
+| n-step Sarsa | ✅ | `scripts/Chapter7_Temporal-Difference learning/` | Multi-step temporal difference learning |
+| Value Approximation | ✅ | `scripts/Chapter8_Value Function Approximaton/` | Using function approximation instead of tabular representation |
+| DQN (Deep Q-Network) | ✅ | `scripts/Chapter8_Value Function Approximaton/` | Deep Q-Network algorithm |
+| Reinforce Algorithm | ✅ | `scripts/Chapter9_Policy Gradient/` | Basic policy gradient algorithm |
+| Actor-Critic | ✅ | `scripts/Chapter10_Actor Critic/` | Methods combining policy gradient and value function approximation |
+
+
+
+## Update Log
+
+**2024.6.7**  
+Major update! The original author's render coordinates were inconsistent with the state settings. The coordinates have been unified as:  
+![img.png](../img.png)
+
+## Environment Setup
+
+```bash
+# Create virtual environment
+conda create -n rl_learning python=3.7
+conda activate rl_learning
+# Install dependencies
+pip install numpy matplotlib torch gym tensorboard
+
+```
+
+
+## Usage Examples
+```bash
+# Run value iteration algorithm
+python scripts/Chapter4_Value\ iteration\ and\ Policy\ iteration/value_iteration.py
+
+# Run Q-learning algorithm
+python scripts/Chapter7_Temporal-Difference\ learning/3.Q-learning.py
+
+# Run DQN algorithm
+python scripts/Chapter8_Value\ Function\ Approximaton/DQN.py
+```
+
+
+## References
+
+- [Professor Zhao's Course](https://www.bilibili.com/video/BV1sd4y167NS) 💌
+- [Mathematical Foundation of Reinforcement Learning](https://github.com/MathFoundationRL/Book-Mathematical-Foundation-of-Reinforcement-Learning)
+
+## Contribution Guidelines
+
+Contributions to this project are welcome! You can participate in the following ways:
+1. Submit issues to report bugs or suggest improvements
+2. Submit pull requests to fix bugs or add new features
+3. Improve documentation and comments
+
+## Acknowledgements
+
+Thanks to `Professor Shiyu Zhao` from Westlake University for his excellent course and the original author `jwk1rose` for the open-source contribution.
