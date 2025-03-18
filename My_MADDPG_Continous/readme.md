@@ -16,19 +16,28 @@
 
 ## Project Structure (Key Files)
 ```tree
-agents/
-├── MADDPG_agent.py    # Multi-agent controller
-├── DDPG_agent.py      # Single-agent DDPG
-├── NN_actor.py        # Actor networks
-├── NN_critic.py       # Critic networks
-└── buffer.py          # replay buffer
+My_MADDPG_Continous/
+├── agents/                   # Core implementations
+│   ├── MADDPG_agent.py       # Multi-agent controller
+│   ├── DDPG_agent.py         # Base DDPG implementation
+│   ├── buffer.py             # Experience replay buffer
+│   └── (NN_actor|NN_critic).py  # Neural network modules
+├── envs/                     # Custom environments
+│   ├── custom_agents_dynamics.py  # Extended physics engine
+│   └── simple_tag_env.py           # Modified tag environment
+├── utils/                    # Utility modules
+│   ├── runner.py             # Training runner
+│   └── logger.py             # Training logger
+│── main_train.py             # Unified training entry
+│── main_evaluate.py          # Unified evaluate model entry
+└── main_parameters.py        # Unified parameters entry
 ```
 
 ## 🛠️ Getting Started
 ### Prerequisites
 ```bash
 # 1. Create and activate virtual environment (recommended)
-***
+      # omit...
 # 2. Install core dependencies
 pip install -r requirements.txt
 
@@ -36,7 +45,19 @@ pip install -r requirements.txt
 python utils/setupPettingzoo.py
 ```
 
-### 🖥️ Runtime Setup
+
+## 🔄 Training Pipeline
+1. **Parameter Customization**  
+Configure environment parameters in [`main_parameter.py`](main_parameters.py)
+```python
+   env_name = 'simple_tag_v3'  # Options: simple_adversary_v3/ simple_spread_v3
+   episode_num = 2000         # Total training episodes
+   # Training parameters
+   batch_size = 1024          # Experience replay batch  size
+   actor_lr = 0.01            # Actor network learning   rate
+   critic_lr = 0.01           # Critic network learning  rate
+```
+2. **Start Visdom server**
 ```bash
 # Start Visdom visualization server (in separate terminal)
 python -m visdom.server
@@ -46,14 +67,22 @@ python -m visdom.server -port 8097
 # Access training dashboard at:
 # http://localhost:8097
 ```
+3. **Run training script**:
+```bash
+   # Train with custom parameters
+   python main_train.py
+```
+4. **Monitor training progress at `http://localhost:8097`**
+5. **Evaluate trained models**
+```bash
+   python main_evaluate.py
+```
 
-## How to use? 
-1. Run `utils/setupPettingzoo.py` to install neccesary packages.
-2. Trainning script is given as `./main_train.py`, then the NN model will be stored in `./models/`.
-3. Then, before run the `./main_train.py`, please run `python -m visdom.server` in your terminal. 
-   (then you can run `./main_train.py` successfully!
-4. Furthermore, you can run the `./main_evaluate.py` to evaluate the models you trained.
-5. What's more, **parameters** are setting in `./main_parameter.py`
+### 🌐 Environment Customization
+The [`simple_tag_env.py`](envs/simple_tag_env.py)  extends PettingZoo's MPE environment with:
+- Custom agent dynamics in [`custom_agents_dynamics.py`](envs/custom_agents_dynamics.py)
+- Modified reward functions
+- Adjustable agent physics parameters
 
-
+## 🤝 Contributing
 Pull requests issue please, if you meet any bugs.
