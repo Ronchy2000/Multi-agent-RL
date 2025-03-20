@@ -69,7 +69,7 @@ class MADDPG():
             # NOTE that the output is a tensor, convert it to int before input to the environment
             action[agent] = a.squeeze(0).detach().cpu().numpy()
         return action
-
+    # 更多解释-飞书链接：https://m6tsmtxj3r.feishu.cn/docx/Kb1vdqvBholiIUxcvYxcIcBcnEg?from=from_copylink   密码：6u2257#8
     def learn(self, batch_size, gamma):
         for agent_id, agent in self.agents.items():
             obs, act, reward, next_obs, done, next_act = self.sample(batch_size)

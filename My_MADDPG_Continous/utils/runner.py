@@ -10,6 +10,10 @@ class RUNNER:
         self.agent = agent
         self.env = env
         self.par = par
+        # 这里为什么新建而不是直接使用用agent.agents.keys()？
+        # 因为pettingzoo中智能体死亡，这个字典就没有了，会导致 td target更新出错。所以这里维护一个不变的字典。
+        self.env_agents = [agent_id for agent_id in self.agent.agents.keys()]
+        self.done = {agent_id: False for agent_id in self.agent.agents.keys()}
 
         # 添加奖励记录相关的属性
         self.reward_sum_record = []  # 用于平滑的奖励记录
@@ -55,8 +59,9 @@ class RUNNER:
             # print(f"This is episode {episode}")
             # 初始化环境 返回初始状态 为一个字典 键为智能体名字 即env.agents中的内容，内容为对应智能体的状态
             obs, _ = self.env.reset()
+            self.done = {agent_id: False for agent_id in self.env_agents}
             # 每个智能体当前episode的奖励
-            agent_reward = {agent_id: 0 for agent_id in self.env.agents}
+            agent_reward = {agent_id: 0 for agent_id in self.env_agents}
             # 每个智能体与环境进行交互
             while self.env.agents:  #  加入围捕判断
                 # print(f"While num:{step}")
@@ -72,22 +77,20 @@ class RUNNER:
                 # 奖励：字典 键为智能体名字 值为对应的奖励
                 # 终止情况：bool
                 next_obs, reward, terminated, truncated, info = self.env.step(action)
-                done = terminated or truncated
-                # env.render()
+
+                self.done = {agent_id: bool(terminated[agent_id] or truncated[agent_id]) for agent_id in self.env_agents}
+
                 # 存储样本
-                self.agent.add(obs, action, reward, next_obs, done)
+                self.agent.add(obs, action, reward, next_obs, self.done)
                 # 计算当前episode每个智能体的奖励 每个step求和
                 for agent_id, r in reward.items():
                     agent_reward[agent_id] += r
                 # 开始学习 有学习开始条件 有学习频率
-                # if step >= self.par.random_steps:
-                #     # 学习
-                #     self.agent.learn(self.par.batch_size, self.par.gamma)
                 if step >= self.par.random_steps and step % self.par.learn_interval == 0:
                     # # 学习
                     self.agent.learn(self.par.batch_size, self.par.gamma)
                     # 更新网络
-                    self.agent.update_target(self.par.tau)  #  不应该是到了学习间隔以后才更新 target网络吗？
+                    self.agent.update_target(self.par.tau)
                 # 状态更新
                 obs = next_obs
 
@@ -232,6 +235,7 @@ class RUNNER:
             print(f"评估第 {episode + 1} 回合")
             # 初始化环境 返回初始状态 为一个字典 键为智能体名字 即env.agents中的内容，内容为对应智能体的状态
             obs, _ = self.env.reset()  # 重置环境，开始新回合
+            self.done = {agent_id: False for agent_id in self.env_agents}
             # 每个智能体当前episode的奖励
             agent_reward = {agent_id: 0 for agent_id in self.env.agents}
             # 每个智能体与环境进行交互
@@ -245,7 +249,9 @@ class RUNNER:
                 # 奖励：字典 键为智能体名字 值为对应的奖励
                 # 终止情况：bool
                 next_obs, reward, terminated, truncated, info = self.env.step(action)
-                done = terminated or truncated
+                
+                self.done = {agent_id: bool(terminated[agent_id] or truncated[agent_id]) for agent_id in self.env_agents}
+
                 # 累积每个智能体的奖励
                 for agent_id, r in reward.items():
                     agent_reward[agent_id] += r
@@ -257,5 +263,3 @@ class RUNNER:
 
             sum_reward = sum(agent_reward.values())
             self.reward_sum_record.append(sum_reward)
-
-            
