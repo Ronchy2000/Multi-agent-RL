@@ -259,7 +259,7 @@ class RUNNER:
 
                 
                 if step % 10 == 0:
-                    print(f"Step {step}, obs: {obs}, action: {action}, reward: {reward}, done: {done}")
+                    print(f"Step {step}, obs: {obs}, action: {action}, reward: {reward}, done: {self.done}")
 
             sum_reward = sum(agent_reward.values())
             self.reward_sum_record.append(sum_reward)
