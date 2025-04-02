@@ -30,6 +30,12 @@ The projects in this repository form a complete learning path from basic reinfor
 
 Reproduction of Professor Shiyu Zhao's reinforcement learning course code from Westlake University, including value iteration, policy iteration, Monte Carlo, temporal difference, DQN, Reinforce, and other algorithm implementations. This part is the best starting point for understanding basic reinforcement learning algorithms.
 
+<div align="center">
+  <img src="./RL_Learning-main/scripts/Chapter4_Value iteration and Policy iteration/plot_figure/policy_iteration.png" width="45%" alt="Policy Iteration Visualization"/>
+  <img src="./RL_Learning-main/scripts/Chapter4_Value iteration and Policy iteration/plot_figure/value_iteration.png" width="45%" alt="Value Iteration Visualization"/>
+  <p><strong>From left to right: Policy Iteration, Value Iteration Visualization</strong></p>
+</div>
+
 #### References
 - [Professor Zhao's Reinforcement Learning Course](https://www.bilibili.com/video/BV1sd4y167NS)
 - [Mathematical Foundation of Reinforcement Learning](https://github.com/MathFoundationRL/Book-Mathematical-Foundation-of-Reinforcement-Learning)

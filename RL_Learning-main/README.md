@@ -14,6 +14,12 @@
 
 非常幸运能够发现这一门课，因为这门课我知道了RL。比较过市面上很多其他的资料，不管是课程还是教材的质量都是顶尖的。像赵老师一样愿意耗费如此心血，制作如此高质量的视频的老师已经很少了。谨以此开源仓库向赵老师致敬✋。
 
+<div align="center">
+  <img src="./scripts/Chapter4_Value iteration and Policy iteration/plot_figure/policy_iteration.png" width="45%" alt="值迭代算法可视化"/>
+  <img src="./scripts/Chapter4_Value iteration and Policy iteration/plot_figure/value_iteration.png" width="45%" alt="策略梯度训练曲线"/>
+  <p>从左到右: 策略梯度、值迭代算法可视化</p>
+</div>
+
 ## 项目结构
 
 ```tree
@@ -49,6 +55,21 @@ RL_Learning-main/
 | Actor-Critic | ✅ | `scripts/Chapter10_Actor Critic/` | 结合策略梯度和值函数近似的方法 |
 
 
+## 开发环境说明
+### PyCharm用户注意事项
+使用**PyCharm**打开本项目时，代码中的 `sys.path.append("..")` 导入语句不会报错。**PyCharm**会自动将项目根目录添加到`PYTHONPATH`中，确保模块导入正常工作。
+
+如果您使用其他IDE或直接通过命令行运行脚本，可能需要手动设置`PYTHONPATH`环境变量
+```bash
+export PYTHONPATH=$PYTHONPATH:/path/to/RL_Learning-main
+```
+或
+```python
+# sys.path.append("..") # 注释掉此行
+# 改为：
+import os 
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+```
 
 ## 更新日志
 
@@ -109,6 +130,11 @@ This project implements the reinforcement learning course code from Professor Sh
 
 I was very fortunate to discover this course, as it introduced me to reinforcement learning. Compared to many other resources available, both the course and textbook quality are top-notch. Professors like Prof. Zhao who are willing to invest so much effort in creating such high-quality videos are rare nowadays. I dedicate this open-source repository to honor Professor Zhao✋.
 
+<div align="center">
+  <img src="./scripts/Chapter4_Value iteration and Policy iteration/plot_figure/policy_iteration.png" width="45%" alt="Policy Iteration Visualization"/>
+  <img src="./scripts/Chapter4_Value iteration and Policy iteration/plot_figure/value_iteration.png" width="45%" alt="Value Iteration Visualization"/>
+  <p>From left to right: Policy Iteration, Value Iteration Visualization</p>
+</div>
 
 ## Project Structure
 
@@ -144,7 +170,22 @@ RL_Learning-main/
 | Reinforce Algorithm | ✅ | `scripts/Chapter9_Policy Gradient/` | Basic policy gradient algorithm |
 | Actor-Critic | ✅ | `scripts/Chapter10_Actor Critic/` | Methods combining policy gradient and value function approximation |
 
+## Development Environment Notes
+### Note for PyCharm Users
+When opening this project with **PyCharm**, the `sys.path.append("..")` import statements in the code will work without errors. **PyCharm** automatically adds the project root directory to `PYTHONPATH`, ensuring that module imports work correctly.
 
+If you are using another IDE or running scripts directly from the command line, you may need to manually set the `PYTHONPATH` environment variable:
+
+```bash
+export PYTHONPATH=$PYTHONPATH:/path/to/RL_Learning-main
+```
+or
+```python
+# sys.path.append("..") # Comment out this line
+# Change to:
+import os 
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+```
 
 ## Update Log
 

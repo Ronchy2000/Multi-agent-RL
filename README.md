@@ -27,6 +27,12 @@
 
 复现西湖大学**赵世钰老师**的强化学习课程代码，包括值迭代、策略迭代、蒙特卡洛、时序差分、DQN、Reinforce等算法实现。这部分是理解强化学习基础算法的最佳起点。
 
+<div align="center">
+  <img src="./RL_Learning-main/scripts/Chapter4_Value iteration and Policy iteration/plot_figure/policy_iteration.png" width="45%" alt="策略迭代可视化"/>
+  <img src="./RL_Learning-main/scripts/Chapter4_Value iteration and Policy iteration/plot_figure/value_iteration.png" width="45%" alt="值迭代可视化"/>
+  <p><strong>从左到右: 策略迭代算法、值迭代算法可视化</strong></p>
+</div>
+
 #### 参考资源
 - [赵老师强化学习课程](https://www.bilibili.com/video/BV1sd4y167NS)
 - [强化学习的数学原理](https://github.com/MathFoundationRL/Book-Mathematical-Foundation-of-Reinforcement-Learning)
