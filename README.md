@@ -57,7 +57,7 @@
 个人基于最新版Pettingzoo中的MPE环境，实现的连续状态，连续动作下的MADDPG算法，支持连续动作空间的多智能体协作与竞争。
 
 <div align="center">
-  <img src="./My_MADDPG_Continous/plot/simple_tag_v3_demo.gif" alt="MADDPG演示" width="70%"/>
+  <img src="./My_MADDPG_Continous/plot/simple_tag_v3_demo_loop.gif" alt="MADDPG演示" width="70%"/>
   <p><strong>MADDPG算法训练效果：捕食者(红色)追逐猎物(绿色)的过程</strong></p>
 </div>
 
