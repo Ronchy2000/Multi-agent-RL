@@ -7,7 +7,7 @@
 ## 📈 Training Results
 
 <div align="center">
-  <img src="./plot/simple_tag_v3_demo.gif" alt="Agent Behavior" width="80%"/>
+  <img src="./plot/simple_tag_v3_demo.gif" alt="Agent Behavior" width="45%"/>
   <p><strong>Trained agents in action: Predators (red) chasing prey (green) in simple_tag_v3 environment</strong></p>
 
   <img src="./plot/demo-rewards_plot_ma.png" alt="Reward Convergence" width="80%"/>
