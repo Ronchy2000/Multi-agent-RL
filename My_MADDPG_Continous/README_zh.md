@@ -6,6 +6,9 @@
 
 ## 📈 训练效果
 <div align="center">
+  <img src="./plot/simple_tag_v3_demo.gif" alt="智能体行为" width="80%"/>
+  <p><strong>训练后的智能体行为展示：捕食者(红色)追逐猎物(绿色)的过程</strong></p>
+
   <img src="./plot/demo-rewards_plot_ma.png" alt="训练收敛结果" width="80%"/>
   <p><strong>MADDPG算法在simple_tag_v3环境中的奖励收敛曲线</strong></p>
 </div>
