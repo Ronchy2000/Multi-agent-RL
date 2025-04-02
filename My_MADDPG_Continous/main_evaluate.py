@@ -38,7 +38,7 @@ if __name__ == '__main__':
     print("Using device:",device)
     # 模型存储路径
     chkpt_dir='models/maddpg_models/'
-    load_timestamp = "2025-02-20_01-48"
+    load_timestamp = "2025-02-16_18-41"
     model_timestamp = None if load_timestamp == '' else load_timestamp
     # 定义参数
     args = main_parameters()

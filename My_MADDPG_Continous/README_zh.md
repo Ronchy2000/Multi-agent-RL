@@ -7,9 +7,8 @@
 ## 📈 训练效果
 <div align="center">
   <img src="./plot/demo-rewards_plot_ma.png" alt="训练收敛结果" width="80%"/>
+  <p><strong>MADDPG算法在simple_tag_v3环境中的奖励收敛曲线</strong></p>
 </div>
-<center><strong>MADDPG算法在simple_tag_v3环境中的奖励收敛曲线</strong></center>
-
 
 > **⚠️ 重要提示**：使用前请查看🔍 [**已知问题与解决方案KNOWN_ISSUES.md**](KNOWN_ISSUES.md)文档，了解常见问题的解决方法，特别是Windows系统的渲染卡死问题和PettingZoo版本兼容性问题。
 

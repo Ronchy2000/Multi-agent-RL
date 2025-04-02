@@ -7,10 +7,8 @@
 ## 📈 Training Results
 <div align="center">
   <img src="./plot/demo-rewards_plot_ma.png" alt="Reward Convergence" width="80%"/>
+  <p><strong>Reward convergence curve of MADDPG algorithm in simple_tag_v3 environment</strong></p>
 </div>
-
-<center> <strong>Reward convergence curve of MADDPG algorithm in simple_tag_v3 environment</strong> </center>
-
 
 > **⚠️ Important Note**: Before using, please check the 🔍 [**Known Issues & Solutions**](KNOWN_ISSUES.md) document to understand common problems and their solutions, especially Windows rendering issues and PettingZoo version compatibility.
 

@@ -68,11 +68,20 @@ class MLPNetworkActor(nn.Module):
         else:
             # 否则从主目录加载
             load_dir = self.chkpt_dir
-
+    
+        # 使用os.path.join确保路径分隔符的一致性
         self.chkpt_file = os.path.join(load_dir, self.chkpt_name)
-
+    
         if is_target:
-                target_chkpt_name = self.chkpt_file.replace('actor', 'target_actor')
-                self.load_state_dict(torch.load(target_chkpt_name, map_location=torch.device(device)))
+            target_chkpt_name = self.chkpt_file.replace('actor', 'target_actor')
+            # 确保路径存在
+            if not os.path.exists(target_chkpt_name):
+                print(f"警告: 找不到目标模型文件: {target_chkpt_name}")
+                return
+            self.load_state_dict(torch.load(target_chkpt_name, map_location=torch.device(device)))
         else:
+            # 确保路径存在
+            if not os.path.exists(self.chkpt_file):
+                print(f"警告: 找不到模型文件: {self.chkpt_file}")
+                return
             self.load_state_dict(torch.load(self.chkpt_file, map_location=torch.device(device)))
