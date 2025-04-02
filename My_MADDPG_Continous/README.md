@@ -5,7 +5,11 @@
 ![Status](https://img.shields.io/badge/status-archived-red) ![MADDPG](https://img.shields.io/badge/MADDPG-implemented-success) ![Python](https://img.shields.io/badge/python-3.11.8%2B-blue)
 
 ## 📈 Training Results
+
 <div align="center">
+  <img src="./plot/simple_tag_v3_demo.gif" alt="Agent Behavior" width="80%"/>
+  <p><strong>Trained agents in action: Predators (red) chasing prey (green) in simple_tag_v3 environment</strong></p>
+
   <img src="./plot/demo-rewards_plot_ma.png" alt="Reward Convergence" width="80%"/>
   <p><strong>Reward convergence curve of MADDPG algorithm in simple_tag_v3 environment</strong></p>
 </div>

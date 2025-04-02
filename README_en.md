@@ -55,6 +55,11 @@ After mastering basic reinforcement learning algorithms, we naturally think: how
 
 Personal implementation of the MADDPG algorithm for continuous states and actions based on the latest version of the MPE environment in PettingZoo, supporting multi-agent cooperation and competition in continuous action spaces.
 
+<div align="center">
+  <img src="./My_MADDPG_Continous/plot/simple_tag_v3_demo.gif" alt="MADDPG Demo" width="70%"/>
+  <p><strong>MADDPG training results: Predators (red) chasing prey (green)</strong></p>
+</div>
+
 #### Implementation Progress
 | Algorithm      | Status | Location              | Core Components                    |
 |----------------|--------|----------------------|----------------------------------|
