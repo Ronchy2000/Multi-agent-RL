@@ -4,6 +4,14 @@
 
 ![Status](https://img.shields.io/badge/status-archived-red) ![MADDPG](https://img.shields.io/badge/MADDPG-implemented-success) ![Python](https://img.shields.io/badge/python-3.11.8%2B-blue)
 
+## 📈 Training Results
+<div align="center">
+  <img src="./plot/demo-rewards_plot_ma.png" alt="Reward Convergence" width="80%"/>
+</div>
+
+<center> <strong>Reward convergence curve of MADDPG algorithm in simple_tag_v3 environment</strong> </center>
+
+
 > **⚠️ Important Note**: Before using, please check the 🔍 [**Known Issues & Solutions**](KNOWN_ISSUES.md) document to understand common problems and their solutions, especially Windows rendering issues and PettingZoo version compatibility.
 
 > **Note**: This repo is no longer actively maintained, but feel free to use it - it should still work!

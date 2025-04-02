@@ -4,6 +4,13 @@
 
 ![项目状态](https://img.shields.io/badge/状态-不再维护-red) ![MADDPG](https://img.shields.io/badge/MADDPG-已实现-success)![Python](https://img.shields.io/badge/python-3.11.8%2B-blue)
 
+## 📈 训练效果
+<div align="center">
+  <img src="./plot/demo-rewards_plot_ma.png" alt="训练收敛结果" width="80%"/>
+</div>
+<center><strong>MADDPG算法在simple_tag_v3环境中的奖励收敛曲线</strong></center>
+
+
 > **⚠️ 重要提示**：使用前请查看🔍 [**已知问题与解决方案KNOWN_ISSUES.md**](KNOWN_ISSUES.md)文档，了解常见问题的解决方法，特别是Windows系统的渲染卡死问题和PettingZoo版本兼容性问题。
 
 
