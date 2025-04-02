@@ -4,7 +4,7 @@ from utils.runner import RUNNER
 from agents.MADDPG_agent import MADDPG
 import torch
 from envs import simple_tag_env
-
+import os
 
 def get_env(env_name, ep_len=50, render_mode = "None"):
     """create environment and get observation and action dimension of each agent in this environment"""
@@ -37,7 +37,9 @@ if __name__ == '__main__':
     # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Using device:",device)
     # 模型存储路径
-    chkpt_dir='models/maddpg_models/'
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    chkpt_dir = os.path.join(current_dir, 'models/maddpg_models/')
+    # 加载模型的时间戳
     load_timestamp = "2025-02-16_18-41"
     model_timestamp = None if load_timestamp == '' else load_timestamp
     # 定义参数

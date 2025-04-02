@@ -50,6 +50,10 @@ class MLPNetworkActor(nn.Module):
         else:
             # 直接保存在主目录下，不使用时间戳
             save_dir = self.chkpt_dir
+        
+        # 确保目录存在
+        os.makedirs(save_dir, exist_ok=True)
+        
         # 创建保存路径
         self.chkpt_file = os.path.join(save_dir, self.chkpt_name)
 

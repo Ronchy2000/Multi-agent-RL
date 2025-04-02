@@ -6,6 +6,7 @@ from utils.runner import RUNNER
 
 from agents.MADDPG_agent import MADDPG
 import torch
+import os
 
 import time
 from datetime import timedelta
@@ -48,7 +49,8 @@ if __name__ == '__main__':
     start_time = time.time() # 记录开始时间
     
     # 模型保存路径
-    chkpt_dir='models/maddpg_models/'
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    chkpt_dir = os.path.join(current_dir, 'models/maddpg_models/')
     # 定义参数
     args = main_parameters()
     # 创建环境

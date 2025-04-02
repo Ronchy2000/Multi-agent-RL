@@ -42,6 +42,9 @@ class MLPNetworkCritic(nn.Module):
             # 直接保存在主目录下
             save_dir = self.chkpt_dir
         
+        # 确保目录存在
+        os.makedirs(save_dir, exist_ok=True)
+        
         self.chkpt_file = os.path.join(save_dir, self.chkpt_name)
 
         if is_target:
