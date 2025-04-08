@@ -16,6 +16,8 @@
 
 > **⚠️ Important Note**: Before using, please check the 🔍 [**Known Issues & Solutions**](KNOWN_ISSUES.md) document to understand common problems and their solutions, especially Windows rendering issues and PettingZoo version compatibility.
 
+> **Reward Function Modification**: The default reward configuration cannot train good policies, especially for adversary agents
+
 > **Note**: This repo is no longer actively maintained, but feel free to use it - it should still work!
 >
 > Current Status: MADDPG implemented in `/agents/*.py`
@@ -156,6 +158,7 @@ We have compiled a detailed document of known issues and their solutions, includ
 - **Windows Rendering Unresponsiveness**: Fixes for PettingZoo rendering issues
 - **PettingZoo Version Compatibility**: This project requires version 1.24.4
 - **Visdom Server Connection Issues**: Ensuring visualization services run properly
+- **Reward Function Modification**: The default reward configuration cannot train good policies, especially for adversary agents
 
 👉 **[Click to view the complete Known Issues & Solutions document](KNOWN_ISSUES.md)**
 
