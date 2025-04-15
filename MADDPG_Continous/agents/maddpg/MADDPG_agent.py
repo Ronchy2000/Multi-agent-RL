@@ -3,8 +3,8 @@ import os
 import numpy as np
 import torch
 import torch.nn.functional as F
-from agents.DDPG_agent import DDPG
-from agents.buffer import BUFFER
+from agents.maddpg.DDPG_agent import DDPG
+from agents.maddpg.buffer import BUFFER
 
 class MADDPG():
     # device = 'cpu'
