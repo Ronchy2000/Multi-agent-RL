@@ -35,7 +35,7 @@
 
 ## 🏗️ Project Structure (Key Files)
 ```tree
-My_MADDPG_Continous/
+MADDPG_Continous/
 ├── agents/                   # Core implementations
 │   ├── MADDPG_agent.py       # Multi-agent controller
 │   ├── DDPG_agent.py         # Base DDPG implementation

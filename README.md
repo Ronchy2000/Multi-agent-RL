@@ -8,22 +8,19 @@
 | 项目 | 状态 | 完成度 | 技术栈 | 文档索引 |
 |------|------|--------|--------|----------|
 | [RL_Learning-main](./RL_Learning-main/) | ![状态](https://img.shields.io/badge/状态-已完成-success) | ![完成度](https://img.shields.io/badge/完成度-90%25-green) | ![技术](https://img.shields.io/badge/技术-基础RL算法-blue) | [已实现算法](./RL_Learning-main/README.md#已实现算法) |
-| [My_MADDPG_Continous](./My_MADDPG_Continous/) | ![状态](https://img.shields.io/badge/状态-已完成-success) | ![完成度](https://img.shields.io/badge/完成度-100%25-brightgreen) | ![技术](https://img.shields.io/badge/技术-连续MADDPG-blue) | [中文文档](./My_MADDPG_Continous/README_zh.md#项目特色) |
-| [My_MPE](./My_MPE/) | ![状态](https://img.shields.io/badge/状态-已完成-success) | ![完成度](https://img.shields.io/badge/完成度-100%25-brightgreen) | ![技术](https://img.shields.io/badge/技术-离散MADDPG-blue) | [README](./My_MPE/README.md) |
-| [RL-basic-algorithm](./RL-basic-algorithm/) | ![状态](https://img.shields.io/badge/状态-暂停开发-orange) | ![完成度](https://img.shields.io/badge/完成度-40%25-yellow) | ![技术](https://img.shields.io/badge/技术-Q学习/DQN/PPO-blue) | [README](./RL-basic-algorithm/README.md) |
 | [动手学强化学习](./动手学强化学习/) | ![状态](https://img.shields.io/badge/状态-参考实现-informational) | ![完成度](https://img.shields.io/badge/完成度-100%25-brightgreen) | ![技术](https://img.shields.io/badge/技术-DQN到DDPG-blue) | [README](./动手学强化学习/README.md) |
-| [pytorch-DRL-master](./pytorch-DRL-master/) | ![状态](https://img.shields.io/badge/状态-参考实现-informational) | ![完成度](https://img.shields.io/badge/完成度-100%25-brightgreen) | ![技术](https://img.shields.io/badge/技术-PyTorch/DRL-blue) | [README](./pytorch-DRL-master/README.md) |
+| [MADDPG_Continous](./MADDPG_Continous/) | ![状态](https://img.shields.io/badge/状态-已完成-success) | ![完成度](https://img.shields.io/badge/完成度-100%25-brightgreen) | ![技术](https://img.shields.io/badge/技术-连续MADDPG-blue) | [中文文档](./MADDPG_Continous/README_zh.md#项目特色) |
+
 
 ## 学习路径与项目关联
 本仓库中的项目构成了一条从基础强化学习到多智能体强化学习的完整学习路径：
 
 1. **基础理论与算法** (RL_Learning-main)：掌握强化学习的数学基础和基本算法
-2. **基础算法实现** (RL-basic-algorithm, 动手学强化学习)：动手实现基础强化学习算法
-3. **深度强化学习** (pytorch-DRL-master)：学习基于深度学习的强化学习算法
-4. **多智能体扩展** (My_MADDPG_Continous, My_MPE)：将单智能体算法扩展到多智能体场景
+2. **基础算法实现** (动手学强化学习)：动手实现基础强化学习算法
+4. **多智能体扩展** (MADDPG_Continous)：将单智能体算法扩展到多智能体场景
 
 ## 项目结构
-### 一、RL_Learning-main：强化学习基础代码复现
+### RL_Learning-main：强化学习基础代码复现
 
 复现西湖大学**赵世钰老师**的强化学习课程代码，包括值迭代、策略迭代、蒙特卡洛、时序差分、DQN、Reinforce等算法实现。这部分是理解强化学习基础算法的最佳起点。
 
@@ -48,46 +45,7 @@
 >Refactoring the code of jwk1rose,I'm trying to divide it into as many sections as possible and write comments.
 
 ---
-### 二、多智能体强化学习实现
-
-在掌握了基础强化学习算法后，我们自然会思考：如何将这些方法扩展到多个智能体同时学习的场景？多智能体强化学习（MARL）正是解决这一问题的关键技术。以下是我在MARL领域的两个主要实现。
-
-### 二.1、My_MADDPG_Continous：多智能体深度确定性策略梯度算法
-
-个人基于最新版Pettingzoo中的MPE环境，实现的连续状态，连续动作下的MADDPG算法，支持连续动作空间的多智能体协作与竞争。
-
-<div align="center">
-  <img src="./My_MADDPG_Continous/plot/simple_tag_v3_demo_loop.gif" alt="MADDPG演示" width="45%"/>
-  <p><strong>MADDPG算法训练效果：捕食者(红色)追逐猎物(绿色)的过程</strong></p>
-</div>
-
-#### 实现进度
-| 算法            | 状态   | 位置                  | 核心组件                           |
-|----------------|--------|----------------------|----------------------------------|
-| MADDPG         | ✅ 1.0 | `agents/*.py`        | MADDPG_agent, DDPG_agent, buffer |
-| Independent RL | ⏳ 待完成 | `agents/independent/`| IndependentRL (计划中)          |
-| Centralized RL | ⏳ 待完成 | `agents/centralized/`| CentralizedRL (计划中)          |
-#### 代码位置  [`./My_MADDPG_Continous`](./My_MADDPG_Continous)
-
-### 二.2、My_MPE
-
-基于Pettingzoo的MPE环境，实现的离散动作空间下的MADDPG算法，支持多智能体协作与竞争。这部分探索了在离散动作空间中多智能体协作的可能性。
-#### 代码位置  [`./My_MPE`](./My_MPE)
-
----
-### 三、RL-basic-algorithm：基础强化学习算法实现
-回到强化学习的基础，这个部分包含了我在学习过程中实现的各种基础算法。这些实现不仅帮助我深入理解了算法原理，也为后续的多智能体研究奠定了坚实基础。
-
-包含Q-Learning、DQN、PPO等基础算法实现，以及一些复现的论文代码。这部分是我学习强化学习基础算法的实践记录，也是后续多智能体研究的基础。
-
-#### 主要内容
-- 基础算法: Q-Learning, DQN, PPO
-- 论文复现: Team-Coordination on Graphs with Risky Edges (TCGRE)
-- 图上的多智能体协调算法实现
-#### 代码位置 [`./RL-basic-algorithm`](./RL-basic-algorithm/)
-
----
-### 四、动手学强化学习
+### 二、动手学强化学习
 《动手学强化学习》书籍代码的复现与扩展，最终目标是扩展到MADDPG。这部分是我系统学习强化学习的记录，从基础算法到高级算法的实现。
 #### 实现算法
 - DQN (Deep Q-Network)
@@ -102,17 +60,29 @@
 - [动手学强化学习](https://hrl.boyuai.com/chapter/2/dqn%E7%AE%97%E6%B3%95)
 - [HandsOnRL GitHub](https://github.com/peterwu4084/HandsOnRL/tree/main)
 
+---
+### 三、多智能体强化学习实现
+> **本项目专为Predator-Prey追逃博弈任务优化！** 在`PettingZoo MPE`环境基础上重构修改，提供了完整的多智能体协作与对抗环境，适用于围捕控制、群体智能和策略博弈研究。
 
-### 五、pytorch-DRL-master：PyTorch实现的深度强化学习
-随着深度学习的发展，深度强化学习成为了当前研究的热点。这部分包含了基于PyTorch实现的各种深度强化学习算法，是我探索深度强化学习的重要工具。
+在掌握了基础强化学习算法后，我们自然会思考：如何将这些方法扩展到多个智能体同时学习的场景？多智能体强化学习（MARL）正是解决这一问题的关键技术。以下是我在MARL领域的两个主要实现。
 
-基于PyTorch的深度强化学习算法实现集合，包含多种经典算法的高效实现。这部分提供了使用PyTorch框架实现强化学习算法的参考。
-#### 实现算法
-- DQN及其变种 (Double DQN, Dueling DQN)
-- DDPG (Deep Deterministic Policy Gradient)
-- TD3 (Twin Delayed DDPG)
-- SAC (Soft Actor-Critic)
-#### 代码位置 [`./pytorch-DRL-master`](./pytorch-DRL-master)
+#### 3.1 MADDPG_Continous：多智能体深度确定性策略梯度算法
+
+个人基于最新版Pettingzoo中的MPE环境，实现的连续状态，连续动作下的MADDPG算法，支持连续动作空间的多智能体协作与竞争。
+
+<div align="center">
+  <img src="./MADDPG_Continous/plot/simple_tag_v3_demo_loop.gif" alt="MADDPG演示" width="45%"/>
+  <p><strong>MADDPG算法训练效果：捕食者(红色)追逐猎物(绿色)的过程</strong></p>
+</div>
+
+#### 实现进度
+| 算法            | 状态   | 位置                  | 核心组件                           |
+|----------------|--------|----------------------|----------------------------------|
+| MADDPG         | ✅ 1.0 | `agents/maddpg/`        | MADDPG_agent, DDPG_agent, buffer |
+| Independent RL | ⏳ 待完成 | `agents/independent/`| IndependentRL (计划中)          |
+| Centralized RL | ⏳ 待完成 | `agents/centralized/`| CentralizedRL (计划中)          |
+#### 代码位置  [`./MADDPG_Continous`](./MADDPG_Continous)
+
 
 
 ## 进行中的项目
