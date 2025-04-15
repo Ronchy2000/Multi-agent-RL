@@ -4,7 +4,9 @@
 
 ![项目状态](https://img.shields.io/badge/状态-重构完成-green) ![MADDPG](https://img.shields.io/badge/MADDPG-已实现-success)![Python](https://img.shields.io/badge/python-3.11.8%2B-blue)
 
- **本项目专为Predator-Prey追逃博弈任务优化！** 在`PettingZoo MPE`环境基础上重构修改，提供了完整的多智能体协作与对抗环境，适用于围捕控制、群体智能和策略博弈研究。
+>**本项目专为Predator-Prey追逃博弈任务优化！** 在`PettingZoo MPE`环境基础上重构修改，提供了完整的多智能体协作与对抗环境，适用于围捕控制、群体智能和策略博弈研究。
+
+> MADDPG algorithm Reference: https://github.com/Git-123-Hub/maddpg-pettingzoo-pytorch
 
 ## 📈 训练效果
 <div align="center">

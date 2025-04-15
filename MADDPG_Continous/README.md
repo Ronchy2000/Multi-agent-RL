@@ -6,6 +6,8 @@
 
 > **This project is specially optimized for Predator-Prey pursuit games!** Built on a modified `PettingZoo MPE` environment, it provides a comprehensive multi-agent cooperative and competitive environment suitable for pursuit control, swarm intelligence, and strategy game research.
 
+> MADDPG algorithm Reference: https://github.com/Git-123-Hub/maddpg-pettingzoo-pytorch
+
 ## 📈 Training Results
 
 <div align="center">
