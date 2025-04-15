@@ -68,12 +68,18 @@
 
 #### 3.1 MADDPG_Continous：多智能体深度确定性策略梯度算法
 
+> Reference: https://github.com/Git-123-Hub/maddpg-pettingzoo-pytorch
+
 个人基于最新版Pettingzoo中的MPE环境，实现的连续状态，连续动作下的MADDPG算法，支持连续动作空间的多智能体协作与竞争。
 
 <div align="center">
-  <img src="./MADDPG_Continous/plot/simple_tag_v3_demo_loop.gif" alt="MADDPG演示" width="45%"/>
-  <p><strong>MADDPG算法训练效果：捕食者(红色)追逐猎物(绿色)的过程</strong></p>
+  <img src="./plot/simple_tag_v3_demo_loop.gif" alt="智能体行为" width="45%"/>
+  <p><strong>训练后的智能体行为展示：捕食者(红色)追逐猎物(绿色)的过程</strong></p>
+
+  <img src="./plot/demo-rewards_plot_ma.png" alt="训练收敛结果" width="80%"/>
+  <p><strong>MADDPG算法在simple_tag_v3环境中的奖励收敛曲线</strong></p>
 </div>
+
 
 #### 实现进度
 | 算法            | 状态   | 位置                  | 核心组件                           |
@@ -82,7 +88,6 @@
 | Independent RL | ⏳ 待完成 | `agents/independent/`| IndependentRL (计划中)          |
 | Centralized RL | ⏳ 待完成 | `agents/centralized/`| CentralizedRL (计划中)          |
 #### 代码位置  [`./MADDPG_Continous`](./MADDPG_Continous)
-
 
 
 ## 进行中的项目

@@ -77,6 +77,8 @@ After mastering basic reinforcement learning algorithms, we naturally think: how
 
 #### 3.1 MADDPG_Continous: Multi-Agent Deep Deterministic Policy Gradient Algorithm
 
+> Reference: https://github.com/Git-123-Hub/maddpg-pettingzoo-pytorch
+
 Personal implementation of the MADDPG algorithm based on the latest version of the MPE environment in PettingZoo, supporting multi-agent cooperation and competition in continuous action spaces.
 
 <div align="center">
