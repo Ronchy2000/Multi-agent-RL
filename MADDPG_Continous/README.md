@@ -1,195 +1,210 @@
-[🇨🇳 中文文档](README_zh.md) | [🇺🇸 English](README.md)
+[🇨🇳 中文文档](README.md) | [🇺🇸 English](README_EN.md)
 
-# Multi-Agent Deep Reinforcement Learning MADDPG Algorithm - Predator-Prey Game
+# 多智能体深度强化学习MADDPG算法 - Predator-Prey追逃博弈
 
-![Status](https://img.shields.io/badge/status-completed-green)  ![MADDPG](https://img.shields.io/badge/MADDPG-implemented-success) ![Python](https://img.shields.io/badge/python-3.11.8%2B-blue)
+![项目状态](https://img.shields.io/badge/状态-重构完成-green) ![MADDPG](https://img.shields.io/badge/MADDPG-已实现-success)![Python](https://img.shields.io/badge/python-3.11.8%2B-blue)
 
-> **This project is specially optimized for Predator-Prey pursuit games!** Built on a modified `PettingZoo MPE` environment, it provides a comprehensive multi-agent cooperative and competitive environment suitable for pursuit control, swarm intelligence, and strategy game research.
+>**本项目专为Predator-Prey追逃博弈任务优化！** 在`PettingZoo MPE`环境基础上重构修改，提供了完整的多智能体协作与对抗环境，适用于围捕控制、群体智能和策略博弈研究。
 
 > MADDPG algorithm Reference: https://github.com/Git-123-Hub/maddpg-pettingzoo-pytorch
 
-> For more portable algorithm implementations, please refer to: https://github.com/wild-firefox/FreeRL
+> 更多可移植的算法请参考：https://github.com/wild-firefox/FreeRL
 
-## 📈 Training Results
-
+## 📈 训练效果
 <div align="center">
-  <img src="./plot/simple_tag_v3_demo_loop.gif" alt="Agent Behavior" width="45%"/>
-  <p><strong>Trained agents in action: Predators (red) chasing prey (green) in simple_tag_v3 environment</strong></p>
+  <img src="./plot/simple_tag_v3_demo_loop.gif" alt="智能体行为" width="45%"/>
+  <p><strong>训练后的智能体行为展示：捕食者(红色)追逐猎物(绿色)的过程</strong></p>
 
-  <img src="./plot/demo-rewards_plot_ma.png" alt="Reward Convergence" width="80%"/>
-  <p><strong>Reward convergence curve of MADDPG algorithm in simple_tag_v3 environment</strong></p>
+  <img src="./plot/demo-rewards_plot_ma.png" alt="训练收敛结果" width="80%"/>
+  <p><strong>MADDPG算法在simple_tag_v3环境中的奖励收敛曲线</strong></p>
 </div>
 
-> **⚠️ Important Note**: Before using, please check the 🔍 [**Known Issues & Solutions**](KNOWN_ISSUES.md) document to understand common problems and their solutions, especially Windows rendering issues and PettingZoo version compatibility.
+> **⚠️ 重要提示**：使用前请查看🔍 [**已知问题与解决方案KNOWN_ISSUES.md**](KNOWN_ISSUES.md)文档，了解常见问题的解决方法，特别是Windows系统的渲染卡死问题和PettingZoo版本兼容性问题。
 
-> **Reward Function Modification**: The default reward configuration cannot train good policies, especially for adversary agents
+> **奖励函数修改**：官方的奖励配置无法训练出好的效果，需要修改追捕者的奖励函数
 
-> **Note**: This repo is no longer actively maintained, but feel free to use it - it should still work!
->
-> Current Status: MADDPG implemented in `/agents/maddpg/`
+> 当前状态：MADDPG算法已在 `/agents/maddpg/*.py` 中实现
 
-## 🚀 Implementation Status
-| Algorithm       | Status  | Location                | Components                          |
-|-----------------|---------|-------------------------|------------------------------------|
-| MADDPG          | ✅ 1.0  | `agents/maddpg/`           | MADDPG_agent, DDPG_agent, buffer   |
-| Independent RL  | ⏳ WIP  | `agents/independent/`   | IndependentRL (planned)            |
-| Centralized RL  | ⏳ WIP  | `agents/centralized/`   | CentralizedRL (planned)            |
+## 🚀 实现进度
+| 算法            | 状态   | 位置                  | 核心组件                           |
+|----------------|--------|----------------------|----------------------------------|
+| MADDPG         | ✅ 1.0 | `agents/maddpg/`   | MADDPG_agent, DDPG_agent, buffer |
+| Independent RL | ⏳ 待完成 | `agents/independent/`| IndependentRL (计划中)          |
+| Centralized RL | ⏳ 待完成 | `agents/centralized/`| CentralizedRL (计划中)          |
 
-> **Note**: MADDPG modules are currently in the root agents directory (buffer.py, DDPG_agent.py, etc.), but are fully functional!
+> 注意：MADDPG模块目前位于agents根目录（buffer.py, DDPG_agent.py等），但功能完整可用！
 
-## 🏗️ Project Structure (Key Files)
+## 🏗️ 项目结构
 ```tree
 MADDPG_Continous/
-├── agents/                   # Core implementations
-│   ├── MADDPG_agent.py       # Multi-agent controller
-│   ├── DDPG_agent.py         # Base DDPG implementation
-│   ├── buffer.py             # Experience replay buffer
-│   └── (NN_actor|NN_critic).py  # Neural network modules
-├── envs/                     # Custom environments
-│   ├── custom_agents_dynamics.py  # Extended physics engine
-│   └── simple_tag_env.py           # Modified tag environment
-├── utils/                    # Utility modules
-│   ├── runner.py             # Training runner
-│   └── logger.py             # Training logger
-│── main_train.py             # Unified training entry
-│── main_evaluate.py          # Unified evaluate model entry
-└── main_parameters.py        # Unified parameters config
+├── agents/                   # 核心实现
+│   ├── maddpg/              # MADDPG算法实现
+│   │   ├── MADDPG_agent.py  # 多智能体控制器
+│   │   ├── DDPG_agent.py    # 基础DDPG实现
+│   │   ├── buffer.py        # 经验回放缓冲区
+│   │   └── NN_(actor|critic).py # 神经网络模块
+│   ├── Independent/         # 独立RL实现(计划中)
+│   └── Centralized/         # 中央化RL实现(计划中)
+├── envs/                     # 自定义环境
+│   ├── custom_agents_dynamics.py  # 扩展物理引擎
+│   └── simple_tag_env.py          # 修改版tag环境
+├── utils/                    # 工具模块
+│   ├── runner.py             # 训练运行器
+│   └── logger.py             # 训练日志系统
+├── main_train.py             # 统一训练入口
+├── main_evaluate.py          # 统一评估入口
+├── main_evaluate_save_render2gif.py # 渲染并保存GIF
+└── main_parameters.py        # 统一参数配置
 ```
-## Other Common Issues
-For other common issues and their solutions, please check the Issues section of this repository.
 
+## 🛠️ 快速开始
 
-## 🛠️ Getting Started
-### Prerequisites
+### 环境配置
+
+> 相关配置需求在utils/文件夹下。
+
+# 创建并激活虚拟环境（推荐）
+1. 使用conda-environment.yml创建新环境
 ```bash
-# 1. Create and activate virtual environment (recommended)
-# Note: Replace "MPE" with your preferred environment name
-conda env create -f utils/conda-environment.yml -n MPE  
-#then, activate env.
+# 注意：将"MPE"替换为您喜欢的环境名称
+conda env create -f utils/conda-environment.yml -n MPE
+# 激活刚创建的环境
 conda activate MPE
-
-# 2. Install core dependencies
+```
+2. pip安装核心依赖
+```bash
 pip install -r utils/pip-requirements.txt
-
-# 3. Install PyTorch
-# Visit https://pytorch.org/ to select the appropriate installation command for your system
-# For example:
+```
+3. 从PyTorch官网安装对应版本的PyTorch
+```bash
+# 请访问 https://pytorch.org 选择适合您系统的安装命令
+# 例如：
 pip3 install torch torchvision torchaudio
-
-# 4. Install PettingZoo 1.24.4
-# Important: This project requires PettingZoo 1.24.4, but the official PyPI repository only offers version 1.24.3
-# You must install from GitHub source to get version 1.24.4 using:
+```
+4. 安装PettingZoo 1.24.4版本
+```bash
+# 重要说明：本项目需要PettingZoo 1.24.4版本，但官方PyPI仓库最新版本仅为1.24.3
+# 必须从GitHub源码安装才能获取1.24.4版本，安装命令为：
 pip install "pettingzoo[mpe] @ git+https://github.com/Farama-Foundation/PettingZoo.git"
-
-# Alternatively, you can use the provided installation script:
+# 或者，您可以直接运行提供的安装脚本：
 python utils/setupPettingzoo.py
 ```
 
-### 🖥️ Runtime Configuration
-> **Note:** The current version no longer depends on Visdom for visualization, but the related configuration is retained for reference if needed.
+### 🖥️ 运行配置
+> **注意：** 为简化使用，当前版本已不再依赖Visdom进行可视化，您可跳过下述visdom配置，但保留相关配置供需要时参考。
 
-If you wish to use Visdom to visualize the training process, you can use the following commands:
 ```bash
-# Start Visdom visualization server (in separate terminal)
+# 启动Visdom可视化服务器（新终端）
 python -m visdom.server
-# or specify port
+# 或指定端口
 python -m visdom.server -port 8097
 
-# Access training dashboard at:
+# 访问训练仪表盘：
 # http://localhost:8097
 ```
 
-## 🔄 Training Pipeline
-1. **Parameter Customization**  
-Configure environment parameters in [`main_parameter.py`](main_parameters.py)
-``` bash
-   env_name = 'simple_tag_v3'  # Options: simple_adversary_v3/ simple_spread_v3
-   episode_num = 2000         # Total training episodes
-   # Training parameters
-   batch_size = 1024          # Experience replay batch  size
-   actor_lr = 0.01            # Actor network learning   rate
-   critic_lr = 0.01           # Critic network learning  rate
+## 🔄 训练流程
+1. **参数配置**   
+在 [`main_parameter.py`](main_parameters.py) 中设置环境参数：
+```python
+env_name = 'simple_tag_v3'  # 可选：simple_adversary_v3/simple_spread_v3
+episode_num = 5000         # 总训练回合数
+# 训练参数
+batch_size = 128          # 经验回放批次大小
+actor_lr = 0.01           # Actor网络学习率
+critic_lr = 0.01          # Critic网络学习率
 ```
 
-2. **Start Visdom server**
-```python
-# Start Visdom visualization server (in separate terminal)
-   python -m visdom.server
-   or
-   python -m visdom.server -port 8097
+2. **启动Visdom服务器**
+```bash
+# 在单独的终端中启动Visdom可视化服务器
+python -m visdom.server
+# 或指定端口
+python -m visdom.server -port 8097
 
-# Access training dashboard at:
+# 访问训练仪表盘：
 # http://localhost:8097
 ```
-3. **Run training script**:
-```python
-# Train with custom parameters
-   python main_train.py
+3. **运行训练脚本**
+```bash
+# 使用默认参数训练
+python main_train.py
 ```
-4. **Monitor training progress at `http://localhost:8097`**
-5. **Evaluate trained models**
-```python
-   python main_evaluate.py
+4. **在 `http://localhost:8097` 监控训练进度**
+
+5. **评估训练模型**
+```bash
+# 渲染训练好的模型策略
+python main_evaluate.py
 ```
 
-### 🌐 Environment Customization
-The [`simple_tag_env.py`](envs/simple_tag_env.py) extends PettingZoo's MPE environment with:
-- Custom agent dynamics in [`custom_agents_dynamics.py`](envs/custom_agents_dynamics.py)
-- Modified reward functions optimized specifically for Predator-Prey pursuit tasks
-- Adjustable agent physics parameters:
-  - World size: 2.5 units (customizable for different pursuit scenarios)
-  - Time step: 0.1s (affects action response time)
-  - Damping coefficient: 0.2 (affects agent inertia)
-  - Collision parameters:
-    - Contact force: 1e2 (controls collision intensity, impacts capture effectiveness)
-    - Contact margin: 1e-3 (controls collision softness)
+### 🌐 环境定制
+[`envs/simple_tag_env.py`](envs/simple_tag_env.py) 扩展了PettingZoo的MPE环境：
+- 在 [`envs/custom_agents_dynamics.py`](envs/custom_agents_dynamics.py) 中自定义智能体动力学
+- 修改的奖励函数，专为Predator-Prey任务优化
+- 可调节的智能体物理参数：
+  - 世界大小：2.5单位（可根据追逃需求自定义）
+  - 时间步长：0.1秒（影响动作响应速度）
+  - 阻尼系数：0.2（影响智能体的惯性）
+  - 碰撞参数：
+    - 接触力：1e2（控制碰撞强度，影响围捕效果）
+    - 接触边界：1e-3（控制碰撞柔软度）
+
+#### 🔄 自定义追逃场景
+您可以轻松配置自己的追逃环境：
+- 自定义Predator数量、速度和加速度
+- 配置Evader的逃跑策略和敏捷度
+- 设计围捕奖励机制，鼓励协作或竞争行为
+- 实现复杂地形和障碍物（通过自定义碰撞处理）
 
 
-## 📦 Data Management
-### Model Storage
-Trained models are automatically saved with timestamps:
+## 📦 数据管理
+### 模型存储
+训练模型自动保存在：
 ```tree
 ./models/
-└── maddpg_models/          # MADDPG checkpoint directory
-    ├── {timestamp}_agent_0_actor.pth    # Actor network parameters
-    ├── {timestamp}_agent_0_critic.pth   # Critic network parameters
-    └── ...  
+└── maddpg_models/          # MADDPG检查点目录
+    ├── {timestamp}_agent_0_actor.pth    # Actor网络参数
+    ├── {timestamp}_agent_0_critic.pth   # Critic网络参数
+    └── ...                             # 其他智能体网络
 ```
-### Visualization Pipeline
+
+### 可视化系统
+训练指标可视化：
 ```tree
 plot/
-├── data/                   # Serialized training metrics
-│   └── plot_data_20240515.pkl  # PyTorch tensor storage
-└── plot_rewards.py         # Visualization toolkit
+├── data/                   # 序列化训练指标
+│   └── plot_data_20240515.pkl  # PyTorch张量存储
+└── plot_rewards.py         # 可视化工具
 ```
-### Logging System
-Implemented in [logger.py](utils/logger.py) :
-- Records training metadata (device, duration)
-- Serializes hyperparameters
-- Generates human-readable training reports
+
+### 日志系统
+实现于 [`logger.py`](utils/logger.py)：
+- 记录训练元数据（设备、时长）
+- 序列化超参数
+- 生成训练报告
 
 ```tree
 logs/
-├── training_log.json       # Human-readable training report
-└── plot_data_20240515.pkl  # Raw metrics for post-analysis
+├── training_log.json       # 可读训练报告
+└── plot_data_20240515.pkl  # 原始指标数据
 ```
 
-## 🐛 Known Issues & Solutions
-We have compiled a detailed document of known issues and their solutions, including:
-- **Windows Rendering Unresponsiveness**: Fixes for PettingZoo rendering issues
-- **PettingZoo Version Compatibility**: This project requires version 1.24.4
-- **Visdom Server Connection Issues**: Ensuring visualization services run properly
-- **Reward Function Modification**: The default reward configuration cannot train good policies, especially for adversary agents
 
-👉 **[Click to view the complete Known Issues & Solutions document](KNOWN_ISSUES.md)**
+## 🐛 已知问题与解决方案
+我们整理了一份详细的已知问题及其解决方案文档，包括：
+- **Windows系统渲染无响应问题**：修复PettingZoo的渲染问题
+- **PettingZoo版本兼容性问题**：本项目需要1.24.4版本
+- **Visdom服务器连接问题**：确保可视化服务正常运行
+- **奖励函数修改**：官方的奖励配置无法训练出好的效果，需要修改追捕者的奖励函数
+👉 **[点击查看完整的已知问题与解决方案文档](KNOWN_ISSUES.md)**
 
-If you encounter issues not mentioned in the document, please submit them in the Issues section and we will address them promptly.
+如果您遇到文档中未提及的问题，请在Issues中提交，我们将尽快解决。
 
+## 🤝 贡献
+本项目的主要贡献在于：
+- 针对Predator-Prey追逃博弈任务的环境适配与优化
+- 改进的奖励函数设计，解决官方环境训练效果不佳的问题
+- 灵活的围捕控制参数配置，支持多种追逃场景
 
-## 🤝 Contributing
-This project's main contributions include:
-- Environment adaptation and optimization specifically for Predator-Prey pursuit games
-- Improved reward function design that solves the ineffective training issues in official environments
-- Flexible pursuit control parameter configuration supporting various chase scenarios
-
-If you encounter any issues, please submit a Pull Request or open an Issue. If you're interested in extending more pursuit game scenarios, your contributions are especially welcome!
+如遇到任何问题，欢迎提交Issue或Pull Request。若您有兴趣扩展更多追逃博弈场景，欢迎您的贡献！
