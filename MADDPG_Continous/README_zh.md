@@ -1,8 +1,10 @@
 [🇨🇳 中文文档](README_zh.md) | [🇺🇸 English](README.md)
 
-# 多智能体深度强化学习MADDPG算法
+# 多智能体深度强化学习MADDPG算法 - Predator-Prey追逃博弈
 
-![项目状态](https://img.shields.io/badge/状态-不再维护-red) ![MADDPG](https://img.shields.io/badge/MADDPG-已实现-success)![Python](https://img.shields.io/badge/python-3.11.8%2B-blue)
+![项目状态](https://img.shields.io/badge/状态-重构完成-green) ![MADDPG](https://img.shields.io/badge/MADDPG-已实现-success)![Python](https://img.shields.io/badge/python-3.11.8%2B-blue)
+
+ **本项目专为Predator-Prey追逃博弈任务优化！** 在`PettingZoo MPE`环境基础上重构修改，提供了完整的多智能体协作与对抗环境，适用于围捕控制、群体智能和策略博弈研究。
 
 ## 📈 训练效果
 <div align="center">
@@ -17,12 +19,12 @@
 
 > **奖励函数修改**：官方的奖励配置无法训练出好的效果，需要修改追捕者的奖励函数
 
-> 当前状态：MADDPG算法已在 `/agents/*.py` 中实现
+> 当前状态：MADDPG算法已在 `/agents/maddpg/*.py` 中实现
 
 ## 🚀 实现进度
 | 算法            | 状态   | 位置                  | 核心组件                           |
 |----------------|--------|----------------------|----------------------------------|
-| MADDPG         | ✅ 1.0 | `agents/*.py`        | MADDPG_agent, DDPG_agent, buffer |
+| MADDPG         | ✅ 1.0 | `agents/maddpg/`   | MADDPG_agent, DDPG_agent, buffer |
 | Independent RL | ⏳ 待完成 | `agents/independent/`| IndependentRL (计划中)          |
 | Centralized RL | ⏳ 待完成 | `agents/centralized/`| CentralizedRL (计划中)          |
 
@@ -30,26 +32,32 @@
 
 ## 🏗️ 项目结构
 ```tree
-My_MADDPG_Continous/
+MADDPG_Continous/
 ├── agents/                   # 核心实现
-│   ├── MADDPG_agent.py       # 多智能体控制器
-│   ├── DDPG_agent.py         # 基础DDPG实现
-│   ├── buffer.py             # 经验回放缓冲区
-│   └── (NN_actor|NN_critic).py  # 神经网络模块
+│   ├── maddpg/              # MADDPG算法实现
+│   │   ├── MADDPG_agent.py  # 多智能体控制器
+│   │   ├── DDPG_agent.py    # 基础DDPG实现
+│   │   ├── buffer.py        # 经验回放缓冲区
+│   │   └── NN_(actor|critic).py # 神经网络模块
+│   ├── Independent/         # 独立RL实现(计划中)
+│   └── Centralized/         # 中央化RL实现(计划中)
 ├── envs/                     # 自定义环境
 │   ├── custom_agents_dynamics.py  # 扩展物理引擎
-│   └── simple_tag_env.py           # 修改版tag环境
+│   └── simple_tag_env.py          # 修改版tag环境
 ├── utils/                    # 工具模块
 │   ├── runner.py             # 训练运行器
 │   └── logger.py             # 训练日志系统
 ├── main_train.py             # 统一训练入口
 ├── main_evaluate.py          # 统一评估入口
+├── main_evaluate_save_render2gif.py # 渲染并保存GIF
 └── main_parameters.py        # 统一参数配置
 ```
 
 ## 🛠️ 快速开始
 
 ### 环境配置
+
+> 相关配置需求在utils/文件夹下。
 
 # 创建并激活虚拟环境（推荐）
 1. 使用conda-environment.yml创建新环境
@@ -79,6 +87,8 @@ python utils/setupPettingzoo.py
 ```
 
 ### 🖥️ 运行配置
+> **注意：** 为简化使用，当前版本已不再依赖Visdom进行可视化，您可跳过下述visdom配置，但保留相关配置供需要时参考。
+
 ```bash
 # 启动Visdom可视化服务器（新终端）
 python -m visdom.server
@@ -100,6 +110,7 @@ batch_size = 1024          # 经验回放批次大小
 actor_lr = 0.01           # Actor网络学习率
 critic_lr = 0.01          # Critic网络学习率
 ```
+
 2. **启动Visdom服务器**
 ```bash
 # 在单独的终端中启动Visdom可视化服务器
@@ -124,10 +135,24 @@ python main_evaluate.py
 ```
 
 ### 🌐 环境定制
-[`simple_tag_env.py`](envs/simple_tag_env.py) 扩展了PettingZoo的MPE环境：
-- 在 [`custom_agents_dynamics.py`](envs/custom_agents_dynamics.py) 中自定义智能体动力学
-- 修改的奖励函数
-- 可调节的智能体物理参数
+[`envs/simple_tag_env.py`](envs/simple_tag_env.py) 扩展了PettingZoo的MPE环境：
+- 在 [`envs/custom_agents_dynamics.py`](envs/custom_agents_dynamics.py) 中自定义智能体动力学
+- 修改的奖励函数，专为Predator-Prey任务优化
+- 可调节的智能体物理参数：
+  - 世界大小：2.5单位（可根据追逃需求自定义）
+  - 时间步长：0.1秒（影响动作响应速度）
+  - 阻尼系数：0.2（影响智能体的惯性）
+  - 碰撞参数：
+    - 接触力：1e2（控制碰撞强度，影响围捕效果）
+    - 接触边界：1e-3（控制碰撞柔软度）
+
+#### 🔄 自定义追逃场景
+您可以轻松配置自己的追逃环境：
+- 自定义Predator数量、速度和加速度
+- 配置Evader的逃跑策略和敏捷度
+- 设计围捕奖励机制，鼓励协作或竞争行为
+- 实现复杂地形和障碍物（通过自定义碰撞处理）
+
 
 ## 📦 数据管理
 ### 模型存储
@@ -161,19 +186,6 @@ logs/
 └── plot_data_20240515.pkl  # 原始指标数据
 ```
 
-## 🔧 高级配置
-
-### 自定义环境
-[`simple_tag_env.py`](envs/simple_tag_env.py) 扩展了PettingZoo的MPE环境：
-- 在 [`custom_agents_dynamics.py`](envs/custom_agents_dynamics.py) 中修改智能体物理特性
-- 可调节的智能体物理参数：
-  - 世界大小：2.5单位
-  - 时间步长：0.1秒
-  - 阻尼系数：0.2
-  - 碰撞参数：
-    - 接触力：1e2（控制碰撞强度）
-    - 接触边界：1e-3（控制碰撞柔软度）
-
 
 ## 🐛 已知问题与解决方案
 我们整理了一份详细的已知问题及其解决方案文档，包括：
@@ -186,4 +198,9 @@ logs/
 如果您遇到文档中未提及的问题，请在Issues中提交，我们将尽快解决。
 
 ## 🤝 贡献
-如遇到任何问题，欢迎提交Issue或Pull Request。
+本项目的主要贡献在于：
+- 针对Predator-Prey追逃博弈任务的环境适配与优化
+- 改进的奖励函数设计，解决官方环境训练效果不佳的问题
+- 灵活的围捕控制参数配置，支持多种追逃场景
+
+如遇到任何问题，欢迎提交Issue或Pull Request。若您有兴趣扩展更多追逃博弈场景，欢迎您的贡献！

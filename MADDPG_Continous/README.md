@@ -1,8 +1,10 @@
 [🇨🇳 中文文档](README_zh.md) | [🇺🇸 English](README.md)
 
-# This is Ronchy's MADDPG project.
+# Multi-Agent Deep Reinforcement Learning MADDPG Algorithm - Predator-Prey Game
 
-![Status](https://img.shields.io/badge/status-archived-red) ![MADDPG](https://img.shields.io/badge/MADDPG-implemented-success) ![Python](https://img.shields.io/badge/python-3.11.8%2B-blue)
+![Status](https://img.shields.io/badge/status-completed-green)  ![MADDPG](https://img.shields.io/badge/MADDPG-implemented-success) ![Python](https://img.shields.io/badge/python-3.11.8%2B-blue)
+
+> **This project is specially optimized for Predator-Prey pursuit games!** Built on a modified `PettingZoo MPE` environment, it provides a comprehensive multi-agent cooperative and competitive environment suitable for pursuit control, swarm intelligence, and strategy game research.
 
 ## 📈 Training Results
 
@@ -20,12 +22,12 @@
 
 > **Note**: This repo is no longer actively maintained, but feel free to use it - it should still work!
 >
-> Current Status: MADDPG implemented in `/agents/*.py`
+> Current Status: MADDPG implemented in `/agents/maddpg/`
 
 ## 🚀 Implementation Status
 | Algorithm       | Status  | Location                | Components                          |
 |-----------------|---------|-------------------------|------------------------------------|
-| MADDPG          | ✅ 1.0  | `agents/*.py`           | MADDPG_agent, DDPG_agent, buffer   |
+| MADDPG          | ✅ 1.0  | `agents/maddpg/`           | MADDPG_agent, DDPG_agent, buffer   |
 | Independent RL  | ⏳ WIP  | `agents/independent/`   | IndependentRL (planned)            |
 | Centralized RL  | ⏳ WIP  | `agents/centralized/`   | CentralizedRL (planned)            |
 
@@ -79,6 +81,19 @@ pip install "pettingzoo[mpe] @ git+https://github.com/Farama-Foundation/PettingZ
 python utils/setupPettingzoo.py
 ```
 
+### 🖥️ Runtime Configuration
+> **Note:** The current version no longer depends on Visdom for visualization, but the related configuration is retained for reference if needed.
+
+If you wish to use Visdom to visualize the training process, you can use the following commands:
+```bash
+# Start Visdom visualization server (in separate terminal)
+python -m visdom.server
+# or specify port
+python -m visdom.server -port 8097
+
+# Access training dashboard at:
+# http://localhost:8097
+```
 
 ## 🔄 Training Pipeline
 1. **Parameter Customization**  
@@ -91,6 +106,7 @@ Configure environment parameters in [`main_parameter.py`](main_parameters.py)
    actor_lr = 0.01            # Actor network learning   rate
    critic_lr = 0.01           # Critic network learning  rate
 ```
+
 2. **Start Visdom server**
 ```python
 # Start Visdom visualization server (in separate terminal)
@@ -113,16 +129,17 @@ Configure environment parameters in [`main_parameter.py`](main_parameters.py)
 ```
 
 ### 🌐 Environment Customization
-The [`simple_tag_env.py`](envs/simple_tag_env.py)  extends PettingZoo's MPE environment with:
+The [`simple_tag_env.py`](envs/simple_tag_env.py) extends PettingZoo's MPE environment with:
 - Custom agent dynamics in [`custom_agents_dynamics.py`](envs/custom_agents_dynamics.py)
-- Modified reward functions
+- Modified reward functions optimized specifically for Predator-Prey pursuit tasks
 - Adjustable agent physics parameters:
-- World size: 2.5 units
-- Time step: 0.1s
-- Damping coefficient: 0.2
-- Collision parameters:
-  - Contact force: 1e2 (controls collision intensity)
-  - Contact margin: 1e-3 (controls collision softness)
+  - World size: 2.5 units (customizable for different pursuit scenarios)
+  - Time step: 0.1s (affects action response time)
+  - Damping coefficient: 0.2 (affects agent inertia)
+  - Collision parameters:
+    - Contact force: 1e2 (controls collision intensity, impacts capture effectiveness)
+    - Contact margin: 1e-3 (controls collision softness)
+
 
 ## 📦 Data Management
 ### Model Storage
@@ -166,4 +183,9 @@ If you encounter issues not mentioned in the document, please submit them in the
 
 
 ## 🤝 Contributing
-If you encounter any issues, please submit a Pull Request or open an Issue.
+This project's main contributions include:
+- Environment adaptation and optimization specifically for Predator-Prey pursuit games
+- Improved reward function design that solves the ineffective training issues in official environments
+- Flexible pursuit control parameter configuration supporting various chase scenarios
+
+If you encounter any issues, please submit a Pull Request or open an Issue. If you're interested in extending more pursuit game scenarios, your contributions are especially welcome!
