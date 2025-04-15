@@ -10,6 +10,7 @@
 | [RL_Learning-main](./RL_Learning-main/) | ![状态](https://img.shields.io/badge/状态-已完成-success) | ![完成度](https://img.shields.io/badge/完成度-90%25-green) | ![技术](https://img.shields.io/badge/技术-基础RL算法-blue) | [已实现算法](./RL_Learning-main/README.md#已实现算法) |
 | [动手学强化学习](./动手学强化学习/) | ![状态](https://img.shields.io/badge/状态-参考实现-informational) | ![完成度](https://img.shields.io/badge/完成度-100%25-brightgreen) | ![技术](https://img.shields.io/badge/技术-DQN到DDPG-blue) | [README](./动手学强化学习/README.md) |
 | [MADDPG_Continous](./MADDPG_Continous/) | ![状态](https://img.shields.io/badge/状态-已完成-success) | ![完成度](https://img.shields.io/badge/完成度-100%25-brightgreen) | ![技术](https://img.shields.io/badge/技术-连续MADDPG-blue) | [中文文档](./MADDPG_Continous/README_zh.md#项目特色) |
+| [MATD3_Continous](./MATD3_Continous/) | ![状态](https://img.shields.io/badge/状态-已完成-success) | ![完成度](https://img.shields.io/badge/完成度-100%25-brightgreen) | ![技术](https://img.shields.io/badge/技术-连续MATD3-blue) | [中文文档](./MATD3_Continous/readme.md) |
 
 
 ## 学习路径与项目关联
@@ -91,6 +92,29 @@
 | Independent RL | ⏳ 待完成 | `agents/independent/`| IndependentRL (计划中)          |
 | Centralized RL | ⏳ 待完成 | `agents/centralized/`| CentralizedRL (计划中)          |
 #### 代码位置  [`./MADDPG_Continous`](./MADDPG_Continous)
+
+
+#### 3.2 MATD3_Continous：多智能体双延迟深度确定性策略梯度算法
+
+基于TD3算法的多智能体扩展版本(MATD3: Twin Delayed Deep Deterministic Policy Gradient)，相比MADDPG，通过双Q网络和目标策略平滑机制有效解决过估计问题，提供更稳定的训练和更优的策略。
+
+> MATD3 algorithm Reference: https://github.com/wild-firefox/FreeRL/blob/main/MADDPG_file/MATD3_simple.py
+
+<div align="center">
+  <img src="./MATD3_Continous/plot/training_rewards_demo.png" alt="训练收敛结果" width="80%"/>
+  <p><strong>MATD3算法在simple_tag_env环境中的奖励收敛曲线</strong></p>
+</div>
+
+#### MATD3 vs MADDPG
+MATD3对标准MADDPG进行了以下关键增强：
+
+1. **双Q网络设计**: 减少对动作值的过估计
+2. **延迟策略更新**: 提高训练稳定性
+3. **目标策略平滑**: 通过在目标动作中加入噪声防止过拟合
+4. **自适应噪声调整**: 根据训练进度动态调整探索噪声
+
+#### 代码位置  [`./MATD3_Continous`](./MATD3_Continous)
+
 
 
 ## 进行中的项目

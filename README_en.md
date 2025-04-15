@@ -10,7 +10,8 @@ This repository contains multiple projects related to Reinforcement Learning (RL
 |------|------|--------|--------|----------|
 | [RL_Learning-main](./RL_Learning-main/) | ![Status](https://img.shields.io/badge/status-completed-success) | ![Completion](https://img.shields.io/badge/completion-90%25-green) | ![Tech](https://img.shields.io/badge/tech-basic%20RL%20algorithms-blue) | [Implemented Algorithms](./RL_Learning-main/README.md#implemented-algorithms) |
 | [Hands-on RL](./动手学强化学习/) | ![Status](https://img.shields.io/badge/status-reference-informational) | ![Completion](https://img.shields.io/badge/completion-100%25-brightgreen) | ![Tech](https://img.shields.io/badge/tech-DQN%20to%20DDPG-blue) | [README](./动手学强化学习/README.md) |
-| [MADDPG_Continous](./MADDPG_Continous/) | ![Status](https://img.shields.io/badge/status-completed-success) | ![Completion](https://img.shields.io/badge/completion-100%25-brightgreen) | ![Tech](https://img.shields.io/badge/tech-continuous%20MADDPG-blue) | [README](./MADDPG_Continous/README.md) |
+| [MADDPG_Continous](./MADDPG_Continous/) | ![Status](https://img.shields.io/badge/status-completed-success) | ![Completion](https://img.shields.io/badge/completion-100%25-brightgreen) | ![Tech](https://img.shields.io/badge/tech-continuous%20MADDPG-blue) | [README](./MADDPG_Continous/README_EN.md) |
+| [MATD3_Continous](./MATD3_Continous/) | ![Status](https://img.shields.io/badge/status-completed-success) | ![Completion](https://img.shields.io/badge/completion-100%25-brightgreen) | ![Tech](https://img.shields.io/badge/tech-continuous%20MATD3-blue) | [README](./MATD3_Continous/readme_en.md) |
 
 ## Learning Path and Project Connections
 
@@ -18,7 +19,7 @@ The projects in this repository form a complete learning path from basic reinfor
 
 1. **Basic Theory and Algorithms** (RL_Learning-main): Master the mathematical foundations and basic algorithms of reinforcement learning
 2. **Basic Algorithm Implementation** (Hands-on RL): Implement basic reinforcement learning algorithms
-3. **Multi-Agent Extensions** (MADDPG_Continous): Extend single-agent algorithms to multi-agent scenarios
+3. **Multi-Agent Extensions** (MADDPG_Continous, MATD3_Continous): Extend single-agent algorithms to multi-agent scenarios
 
 ## Project Structure
 
@@ -45,6 +46,7 @@ Major update! The original author's render coordinates were inconsistent with st
 ![img.png](img.png)
 > Original code source: https://github.com/jwk1rose/RL_Learning  
 > I am currently refactoring the code, trying to divide it into more independent modules and add detailed comments.
+>Refactoring the code of jwk1rose, I'm trying to divide it into as many sections as possible and write comments.
 
 ---
 
@@ -73,19 +75,22 @@ This section demonstrates the learning path from basic DQN to DDPG, and then to 
 ### III. Multi-Agent Reinforcement Learning Implementation
 > **This project is specially optimized for Predator-Prey pursuit games!** Built on a modified `PettingZoo MPE` environment, it provides a comprehensive multi-agent cooperative and competitive environment suitable for pursuit control, swarm intelligence, and strategy game research.
 
-After mastering basic reinforcement learning algorithms, we naturally think: how can these methods be extended to scenarios where multiple agents learn simultaneously? Multi-agent reinforcement learning (MARL) is the key technology to solve this problem.
+After mastering basic reinforcement learning algorithms, we naturally think: how can these methods be extended to scenarios where multiple agents learn simultaneously? Multi-agent reinforcement learning (MARL) is the key technology to solve this problem. Below are my main implementations in the MARL field.
 
 #### 3.1 MADDPG_Continous: Multi-Agent Deep Deterministic Policy Gradient Algorithm
 
 Personal implementation of the MADDPG algorithm based on the latest version of the MPE environment in PettingZoo, supporting multi-agent cooperation and competition in continuous action spaces.
 
-> Reference: https://github.com/Git-123-Hub/maddpg-pettingzoo-pytorch
+> MADDPG algorithm Reference: https://github.com/Git-123-Hub/maddpg-pettingzoo-pytorch
 
 > For more portable algorithm implementations, please refer to: https://github.com/wild-firefox/FreeRL
 
 <div align="center">
-  <img src="./MADDPG_Continous/plot/simple_tag_v3_demo_loop.gif" alt="MADDPG Demo" width="45%"/>
-  <p><strong>MADDPG training results: Predators (red) chasing prey (green)</strong></p>
+  <img src="./MADDPG_Continous/plot/simple_tag_v3_demo_loop.gif" alt="Agent Behavior" width="45%"/>
+  <p><strong>Agent behavior after training: Predators (red) chasing prey (green)</strong></p>
+
+  <img src="./MADDPG_Continous/plot/demo-rewards_plot_ma.png" alt="Training Convergence" width="80%"/>
+  <p><strong>Reward convergence curve of MADDPG algorithm in simple_tag_v3 environment</strong></p>
 </div>
 
 #### Implementation Progress
@@ -98,6 +103,28 @@ Personal implementation of the MADDPG algorithm based on the latest version of t
 #### Code Location
 [./MADDPG_Continous](./MADDPG_Continous)
 
+#### 3.2 MATD3_Continous: Multi-Agent Twin Delayed Deep Deterministic Policy Gradient Algorithm
+
+Multi-agent extension version of the TD3 algorithm (MATD3: Twin Delayed Deep Deterministic Policy Gradient). Compared to MADDPG, it effectively solves overestimation problems through double Q-networks and target policy smoothing mechanisms, providing more stable training and better policies.
+
+> MATD3 algorithm Reference: https://github.com/wild-firefox/FreeRL/blob/main/MADDPG_file/MATD3_simple.py
+
+<div align="center">
+  <img src="./MATD3_Continous/plot/training_rewards_demo.png" alt="Training Convergence" width="80%"/>
+  <p><strong>Reward convergence curve of MATD3 algorithm in simple_tag_v3 environment</strong></p>
+</div>
+
+#### MATD3 vs MADDPG
+MATD3 enhances standard MADDPG with these key improvements:
+
+1. **Double Q-Network Design**: Reduces overestimation of action values
+2. **Delayed Policy Updates**: Improves training stability
+3. **Target Policy Smoothing**: Prevents overfitting by adding noise to target actions
+4. **Adaptive Noise Adjustment**: Dynamically adjusts exploration noise based on training progress
+
+#### Code Location
+[./MATD3_Continous](./MATD3_Continous)
+
 ## Ongoing Projects
 - **MARL**: Multi-agent cooperation and coordination based on deep reinforcement learning
   - Exploring the impact of different communication mechanisms on multi-agent cooperation
@@ -106,7 +133,7 @@ Personal implementation of the MADDPG algorithm based on the latest version of t
 - **Multi-agent Coordination and Decision-Making on Graphs**
   - Combining multi-agent reinforcement learning with graph neural networks
   - Researching multi-agent coordination problems on large-scale graph structures
-
+  
 - **Applications of Multi-Agent Reinforcement Learning**
   - Exploring applications of multi-agent reinforcement learning in industries, healthcare, etc.
   - Researching performance optimization of multi-agent reinforcement learning in different scenarios
