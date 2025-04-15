@@ -411,7 +411,10 @@ class Custom_raw_env(SimpleEnv, EzPickle):
             x += self.width // 2
             y += self.height // 2
 
-            radius = entity.size * 140 * scaling_factor
+            # radius = entity.size * 140 * scaling_factor
+            # # 修改为：根据世界到屏幕的实际转换比例计算
+            world_to_screen_scale = (self.width / (2 * self.world_size)) * 0.9
+            radius = entity.size * world_to_screen_scale
 
             if isinstance(entity, Agent):
              # 设置透明度：例如，transparent_alpha=128 (半透明)
