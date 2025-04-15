@@ -73,6 +73,8 @@
 
 > MADDPG algorithm Reference: https://github.com/Git-123-Hub/maddpg-pettingzoo-pytorch
 
+> 更多可移植的算法请参考：https://github.com/wild-firefox/FreeRL
+
 <div align="center">
   <img src="./MADDPG_Continous/plot/simple_tag_v3_demo_loop.gif" alt="智能体行为" width="45%"/>
   <p><strong>训练后的智能体行为展示：捕食者(红色)追逐猎物(绿色)的过程</strong></p>

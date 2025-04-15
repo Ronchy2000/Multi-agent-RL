@@ -8,6 +8,8 @@
 
 > MADDPG algorithm Reference: https://github.com/Git-123-Hub/maddpg-pettingzoo-pytorch
 
+> 更多可移植的算法请参考：https://github.com/wild-firefox/FreeRL
+
 ## 📈 训练效果
 <div align="center">
   <img src="./plot/simple_tag_v3_demo_loop.gif" alt="智能体行为" width="45%"/>

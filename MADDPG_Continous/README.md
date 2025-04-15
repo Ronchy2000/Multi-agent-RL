@@ -8,6 +8,8 @@
 
 > MADDPG algorithm Reference: https://github.com/Git-123-Hub/maddpg-pettingzoo-pytorch
 
+> For more portable algorithm implementations, please refer to: https://github.com/wild-firefox/FreeRL
+
 ## 📈 Training Results
 
 <div align="center">
