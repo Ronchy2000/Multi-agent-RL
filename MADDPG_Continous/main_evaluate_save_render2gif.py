@@ -1,7 +1,7 @@
 from pettingzoo.mpe import simple_adversary_v3, simple_spread_v3, simple_tag_v3
 from main_parameters import main_parameters
 from utils.runner import RUNNER
-from agents.MADDPG_agent import MADDPG
+from agents.maddpg.MADDPG_agent import MADDPG
 import torch
 from envs import simple_tag_env
 import os

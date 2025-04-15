@@ -6,8 +6,8 @@ import torch
 import torch.nn.functional as F
 from torch import nn, Tensor
 from torch.optim import Adam
-from agents.NN_actor import MLPNetworkActor
-from agents.NN_critic import MLPNetworkCritic
+from agents.maddpg.NN_actor import MLPNetworkActor
+from agents.maddpg.NN_critic import MLPNetworkCritic
 
 class DDPG():
     def __init__(self, obs_dim, act_dim, global_obs_dim, actor_lr, critic_lr, device, action_bound,  chkpt_dir, chkpt_name):

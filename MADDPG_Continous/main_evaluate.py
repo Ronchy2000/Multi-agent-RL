@@ -1,7 +1,7 @@
 from pettingzoo.mpe import simple_adversary_v3, simple_spread_v3, simple_tag_v3
 from main_parameters import main_parameters
 from utils.runner import RUNNER
-from agents.MADDPG_agent import MADDPG
+from agents.maddpg.MADDPG_agent import MADDPG
 import torch
 from envs import simple_tag_env
 import os
@@ -40,12 +40,11 @@ if __name__ == '__main__':
     current_dir = os.path.dirname(os.path.abspath(__file__))
     chkpt_dir = os.path.join(current_dir, 'models/maddpg_models/')
     # 加载模型的时间戳
-    load_timestamp = "2025-02-16_18-41"
+    load_timestamp = "" # 请输入形如：2025-04-15_15-51   ->  时间戳位置models/maddpg_models/xxxx
     model_timestamp = None if load_timestamp == '' else load_timestamp
     # 定义参数
     args = main_parameters()
     args.render_mode = "human"
-    # args.episode_num = 1
 
     # 创建环境
     env, dim_info, action_bound = get_env(args.env_name, args.episode_length, args.render_mode)

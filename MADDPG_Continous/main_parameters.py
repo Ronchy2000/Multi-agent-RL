@@ -6,7 +6,7 @@ def main_parameters():
     parser.add_argument("--env_name", type =str, default = "simple_tag_v3", help = "name of the env",   
                         choices=['simple_adversary_v3', 'simple_spread_v3', 'simple_tag_v3', 'simple_tag_env']) 
     parser.add_argument("--render_mode", type=str, default = "None", help = "None | human | rgb_array")
-    parser.add_argument("--episode_num", type = int, default = 5000) # 5000
+    parser.add_argument("--episode_num", type = int, default = 5) # 5000
     parser.add_argument("--episode_length", type = int, default = 500) #50
     parser.add_argument('--learn_interval', type=int, default=10,
                         help='steps interval between learning time')

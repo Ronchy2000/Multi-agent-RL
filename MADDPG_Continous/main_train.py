@@ -4,7 +4,7 @@ from envs import simple_tag_env, custom_agents_dynamics
 from main_parameters import main_parameters
 from utils.runner import RUNNER
 
-from agents.MADDPG_agent import MADDPG
+from agents.maddpg.MADDPG_agent import MADDPG
 import torch
 import os
 
