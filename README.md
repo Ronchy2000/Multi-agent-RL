@@ -70,7 +70,7 @@
 #### 3.1 MADDPG_Continous：多智能体深度确定性策略梯度算法
 
 
-个人基于最新版**Pettingzoo(pettingzoo==1.25.0)**中的MPE环境，实现的连续状态，连续动作下的MADDPG算法，支持连续动作空间的多智能体协作与竞争。
+个人基于最新版**Pettingzoo**`(pettingzoo==1.25.0)`中的MPE环境，实现的连续状态，连续动作下的MADDPG算法，支持连续动作空间的多智能体协作与竞争。
 
 > MADDPG algorithm Reference: https://github.com/Git-123-Hub/maddpg-pettingzoo-pytorch
 
