@@ -102,11 +102,17 @@ pip install -r utils/pip-requirements.txt
 # For example:
 pip3 install torch torchvision torchaudio
 ```
-4. Install PettingZoo version 1.24.4
+
+4. Install PettingZoo 1.25.0
+> 2025.4.26 update: Install PettingZoo 1.25.0 version, the official PyPI repository has been updated to 1.25.0, with the same content as 1.24.4. MPE has been separated from PettingZoo, **warnings can be ignored**, see MPE2 for details: https://github.com/Farama-Foundation/MPE2
+```bash
+pip install pettingzoo==1.25.0
+```
+4. ~~Install PettingZoo version 1.24.4~~
 ```bash
 # Important note: This project requires PettingZoo version 1.24.4, but the latest version in the official PyPI repository may not be fully compatible
 # It is recommended to install from GitHub source code with the command:
-pip install "pettingzoo[mpe] @ git+https://github.com/Farama-Foundation/PettingZoo.git"
+#pip install "pettingzoo[mpe] @ git+https://github.com/Farama-Foundation/PettingZoo.git"
 # Alternatively, you can run the provided installation script:
 python utils/setupPettingzoo.py
 ```

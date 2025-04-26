@@ -102,12 +102,17 @@ pip install -r utils/pip-requirements.txt
 # 例如：
 pip3 install torch torchvision torchaudio
 ```
-4. 安装PettingZoo 1.24.4版本
+4. 2025.4.26 update: 安装`PettingZoo 1.25.0`版本，官方PyPI仓库最新版本更新为为1.25.0，内容与1.24.4相同。MPE被拆分出PettingZoo, **警告可忽略**，`MPE2`详情可见:https://github.com/Farama-Foundation/MPE2
 ```bash
-# 重要说明：本项目需要PettingZoo 1.24.4版本，但官方PyPI仓库最新版本可能不完全兼容
-# 推荐从GitHub源码安装，安装命令为：
-pip install "pettingzoo[mpe] @ git+https://github.com/Farama-Foundation/PettingZoo.git"
-# 或者，您可以直接运行提供的安装脚本：
+pip install pettingzoo==1.25.0
+```
+
+4. ~~安装PettingZoo 1.24.4版本~~
+```bash
+# 重要说明：本项目需要PettingZoo 1.24.4版本，但官方PyPI仓库最新版本仅为1.24.3
+# 必须从GitHub源码安装才能获取1.24.4版本，安装命令为：
+# pip install "pettingzoo[mpe] @ git+https://github.com/Farama-Foundation/PettingZoo.git"
+或者，您可以直接运行提供的安装脚本安装pettingzoo1.25.0：
 python utils/setupPettingzoo.py
 ```
 

@@ -41,18 +41,22 @@
 ```tree
 MADDPG_Continous/
 ├── agents/                   # Core implementations
-│   ├── MADDPG_agent.py       # Multi-agent controller
-│   ├── DDPG_agent.py         # Base DDPG implementation
-│   ├── buffer.py             # Experience replay buffer
-│   └── (NN_actor|NN_critic).py  # Neural network modules
+│   ├── maddpg/              # MADDPG algorithm implementation
+│   │   ├── MADDPG_agent.py  # Multi-agent controller
+│   │   ├── DDPG_agent.py    # Base DDPG implementation
+│   │   ├── buffer.py        # Experience replay buffer
+│   │   └── NN_(actor|critic).py # Neural network modules
+│   ├── Independent/         # Independent RL implementation (planned)
+│   └── Centralized/         # Centralized RL implementation (planned)
 ├── envs/                     # Custom environments
 │   ├── custom_agents_dynamics.py  # Extended physics engine
-│   └── simple_tag_env.py           # Modified tag environment
+│   └── simple_tag_env.py          # Modified tag environment
 ├── utils/                    # Utility modules
 │   ├── runner.py             # Training runner
 │   └── logger.py             # Training logger
-│── main_train.py             # Unified training entry
-│── main_evaluate.py          # Unified evaluate model entry
+├── main_train.py             # Unified training entry
+├── main_evaluate.py          # Unified evaluate entry
+├── main_evaluate_save_render2gif.py # Render and save GIF
 └── main_parameters.py        # Unified parameters config
 ```
 ## Other Common Issues
@@ -65,7 +69,7 @@ For other common issues and their solutions, please check the Issues section of 
 # 1. Create and activate virtual environment (recommended)
 # Note: Replace "MPE" with your preferred environment name
 conda env create -f utils/conda-environment.yml -n MPE  
-#then, activate env.
+# Activate the newly created environment
 conda activate MPE
 
 # 2. Install core dependencies
@@ -76,12 +80,17 @@ pip install -r utils/pip-requirements.txt
 # For example:
 pip3 install torch torchvision torchaudio
 
-# 4. Install PettingZoo 1.24.4
-# Important: This project requires PettingZoo 1.24.4, but the official PyPI repository only offers version 1.24.3
-# You must install from GitHub source to get version 1.24.4 using:
-pip install "pettingzoo[mpe] @ git+https://github.com/Farama-Foundation/PettingZoo.git"
+# 4. 2025.4.26 update: Install PettingZoo 1.25.0 version, the official PyPI repository has been updated to 1.25.0, with the same content as 1.24.4. MPE has been separated from PettingZoo, **warnings can be ignored**, see MPE2 for details: https://github.com/Farama-Foundation/MPE2
+pip install pettingzoo==1.25.0
 
-# Alternatively, you can use the provided installation script:
+# ~~4. Install PettingZoo 1.24.4~~
+# ~~Important: This project requires PettingZoo 1.24.4, but the official PyPI repository only offers version 1.24.3~~
+# ~~You must install from GitHub source to get version 1.24.4 using:~~
+# ~~pip install "pettingzoo[mpe] @ git+https://github.com/Farama-Foundation/PettingZoo.git"~~
+# ~~Or, you can directly run the provided installation script:~~
+# ~~python utils/setupPettingzoo.py~~
+
+# Alternatively, you can use the provided installation script to install PettingZoo 1.25.0:
 python utils/setupPettingzoo.py
 ```
 

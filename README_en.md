@@ -73,7 +73,7 @@ This section demonstrates the learning path from basic DQN to DDPG, and then to 
 ---
 
 ### III. Multi-Agent Reinforcement Learning Implementation
-> **This project is specially optimized for Predator-Prey pursuit games!** Built on a modified `PettingZoo MPE` environment, it provides a comprehensive multi-agent cooperative and competitive environment suitable for pursuit control, swarm intelligence, and strategy game research.
+> **This project is specially optimized for Predator-Prey pursuit games!** Built on a modified `PettingZoo MPE (PettingZoo==1.25.0)` environment, it provides a comprehensive multi-agent cooperative and competitive environment suitable for pursuit control, swarm intelligence, and strategy game research.
 
 After mastering basic reinforcement learning algorithms, we naturally think: how can these methods be extended to scenarios where multiple agents learn simultaneously? Multi-agent reinforcement learning (MARL) is the key technology to solve this problem. Below are my main implementations in the MARL field.
 

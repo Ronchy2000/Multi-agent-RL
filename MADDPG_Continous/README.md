@@ -6,9 +6,11 @@
 
 >**本项目专为Predator-Prey追逃博弈任务优化！** 在`PettingZoo MPE`环境基础上重构修改，提供了完整的多智能体协作与对抗环境，适用于围捕控制、群体智能和策略博弈研究。
 
+> Pettingzoo MPE环境：https://github.com/Farama-Foundation/PettingZoo
+
 > MADDPG algorithm Reference: https://github.com/Git-123-Hub/maddpg-pettingzoo-pytorch
 
-> 更多可移植的算法请参考：https://github.com/wild-firefox/FreeRL
+> 2025.4.26 update: MPE环境已经拆分出PettingZoo,详情请见MPE2:https://github.com/Farama-Foundation/MPE2
 
 ## 📈 训练效果
 <div align="center">
@@ -81,13 +83,19 @@ pip install -r utils/pip-requirements.txt
 # 例如：
 pip3 install torch torchvision torchaudio
 ```
-4. 安装PettingZoo 1.24.4版本
+
+4. 2025.4.26 update: 安装`PettingZoo 1.25.0`版本，官方PyPI仓库最新版本更新为为1.25.0，内容与1.24.4相同。MPE被拆分出PettingZoo, **警告可忽略**，`MPE2`详情可见:https://github.com/Farama-Foundation/MPE2
+```bash
+pip install pettingzoo==1.25.0
+```
+
+4. ~~安装PettingZoo 1.24.4版本~~
 ```bash
 # 重要说明：本项目需要PettingZoo 1.24.4版本，但官方PyPI仓库最新版本仅为1.24.3
 # 必须从GitHub源码安装才能获取1.24.4版本，安装命令为：
-pip install "pettingzoo[mpe] @ git+https://github.com/Farama-Foundation/PettingZoo.git"
+# pip install "pettingzoo[mpe] @ git+https://github.com/Farama-Foundation/PettingZoo.git"
 # 或者，您可以直接运行提供的安装脚本：
-python utils/setupPettingzoo.py
+# python utils/setupPettingzoo.py
 ```
 
 ### 🖥️ 运行配置
