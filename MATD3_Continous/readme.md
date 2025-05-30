@@ -50,9 +50,12 @@ MATD3_Continous/
 ├── logs/                     # 日志文件
 │   └── log_td3_main/        # TD3训练日志
 └── utils/                    # 工具函数
-    ├── conda-environment.yml  # Conda环境配置
+    ├── conda-environment.yml  # Conda环境配置(Windows和Intel芯片的macOS)
+    ├── linux_environment.yml  # Linux环境配置
     ├── logger.py            # 日志工具
-    ├── pip-requirements.txt  # Pip依赖
+    ├── mac_arm_M4_environment.yml  # Mac M系列芯片环境配置
+    ├── pip-requirements.txt  # pip依赖
+    ├── pip-requirements_mac_arm_M4.txt  # Mac M系列芯片专用依赖
     └── setupPettingzoo.py   # PettingZoo环境设置
 ```
 
@@ -84,7 +87,32 @@ MATD3_Continous/
 
 > 相关配置需求在utils/文件夹下。
 
-#### 创建并激活虚拟环境（推荐）
+### Linux环境（ubuntu）
+1. 使用linux_environment.yml创建新环境
+```bash
+# 注意：将"MPE"替换为您喜欢的环境名称
+conda env create -f utils/linux_environment.yml -n MPE
+# 激活刚创建的环境
+conda activate MPE
+```
+2. pip安装核心依赖
+```bash
+pip install -r utils/pip-requirements.txt
+```
+### Mac M系列芯片环境
+1. 使用mac_arm_M4_environment.yml创建新conda环境
+```bash
+# 注意：将"MPE"替换为您喜欢的环境名称
+conda env create -f utils/mac_arm_M4_environment.yml -n MPE
+# 激活刚创建的环境
+conda activate MPE
+```
+2. pip安装Mac M芯片专用依赖
+```bash
+pip install -r utils/pip-requirements_mac_arm_M4.txt
+```
+
+### Windows创建并激活虚拟环境（推荐）
 1. 使用conda-environment.yml创建新环境
 ```bash
 # 注意：将"MPE"替换为您喜欢的环境名称
@@ -96,12 +124,15 @@ conda activate MPE
 ```bash
 pip install -r utils/pip-requirements.txt
 ```
+### 手动安装依赖
+> 上述虚拟环境创建成功后，您需要手动安装以下依赖：
 3. 从PyTorch官网安装对应版本的PyTorch
 ```bash
 # 请访问 https://pytorch.org 选择适合您系统的安装命令
 # 例如：
 pip3 install torch torchvision torchaudio
 ```
+
 4. 2025.4.26 update: 安装`PettingZoo 1.25.0`版本，官方PyPI仓库最新版本更新为为1.25.0，内容与1.24.4相同。MPE被拆分出PettingZoo, **警告可忽略**，`MPE2`详情可见:https://github.com/Farama-Foundation/MPE2
 ```bash
 pip install pettingzoo==1.25.0

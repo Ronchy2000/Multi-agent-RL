@@ -50,9 +50,12 @@ MATD3_Continous/
 ├── logs/                     # Log files
 │   └── log_td3_main/        # TD3 training logs
 └── utils/                    # Utility functions
-    ├── conda-environment.yml  # Conda environment configuration
+    ├── conda-environment.yml  # Conda environment configuration(Windows & macOS with intel chip)
+    ├── linux_environment.yml  # Linux Environment configuration(Linux)
     ├── logger.py            # Logging tool
-    ├── pip-requirements.txt  # Pip dependencies
+    ├── mac_arm_M4_environment.yml  # Mac M Series Chip environment configuration(macOS M Series Chip)
+    ├── pip-requirements.txt  # pip dependencies
+    ├── pip-requirements_mac_arm_M4.txt  # Mac M Series Chip environment configuration(macOS M Series Chip)
     └── setupPettingzoo.py   # PettingZoo environment setup
 ```
 
@@ -84,11 +87,11 @@ The project implements the MATD3 (Multi-Agent Twin Delayed Deep Deterministic Po
 
 > Configuration requirements are in the utils/ folder.
 
-#### Create and activate a virtual environment (recommended)
-1. Create a new environment using conda-environment.yml
+### Linux Environment
+1. Create a new environment using linux_environment.yml
 ```bash
 # Note: Replace "MPE" with your preferred environment name
-conda env create -f utils/conda-environment.yml -n MPE
+conda env create -f utils/linux_environment.yml -n MPE
 # Activate the newly created environment
 conda activate MPE
 ```
@@ -96,18 +99,49 @@ conda activate MPE
 ```bash
 pip install -r utils/pip-requirements.txt
 ```
-3. Install the corresponding version of PyTorch from the official website
+### Mac M Series Chip Environment
+1. Create a new environment using mac_arm_M4_environment.yml
 ```bash
-# Please visit https://pytorch.org to select the appropriate installation command for your system
+# Note: Replace "MPE" with your preferred environment name
+conda env create -f utils/mac_arm_M4_environment.yml -n MPE
+# Activate the newly created environment
+conda activate MPE
+```
+2. Install Mac M chip-specific dependencies
+```bash
+pip install -r utils/pip-requirements_mac_arm_M4.txt
+```
+
+### Windows Environment
+1. Create and activate virtual environment (recommended)
+```bash
+# Note: Replace "MPE" with your preferred environment name
+conda env create -f utils/conda-environment.yml -n MPE  
+# Activate the newly created environment
+conda activate MPE
+```
+2. Install core dependencies
+```bash
+pip install -r utils/pip-requirements.txt
+```
+
+### Other Prerequisites
+> Then, install other prerequisites after creating new environment.
+3. Install PyTorch
+```bash
+# Visit https://pytorch.org/ to select the appropriate installation command for your system
 # For example:
 pip3 install torch torchvision torchaudio
 ```
-
-4. Install PettingZoo 1.25.0
-> 2025.4.26 update: Install PettingZoo 1.25.0 version, the official PyPI repository has been updated to 1.25.0, with the same content as 1.24.4. MPE has been separated from PettingZoo, **warnings can be ignored**, see MPE2 for details: https://github.com/Farama-Foundation/MPE2
+4. 2025.4.26 update: Install PettingZoo 1.25.0 version, the official PyPI repository has been updated to 1.25.0, with the same content as 1.24.4. MPE has been separated from PettingZoo, **warnings can be ignored**, see MPE2 for details: https://github.com/Farama-Foundation/MPE2
 ```bash
 pip install pettingzoo==1.25.0
 ```
+Alternatively, you can use the provided installation script to install PettingZoo 1.25.0:
+```bash
+python utils/setupPettingzoo.py
+```
+
 4. ~~Install PettingZoo version 1.24.4~~
 ```bash
 # Important note: This project requires PettingZoo version 1.24.4, but the latest version in the official PyPI repository may not be fully compatible
