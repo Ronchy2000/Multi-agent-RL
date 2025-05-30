@@ -104,19 +104,19 @@ pip install -r utils/pip-requirements.txt
 ```
 ### 手动安装依赖
 > 上述虚拟环境创建成功后，您需要手动安装以下依赖：
-1. 从PyTorch官网安装对应版本的PyTorch
+3. 从PyTorch官网安装对应版本的PyTorch
 ```bash
 # 请访问 https://pytorch.org 选择适合您系统的安装命令
 # 例如：
 pip3 install torch torchvision torchaudio
 ```
 
-2. 2025.4.26 update: 安装`PettingZoo 1.25.0`版本，官方PyPI仓库最新版本更新为为1.25.0，内容与1.24.4相同。MPE被拆分出PettingZoo, **警告可忽略**，`MPE2`详情可见:https://github.com/Farama-Foundation/MPE2
+4. 2025.4.26 update: 安装`PettingZoo 1.25.0`版本，官方PyPI仓库最新版本更新为为1.25.0，内容与1.24.4相同。MPE被拆分出PettingZoo, **警告可忽略**，`MPE2`详情可见:https://github.com/Farama-Foundation/MPE2
 ```bash
 pip install pettingzoo==1.25.0
 ```
 
-2. ~~安装PettingZoo 1.24.4版本~~
+4. ~~安装PettingZoo 1.24.4版本~~
 ```bash
 # 重要说明：本项目需要PettingZoo 1.24.4版本，但官方PyPI仓库最新版本仅为1.24.3
 # 必须从GitHub源码安装才能获取1.24.4版本，安装命令为：
