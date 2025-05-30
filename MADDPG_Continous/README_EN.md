@@ -52,17 +52,26 @@ MADDPG_Continous/
 │   └── simple_tag_env.py          # Modified tag environment
 ├── utils/                    # Utility modules
 │   ├── runner.py             # Training runner
-│   └── logger.py             # Training logger
+│   ├── logger.py             # Training logger
+│   ├── conda-environment.yml # Conda environment configuration
+│   ├── linux_environment.yml # Linux environment configuration
+│   ├── mac_arm_M4_environment.yml # Mac M-series chip environment configuration
+│   ├── pip-requirements.txt  # General dependency requirements
+│   ├── pip-requirements_mac_arm_M4.txt # Mac M chip specific dependencies
+│   └── setupPettingzoo.py    # PettingZoo environment setup script
 ├── main_train.py             # Unified training entry
 ├── main_evaluate.py          # Unified evaluate entry
 ├── main_evaluate_save_render2gif.py # Render and save GIF
-└── main_parameters.py        # Unified parameters config
+└── main_parameters.py        # Unified parameters configuration
 ```
 ## Other Common Issues
 For other common issues and their solutions, please check the Issues section of this repository.
 
 
 ## 🛠️ Getting Started
+
+> Configuration requirements are in the utils/ folder.
+
 ### Linux Environment
 1. Create a new environment using linux_environment.yml
 ```bash

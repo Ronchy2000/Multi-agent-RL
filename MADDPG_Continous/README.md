@@ -45,14 +45,20 @@ MADDPG_Continous/
 │   │   ├── DDPG_agent.py    # 基础DDPG实现
 │   │   ├── buffer.py        # 经验回放缓冲区
 │   │   └── NN_(actor|critic).py # 神经网络模块
-│   ├── Independent/         # 独立RL实现(计划中)
-│   └── Centralized/         # 中央化RL实现(计划中)
+│   ├── Independent/         # 独立RL实现（计划中）
+│   └── Centralized/         # 集中式RL实现（计划中）
 ├── envs/                     # 自定义环境
 │   ├── custom_agents_dynamics.py  # 扩展物理引擎
-│   └── simple_tag_env.py          # 修改版tag环境
+│   └── simple_tag_env.py          # 修改后的标签环境
 ├── utils/                    # 工具模块
 │   ├── runner.py             # 训练运行器
-│   └── logger.py             # 训练日志系统
+│   ├── logger.py             # 训练日志记录器
+│   ├── conda-environment.yml # Conda环境配置文件
+│   ├── linux_environment.yml # Linux环境配置文件
+│   ├── mac_arm_M4_environment.yml # Mac M系列芯片环境配置文件
+│   ├── pip-requirements.txt  # 通用依赖项要求
+│   ├── pip-requirements_mac_arm_M4.txt # Mac M芯片特定依赖项
+│   └── setupPettingzoo.py    # PettingZoo环境设置脚本
 ├── main_train.py             # 统一训练入口
 ├── main_evaluate.py          # 统一评估入口
 ├── main_evaluate_save_render2gif.py # 渲染并保存GIF
