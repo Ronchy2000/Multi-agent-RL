@@ -1,7 +1,7 @@
 # 强化学习与多智能体强化学习项目集
 [ 🇺🇸 English](./README_en.md) | 🇨🇳 中文文档
 
-![项目总状态](https://img.shields.io/badge/状态-维护模式-blue) ![Python](https://img.shields.io/badge/Python-3.11.8%2B-blue) ![强化学习](https://img.shields.io/badge/强化学习-基础到高级-orange) ![多智能体](https://img.shields.io/badge/多智能体-MADDPG实现-success)
+![项目总状态](https://img.shields.io/badge/状态-维护模式-blue) ![Python](https://img.shields.io/badge/Python-3.11.8%2B-blue) ![强化学习](https://img.shields.io/badge/强化学习-基础到高级-orange) ![多智能体](https://img.shields.io/badge/多智能体-MADDPG实现-success) [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Ronchy2000/Multi-agent-RL)
 
 本仓库包含强化学习（RL）和多智能体强化学习（MARL）相关的多个项目，既有经典算法的复现，也有个人的研究实现。通过这些项目，我希望构建从基础强化学习到多智能体强化学习的完整学习路径。
 
