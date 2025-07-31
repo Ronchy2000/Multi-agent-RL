@@ -6,8 +6,8 @@ on:
       - 'v*'          # 打标签触发
   workflow_dispatch:  # 手动触发选项
 
-permissions: # ✅ 添加权限配置
-  contents: write  # 允许创建和更新 Release
+permissions:
+  contents: write
 
 jobs:
   package:
@@ -17,32 +17,41 @@ jobs:
 
       - name: Prepare shared files
         run: |
-          # 复制共享文件到临时目录
           mkdir -p shared_files
           cp README.md README_en.md img.png shared_files/
 
       - name: Package each folder
         run: |
           mkdir -p zips
-          # 需要打包的文件夹列表（排除.gitignore等）
+          # 需要打包的文件夹列表
           TARGET_FOLDERS=(
             "MADDPG_Continous"
-            # "MAPPO_Continous" 
             "MATD3_Continous"
             "RL_Learning-main"
-            "动手学强化学习"
+            "动手学强化学习"   # 保留原始中文名称
           )
 
           for folder in "${TARGET_FOLDERS[@]}"; do
             if [ -d "$folder" ]; then
-              # 创建临时目录并放入共享文件+当前文件夹
-              mkdir -p "temp_$folder"
-              cp -r "$folder" "temp_$folder/"
-              cp shared_files/* "temp_$folder/"
+              # 为中文文件夹设置英文输出名称
+              if [ "$folder" = "动手学强化学习" ]; then
+                output_name="hands_on_RL"
+              else
+                output_name="$folder"
+              fi
               
-              # 打包（ZIP内保留目录结构）
-              (cd "temp_$folder" && zip -r "../zips/$folder.zip" .)
-              echo "✅ Packaged: $folder.zip"
+              # 创建临时目录
+              mkdir -p "temp_$output_name"
+              
+              # 复制文件夹内容（保留原始结构）
+              cp -r "$folder" "temp_$output_name/"
+              
+              # 添加共享文件
+              cp shared_files/* "temp_$output_name/"
+              
+              # 打包为英文名称的ZIP
+              (cd "temp_$output_name" && zip -r "../zips/$output_name.zip" .)
+              echo "✅ Packaged: $folder as $output_name.zip"
             else
               echo "⚠️ Folder not found: $folder"
             fi
