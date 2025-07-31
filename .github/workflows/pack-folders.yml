@@ -6,6 +6,9 @@ on:
       - 'v*'          # 打标签触发
   workflow_dispatch:  # 手动触发选项
 
+permissions: # ✅ 添加权限配置
+  contents: write  # 允许创建和更新 Release
+
 jobs:
   package:
     runs-on: ubuntu-latest
