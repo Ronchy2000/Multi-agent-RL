@@ -62,7 +62,56 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: "Release ${{ github.ref_name }}"
-          body: "📦 各模块独立下载包（含README和说明图）："
+          body: |  #  👇 这里已经更新为优化后的双语发布说明
+            # 多模块独立发布包
+
+            ## 模块介绍
+            -  🚀 **MADDPG_Continous**  
+              多智能体深度确定性策略梯度算法（连续动作空间版本），适用于连续控制场景的多智能体协同训练。
+
+            -  ⚡️ **MATD3_Continous**  
+              多智能体双延迟深度确定性策略梯度算法，在MADDPG基础上增加了延迟更新和策略平滑机制。
+
+            - 📚 **RL_Learning-main**  
+              赵世钰老师强化学习基础教程合集，包含经典算法实现和示例代码。
+
+            -  **hands_on_RL**  
+              动手学强化学习实践项目，通过Jupyter Notebook提供互动式学习体验。
+
+            ## 使用说明
+            1. 点击下方所需模块的ZIP文件下载
+            2. 解压后阅读README.md获取详细使用指南
+            3. 安装依赖：`pip install -r requirements.txt`
+
+            ## 支持渠道
+            - [中文问题提交](https://github.com/Ronchy2000/Multi-agent-RL/issues/new?labels=zh)
+            - 许可证：[MIT](LICENSE)
+
+            ---
+
+            # Independent Modules Release
+
+            ## Available Modules
+            -  **MADDPG_Continous**  
+              Multi-Agent Deep Deterministic Policy Gradient (continuous action space version) for cooperative multi-agent control.
+
+            - ️ **MATD3_Continous**  
+              Multi-Agent Twin Delayed DDPG, featuring delayed updates and policy smoothing.
+
+            -  📚 **RL_Learning-main**  
+              Fundamental RL tutorials with classic algorithm implementations.
+
+            -  🧠 **hands_on_RL**  
+              Interactive reinforcement learning projects via Jupyter Notebooks.
+
+            ## Quick Start
+            1. Download the desired module ZIP below
+            2. Check README_en.md for detailed instructions
+            3. Install dependencies: `pip install -r requirements.txt`
+
+            ## Support
+            - [English Issues](https://github.com/Ronchy2000/Multi-agent-RL/issues/new?labels=en)
+            - License: [MIT](LICENSE)
           files: |
             zips/*.zip
         env:
