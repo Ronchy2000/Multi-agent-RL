@@ -21,6 +21,21 @@ The projects in this repository form a complete learning path from basic reinfor
 2. **Basic Algorithm Implementation** (Hands-on RL): Implement basic reinforcement learning algorithms
 3. **Multi-Agent Extensions** (MADDPG_Continous, MATD3_Continous): Extend single-agent algorithms to multi-agent scenarios
 
+## Quick Start!(On-Demand Downloads)
+
+For users interested in specific modules, we provide independent module release packages. You can access the latest release through the following link and download specific modules without cloning the entire repository:
+
+🔗 [Visit Release Page](https://github.com/Ronchy2000/Multi-agent-RL/releases/tag/v1.0)
+
+### Available Modules
+
+- **MADDPG_Continous.zip** - Multi-Agent Deep Deterministic Policy Gradient algorithm (continuous action space version)
+- **MATD3_Continous.zip** - Multi-Agent Twin Delayed Deep Deterministic Policy Gradient algorithm
+- **RL_Learning-main.zip** - Professor Shiyu Zhao's reinforcement learning tutorial collection
+- **hands_on_RL.zip** - Hands-on Reinforcement Learning practice project
+
+Each module contains independent code, documentation, and dependency configurations. After extraction, follow the instructions in the module's README.md to use it.
+
 ## Project Structure
 
 ### I. RL_Learning-main: Reproduction of Basic Reinforcement Learning Code
