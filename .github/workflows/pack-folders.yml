@@ -1,0 +1,57 @@
+name: Package Folders with Shared Files
+
+on:
+  push:
+    tags:
+      - 'v*'          # 打标签触发
+  workflow_dispatch:  # 手动触发选项
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare shared files
+        run: |
+          # 复制共享文件到临时目录
+          mkdir -p shared_files
+          cp README.md README_en.md img.png shared_files/
+
+      - name: Package each folder
+        run: |
+          mkdir -p zips
+          # 需要打包的文件夹列表（排除.gitignore等）
+          TARGET_FOLDERS=(
+            "MADDPG_Continous"
+            # "MAPPO_Continous" 
+            "MATD3_Continous"
+            "RL_Learning-main"
+            "动手学强化学习"
+          )
+
+          for folder in "${TARGET_FOLDERS[@]}"; do
+            if [ -d "$folder" ]; then
+              # 创建临时目录并放入共享文件+当前文件夹
+              mkdir -p "temp_$folder"
+              cp -r "$folder" "temp_$folder/"
+              cp shared_files/* "temp_$folder/"
+              
+              # 打包（ZIP内保留目录结构）
+              (cd "temp_$folder" && zip -r "../zips/$folder.zip" .)
+              echo "✅ Packaged: $folder.zip"
+            else
+              echo "⚠️ Folder not found: $folder"
+            fi
+          done
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "Release ${{ github.ref_name }}"
+          body: "📦 各模块独立下载包（含README和说明图）："
+          files: |
+            zips/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
