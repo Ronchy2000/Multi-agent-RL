@@ -1,0 +1,118 @@
+name: Package Folders with Shared Files
+
+on:
+  push:
+    tags:
+      - 'v*'          # 打标签触发
+  workflow_dispatch:  # 手动触发选项
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare shared files
+        run: |
+          mkdir -p shared_files
+          cp README.md README_en.md img.png shared_files/
+
+      - name: Package each folder
+        run: |
+          mkdir -p zips
+          # 需要打包的文件夹列表
+          TARGET_FOLDERS=(
+            "MADDPG_Continous"
+            "MATD3_Continous"
+            "RL_Learning-main"
+            "动手学强化学习"   # 保留原始中文名称
+          )
+
+          for folder in "${TARGET_FOLDERS[@]}"; do
+            if [ -d "$folder" ]; then
+              # 为中文文件夹设置英文输出名称
+              if [ "$folder" = "动手学强化学习" ]; then
+                output_name="hands_on_RL"
+              else
+                output_name="$folder"
+              fi
+              
+              # 创建临时目录
+              mkdir -p "temp_$output_name"
+              
+              # 复制文件夹内容（保留原始结构）
+              cp -r "$folder" "temp_$output_name/"
+              
+              # 添加共享文件
+              cp shared_files/* "temp_$output_name/"
+              
+              # 打包为英文名称的ZIP
+              (cd "temp_$output_name" && zip -r "../zips/$output_name.zip" .)
+              echo "✅ Packaged: $folder as $output_name.zip"
+            else
+              echo "⚠️ Folder not found: $folder"
+            fi
+          done
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "Release ${{ github.ref_name }}"
+          body: |  #  👇 这里已经更新为优化后的双语发布说明
+            # 多模块独立发布包
+
+            ## 模块介绍
+            -  🚀 **MADDPG_Continous**  
+              多智能体深度确定性策略梯度算法（连续动作空间版本），适用于连续控制场景的多智能体协同训练。
+
+            -  ⚡️ **MATD3_Continous**  
+              多智能体双延迟深度确定性策略梯度算法，在MADDPG基础上增加了延迟更新和策略平滑机制。
+
+            - 📚 **RL_Learning-main**  
+              赵世钰老师强化学习基础教程合集，包含经典算法实现和示例代码。
+
+            -  **hands_on_RL**  
+              动手学强化学习实践项目，通过Jupyter Notebook提供互动式学习体验。
+
+            ## 使用说明
+            1. 点击下方所需模块的ZIP文件下载
+            2. 解压后阅读README.md获取详细使用指南
+            3. 安装依赖：`pip install -r requirements.txt`
+
+            ## 支持渠道
+            - [中文问题提交](https://github.com/Ronchy2000/Multi-agent-RL/issues/new?labels=zh)
+            - 许可证：[MIT](LICENSE)
+
+            ---
+
+            # Independent Modules Release
+
+            ## Available Modules
+            -  **MADDPG_Continous**  
+              Multi-Agent Deep Deterministic Policy Gradient (continuous action space version) for cooperative multi-agent control.
+
+            - ️ **MATD3_Continous**  
+              Multi-Agent Twin Delayed DDPG, featuring delayed updates and policy smoothing.
+
+            -  📚 **RL_Learning-main**  
+              Fundamental RL tutorials with classic algorithm implementations.
+
+            -  🧠 **hands_on_RL**  
+              Interactive reinforcement learning projects via Jupyter Notebooks.
+
+            ## Quick Start
+            1. Download the desired module ZIP below
+            2. Check README_en.md for detailed instructions
+            3. Install dependencies: `pip install -r requirements.txt`
+
+            ## Support
+            - [English Issues](https://github.com/Ronchy2000/Multi-agent-RL/issues/new?labels=en)
+            - License: [MIT](LICENSE)
+          files: |
+            zips/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
