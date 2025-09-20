@@ -57,6 +57,12 @@ class Actor_MLP(nn.Module):
         self.fc1 = nn.Linear(actor_input_dim, args.mlp_hidden_dim)
         self.fc2 = nn.Linear(args.mlp_hidden_dim, args.mlp_hidden_dim)
         self.fc3 = nn.Linear(args.mlp_hidden_dim, args.action_dim)
+
+        self.fc_mean = nn.Linear(args.mlp_hidden_dim, args.action_dim)
+
+        # log_std is independent of state, initialized to small negative value
+        self.log_std = nn.Parameter(torch.zeros(args.action_dim) - 0.5)  # or init to -0.5
+
         self.activate_func = [nn.Tanh(), nn.ReLU()][args.use_relu]
 
         if args.use_orthogonal_init:
@@ -70,5 +76,15 @@ class Actor_MLP(nn.Module):
         # When 'train':         actor_input.shape=(mini_batch_size, episode_limit, N, actor_input_dim), prob.shape(mini_batch_size, episode_limit, N, action_dim)
         x = self.activate_func(self.fc1(actor_input))
         x = self.activate_func(self.fc2(x))
-        prob = torch.softmax(self.fc3(x), dim=-1)
-        return prob
+
+        '''
+        下方内容代表输出连续动作
+        '''
+        mean = self.fc_mean(x)
+        log_std = self.log_std.clamp(-20, 2)
+        std = log_std.exp()
+        return mean, std
+
+        # 下方内容代表输出离散动作
+        # prob = torch.softmax(self.fc3(x), dim=-1)
+        # return prob

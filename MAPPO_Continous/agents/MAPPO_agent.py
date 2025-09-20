@@ -3,159 +3,271 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Categorical
 from torch.utils.data.sampler import *
-
+import numpy as np
 from NN_critic_PPO import Critic_RNN, Critic_MLP
 from NN_actor_PPO import Actor_RNN, Actor_MLP
+import os
 
-
-class MAPPO:
+class MAPPO_MPE:
     def __init__(self, args):
-        self.args = args # 下面的都不需要了
+        self.args = args
 
-        self.N = args.N
-        self.action_dim = args.action_dim
-        self.obs_dim = args.obs_dim
+        # 从环境获取的参数
+        self.N = len(args.agents)  # 智能体数量
+        self.action_dim = args.action_dim  # 动作维度
+        
+        # 确定每个智能体的类型和观测维度
+        self.agent_types = {}
+        self.obs_dims = {}
+        for agent_id in args.agents:
+            # 确定智能体类型
+            if agent_id.startswith('adversary_'):
+                self.agent_types[agent_id] = 'adversary'
+            else:
+                self.agent_types[agent_id] = 'agent'
+            
+            # 获取智能体观测维度
+            if hasattr(args, 'dim_info') and agent_id in args.dim_info:
+                self.obs_dims[agent_id] = args.dim_info[agent_id][0]
+            else:
+                # 默认处理
+                self.obs_dims[agent_id] = 12 if self.agent_types[agent_id] == 'adversary' else 10
+        
+        # 环境相关参数
         self.state_dim = args.state_dim
-        self.episode_limit = args.episode_limit
-        self.rnn_hidden_dim = args.rnn_hidden_dim
-
+        self.episode_limit = args.episode_length
+        
+        # 算法配置参数 - 从args获取
         self.batch_size = args.batch_size
-        self.mini_batch_size = args.mini_batch_size
-        self.max_train_steps = args.max_train_steps
-        self.lr = args.lr
+        self.mini_batch_size = args.mini_batch_size if hasattr(args, 'mini_batch_size') else self.batch_size // 4
+        self.max_train_steps = args.max_train_steps if hasattr(args, 'max_train_steps') else args.episode_num * args.episode_length
+        self.lr = args.actor_lr
         self.gamma = args.gamma
         self.lamda = args.lamda
         self.epsilon = args.epsilon
         self.K_epochs = args.K_epochs
         self.entropy_coef = args.entropy_coef
+        
+        # 训练技巧参数 - 从args获取
         self.set_adam_eps = args.set_adam_eps
         self.use_grad_clip = args.use_grad_clip
         self.use_lr_decay = args.use_lr_decay
         self.use_adv_norm = args.use_adv_norm
+        self.use_value_clip = args.use_value_clip
+        
+        # 网络结构参数
         self.use_rnn = args.use_rnn
         self.add_agent_id = args.add_agent_id
-        self.use_value_clip = args.use_value_clip
-
-        # get the input dimension of actor and critic
-        self.actor_input_dim = args.obs_dim
-        self.critic_input_dim = args.state_dim
+        
+        # 创建多个actor网络，每种观测维度一个
+        self.actors = {}
+        self.actor_input_dims = {}
+        
+        # 获取所有不同的观测维度
+        unique_obs_dims = set(self.obs_dims.values())
+        for obs_dim in unique_obs_dims:
+            actor_input_dim = obs_dim
+            if self.add_agent_id:
+                actor_input_dim += self.N
+                
+            self.actor_input_dims[obs_dim] = actor_input_dim
+            
+            if self.use_rnn:
+                self.actors[obs_dim] = Actor_RNN(args, actor_input_dim)
+            else:
+                self.actors[obs_dim] = Actor_MLP(args, actor_input_dim)
+        
+        # 创建critic网络
+        self.critic_input_dim = self.state_dim
         if self.add_agent_id:
-            print("------add agent id------")
-            self.actor_input_dim += args.N
-            self.critic_input_dim += args.N
-
+            print("------添加智能体ID------")
+            self.critic_input_dim += self.N
+            
         if self.use_rnn:
-            print("------use rnn------")
-            self.actor = Actor_RNN(args, self.actor_input_dim)
+            print("------使用RNN网络------")
             self.critic = Critic_RNN(args, self.critic_input_dim)
         else:
-            self.actor = Actor_MLP(args, self.actor_input_dim)
             self.critic = Critic_MLP(args, self.critic_input_dim)
-
-        self.ac_parameters = list(self.actor.parameters()) + list(self.critic.parameters())
+        
+        # 设置优化器
+        self.ac_parameters = []
+        for actor in self.actors.values():
+            self.ac_parameters.extend(list(actor.parameters()))
+        self.ac_parameters.extend(list(self.critic.parameters()))
+        
         if self.set_adam_eps:
-            print("------set adam eps------")
+            print("------设置Adam epsilon------")
             self.ac_optimizer = torch.optim.Adam(self.ac_parameters, lr=self.lr, eps=1e-5)
         else:
             self.ac_optimizer = torch.optim.Adam(self.ac_parameters, lr=self.lr)
+    
+    @staticmethod
+    def tanh_action_sample(dist):
+        """从正态分布中采样动作并应用tanh压缩"""
+        raw_action = dist.rsample()  # 使用rsample()支持重参数化
+        action = torch.tanh(raw_action)
+        # 修正log_prob：加上tanh的导数项
+        log_prob = dist.log_prob(raw_action).sum(-1)
+        log_prob -= (2 * (np.log(2) - raw_action - F.softplus(-2 * raw_action))).sum(-1)
+        return action, log_prob
 
     def choose_action(self, obs_n, evaluate):
+        """选择动作
+        obs_n: 所有智能体的观测，列表或字典形式
+        evaluate: 是否为评估模式
+        """
         with torch.no_grad():
-            actor_inputs = []
-            obs_n = torch.tensor(obs_n, dtype=torch.float32)  # obs_n.shape=(N，obs_dim)
-            actor_inputs.append(obs_n)
-            if self.add_agent_id:
-                """
-                    Add an one-hot vector to represent the agent_id
-                    For example, if N=3
-                    [obs of agent_1]+[1,0,0]
-                    [obs of agent_2]+[0,1,0]
-                    [obs of agent_3]+[0,0,1]
-                    So, we need to concatenate a N*N unit matrix(torch.eye(N))
-                """
-                actor_inputs.append(torch.eye(self.N))
-
-            actor_inputs = torch.cat([x for x in actor_inputs], dim=-1)  # actor_input.shape=(N, actor_input_dim)
-            prob = self.actor(actor_inputs)  # prob.shape=(N,action_dim)
-            if evaluate:  # When evaluating the policy, we select the action with the highest probability
-                a_n = prob.argmax(dim=-1)
-                return a_n.numpy(), None
+            # 将obs_n转换为列表
+            if isinstance(obs_n, dict):
+                obs_list = list(obs_n.values())
+                agent_ids = list(obs_n.keys())
             else:
-                dist = Categorical(probs=prob)
-                a_n = dist.sample()
-                a_logprob_n = dist.log_prob(a_n)
-                return a_n.numpy(), a_logprob_n.numpy()
+                obs_list = obs_n
+                agent_ids = list(self.obs_dims.keys())
+            
+            # 分别处理每个智能体的动作
+            actions = []
+            log_probs = []
+            
+            for i, (obs, agent_id) in enumerate(zip(obs_list, agent_ids)):
+                # 为单个智能体创建输入
+                actor_inputs = []
+                obs_tensor = torch.tensor([obs], dtype=torch.float32)
+                actor_inputs.append(obs_tensor)
+                
+                if self.add_agent_id:
+                    agent_id_tensor = torch.zeros(1, self.N)
+                    agent_id_tensor[0, i] = 1.0
+                    actor_inputs.append(agent_id_tensor)
+                
+                # 连接输入
+                if len(actor_inputs) > 1:
+                    actor_input = torch.cat(actor_inputs, dim=-1)
+                else:
+                    actor_input = actor_inputs[0]
+                
+                # 获取对应观测维度的actor网络
+                obs_dim = self.obs_dims[agent_id]
+                actor = self.actors[obs_dim]
+                
+                # 获取动作分布参数
+                mean, std = actor(actor_input)
+                dist = torch.distributions.Normal(mean, std)
+                
+                if evaluate:
+                    # 评估模式：使用确定性策略
+                    a = torch.tanh(mean)
+                    log_prob = None
+                else:
+                    # 训练模式：使用随机策略
+                    a, log_prob = self.tanh_action_sample(dist)
+                
+                actions.append(a.squeeze(0).numpy())
+                if log_prob is not None:
+                    log_probs.append(log_prob.squeeze(0).item())
+            
+            # 返回结果
+            actions = np.array(actions)
+            if evaluate or not log_probs:
+                return actions, None
+            else:
+                log_probs = np.array(log_probs)
+                return actions, log_probs
 
     def get_value(self, s):
+        """获取状态值函数
+        s: 全局状态
+        """
         with torch.no_grad():
             critic_inputs = []
-            # Because each agent has the same global state, we need to repeat the global state 'N' times.
-            s = torch.tensor(s, dtype=torch.float32).unsqueeze(0).repeat(self.N, 1)  # (state_dim,)-->(N,state_dim)
+            # 每个智能体都有相同的全局状态
+            s = torch.tensor(s, dtype=torch.float32).unsqueeze(0).repeat(self.N, 1)
             critic_inputs.append(s)
-            if self.add_agent_id:  # Add an one-hot vector to represent the agent_id
+            
+            if self.add_agent_id:
                 critic_inputs.append(torch.eye(self.N))
-            critic_inputs = torch.cat([x for x in critic_inputs], dim=-1)  # critic_input.shape=(N, critic_input_dim)
-            v_n = self.critic(critic_inputs)  # v_n.shape(N,1)
+                
+            critic_inputs = torch.cat([x for x in critic_inputs], dim=-1)
+            v_n = self.critic(critic_inputs)
+            
             return v_n.numpy().flatten()
 
     def train(self, replay_buffer, total_steps):
-        batch = replay_buffer.get_training_data()  # get training data
-
-        # Calculate the advantage using GAE
+        """训练网络
+        replay_buffer: 经验回放缓冲区
+        total_steps: 当前总步数
+        """
+        batch = replay_buffer.get_training_data()  # 获取训练数据
+        
+        # 使用GAE计算优势函数
         adv = []
         gae = 0
-        with torch.no_grad():  # adv and td_target have no gradient
-            deltas = batch['r_n'] + self.gamma * batch['v_n'][:, 1:] * (1 - batch['done_n']) - batch['v_n'][:, :-1]  # deltas.shape=(batch_size,episode_limit,N)
+        with torch.no_grad():  # adv和td_target不需要梯度
+            # 计算时序差分误差
+            deltas = batch['r_n'] + self.gamma * batch['v_n'][:, 1:] * (1 - batch['done_n']) - batch['v_n'][:, :-1]
+            
+            # 反向计算GAE
             for t in reversed(range(self.episode_limit)):
                 gae = deltas[:, t] + self.gamma * self.lamda * gae
                 adv.insert(0, gae)
-            adv = torch.stack(adv, dim=1)  # adv.shape(batch_size,episode_limit,N)
-            v_target = adv + batch['v_n'][:, :-1]  # v_target.shape(batch_size,episode_limit,N)
-            if self.use_adv_norm:  # Trick 1: advantage normalization
+                
+            adv = torch.stack(adv, dim=1)  # adv.shape=(batch_size, episode_limit, N)
+            v_target = adv + batch['v_n'][:, :-1]  # v_target.shape=(batch_size, episode_limit, N)
+            
+            if self.use_adv_norm:  # Trick 1: 优势函数归一化
                 adv = ((adv - adv.mean()) / (adv.std() + 1e-5))
-
-        """
-            Get actor_inputs and critic_inputs
-            actor_inputs.shape=(batch_size, max_episode_len, N, actor_input_dim)
-            critic_inputs.shape=(batch_size, max_episode_len, N, critic_input_dim)
-        """
-        actor_inputs, critic_inputs = self.get_inputs(batch)
-
-        # Optimize policy for K epochs:
+                
+        # 获取critic输入
+        critic_inputs = self.get_critic_inputs(batch)
+        
+        # 进行K轮优化
         for _ in range(self.K_epochs):
             for index in BatchSampler(SequentialSampler(range(self.batch_size)), self.mini_batch_size, False):
-                """
-                    get probs_now and values_now
-                    probs_now.shape=(mini_batch_size, episode_limit, N, action_dim)
-                    values_now.shape=(mini_batch_size, episode_limit, N)
-                """
-                if self.use_rnn:
-                    # If use RNN, we need to reset the rnn_hidden of the actor and critic.
-                    self.actor.rnn_hidden = None
-                    self.critic.rnn_hidden = None
-                    probs_now, values_now = [], []
-                    for t in range(self.episode_limit):
-                        prob = self.actor(actor_inputs[index, t].reshape(self.mini_batch_size * self.N, -1)) # prob.shape=(mini_batch_size*N, action_dim)
-                        probs_now.append(prob.reshape(self.mini_batch_size, self.N, -1))  # prob.shape=(mini_batch_size,N,action_dim）
-                        v = self.critic(critic_inputs[index, t].reshape(self.mini_batch_size * self.N, -1))  # v.shape=(mini_batch_size*N,1)
-                        values_now.append(v.reshape(self.mini_batch_size, self.N))  # v.shape=(mini_batch_size,N)
-                    # Stack them according to the time (dim=1)
-                    probs_now = torch.stack(probs_now, dim=1)
-                    values_now = torch.stack(values_now, dim=1)
-                else:
-                    probs_now = self.actor(actor_inputs[index])
-                    values_now = self.critic(critic_inputs[index]).squeeze(-1)
-
-                dist_now = Categorical(probs_now)
-                dist_entropy = dist_now.entropy()  # dist_entropy.shape=(mini_batch_size, episode_limit, N)
-                # batch['a_n'][index].shape=(mini_batch_size, episode_limit, N)
-                a_logprob_n_now = dist_now.log_prob(batch['a_n'][index])  # a_logprob_n_now.shape=(mini_batch_size, episode_limit, N)
-                # a/b=exp(log(a)-log(b))
-                ratios = torch.exp(a_logprob_n_now - batch['a_logprob_n'][index].detach())  # ratios.shape=(mini_batch_size, episode_limit, N)
-                surr1 = ratios * adv[index]
-                surr2 = torch.clamp(ratios, 1 - self.epsilon, 1 + self.epsilon) * adv[index]
-                actor_loss = -torch.min(surr1, surr2) - self.entropy_coef * dist_entropy
-
+                # 处理每种观测维度的智能体
+                actor_loss_all = 0
+                dist_entropy_all = 0
+                
+                for obs_dim, agent_indices in batch['agent_indices_by_dim'].items():
+                    # 获取当前维度的观测数据
+                    actor_inputs = batch['obs_n_by_dim'][obs_dim][index]
+                    actor = self.actors[obs_dim]
+                    
+                    # 获取当前策略的动作分布
+                    mean_now, std_now = actor(actor_inputs)
+                    dist_now = torch.distributions.Normal(mean_now, std_now)
+                    
+                    # 提取相应智能体的动作数据
+                    a_n = batch['a_n'][index, :, agent_indices, :]
+                    a_logprob_n = batch['a_logprob_n'][index, :, agent_indices]
+                    agent_adv = adv[index, :, agent_indices]
+                    
+                    # 计算动作对数概率（包含tanh变换）
+                    eps = 1e-6
+                    a_n_raw = torch.atanh(torch.clamp(a_n, -1 + eps, 1 - eps))
+                    log_prob = dist_now.log_prob(a_n_raw).sum(-1)
+                    log_prob -= (2 * (np.log(2) - a_n_raw - F.softplus(-2 * a_n_raw))).sum(-1)
+                    
+                    # 计算重要性权重
+                    ratios = torch.exp(log_prob - a_logprob_n.detach())
+                    
+                    # PPO裁剪目标
+                    surr1 = ratios * agent_adv
+                    surr2 = torch.clamp(ratios, 1 - self.epsilon, 1 + self.epsilon) * agent_adv
+                    
+                    # 策略熵
+                    dist_entropy = dist_now.entropy().sum(-1)
+                    
+                    # 计算actor损失
+                    actor_loss = -torch.min(surr1, surr2) - self.entropy_coef * dist_entropy
+                    
+                    # 累加所有智能体的损失
+                    actor_loss_all += actor_loss.mean()
+                    dist_entropy_all += dist_entropy.mean()
+                
+                # 计算critic损失
+                values_now = self.critic(critic_inputs[index]).squeeze(-1)
+                
+                # 值函数裁剪
                 if self.use_value_clip:
                     values_old = batch["v_n"][index, :-1].detach()
                     values_error_clip = torch.clamp(values_now - values_old, -self.epsilon, self.epsilon) + values_old - v_target[index]
@@ -163,38 +275,114 @@ class MAPPO:
                     critic_loss = torch.max(values_error_clip ** 2, values_error_original ** 2)
                 else:
                     critic_loss = (values_now - v_target[index]) ** 2
-
+                
+                # 总损失
+                ac_loss = actor_loss_all + critic_loss.mean()
+                
+                # 优化
                 self.ac_optimizer.zero_grad()
-                ac_loss = actor_loss.mean() + critic_loss.mean()
                 ac_loss.backward()
-                if self.use_grad_clip:  # Trick 7: Gradient clip
+                
+                if self.use_grad_clip:  # Trick 7: 梯度裁剪
                     torch.nn.utils.clip_grad_norm_(self.ac_parameters, 10.0)
+                    
                 self.ac_optimizer.step()
-
+        
         if self.use_lr_decay:
             self.lr_decay(total_steps)
 
-    def lr_decay(self, total_steps):  # Trick 6: learning rate Decay
+    def get_critic_inputs(self, batch):
+        """获取critic网络输入"""
+        critic_inputs = []
+        critic_inputs.append(batch['s'].unsqueeze(2).repeat(1, 1, self.N, 1))
+        
+        if self.add_agent_id:
+            # agent_id_one_hot.shape=(batch_size, episode_limit, N, N)
+            agent_id_one_hot = torch.eye(self.N).unsqueeze(0).unsqueeze(0).repeat(self.batch_size, self.episode_limit, 1, 1)
+            critic_inputs.append(agent_id_one_hot)
+            
+        return torch.cat([x for x in critic_inputs], dim=-1)
+
+    def lr_decay(self, total_steps):
+        """学习率衰减
+        total_steps: 当前总步数
+        """
         lr_now = self.lr * (1 - total_steps / self.max_train_steps)
         for p in self.ac_optimizer.param_groups:
             p['lr'] = lr_now
 
     def get_inputs(self, batch):
+        """获取网络输入
+        batch: 经验回放缓冲区中的批量数据
+        """
         actor_inputs, critic_inputs = [], []
         actor_inputs.append(batch['obs_n'])
         critic_inputs.append(batch['s'].unsqueeze(2).repeat(1, 1, self.N, 1))
+        
         if self.add_agent_id:
             # agent_id_one_hot.shape=(mini_batch_size, max_episode_len, N, N)
             agent_id_one_hot = torch.eye(self.N).unsqueeze(0).unsqueeze(0).repeat(self.batch_size, self.episode_limit, 1, 1)
             actor_inputs.append(agent_id_one_hot)
             critic_inputs.append(agent_id_one_hot)
-
-        actor_inputs = torch.cat([x for x in actor_inputs], dim=-1)  # actor_inputs.shape=(batch_size, episode_limit, N, actor_input_dim)
-        critic_inputs = torch.cat([x for x in critic_inputs], dim=-1)  # critic_inputs.shape=(batch_size, episode_limit, N, critic_input_dim)
+            
+        actor_inputs = torch.cat([x for x in actor_inputs], dim=-1)
+        critic_inputs = torch.cat([x for x in critic_inputs], dim=-1)
+        
         return actor_inputs, critic_inputs
 
-    def save_model(self, env_name, number, seed, total_steps):
-        torch.save(self.actor.state_dict(), "./model/MAPPO_actor_env_{}_number_{}_seed_{}_step_{}k.pth".format(env_name, number, seed, int(total_steps / 1000)))
-
-    def load_model(self, env_name, number, seed, step):
-        self.actor.load_state_dict(torch.load("./model/MAPPO_actor_env_{}_number_{}_seed_{}_step_{}k.pth".format(env_name, number, seed, step)))
+    def save_model(self, timestamp=False):
+        """保存模型
+        timestamp: 是否在文件名中添加时间戳
+        """
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        model_dir = os.path.join(current_dir, '../models/mappo_models')
+        os.makedirs(model_dir, exist_ok=True)
+        
+        # 使用时间戳或默认文件名
+        if timestamp:
+            from datetime import datetime
+            timestamp_str = datetime.now().strftime('%Y-%m-%d_%H-%M')
+            prefix = f"mappo_{timestamp_str}_"
+        else:
+            prefix = "mappo_"
+        
+        # 保存每个actor网络
+        for obs_dim, actor in self.actors.items():
+            model_path = os.path.join(model_dir, f"{prefix}actor_{obs_dim}.pth")
+            torch.save(actor.state_dict(), model_path)
+        
+        # 保存critic网络
+        critic_path = os.path.join(model_dir, f"{prefix}critic.pth")
+        torch.save(self.critic.state_dict(), critic_path)
+        
+        print(f"模型已保存到 {model_dir}")
+        
+    def load_model(self, model_timestamp=None):
+        """加载模型
+        model_timestamp: 模型时间戳
+        """
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        model_dir = os.path.join(current_dir, '../models/mappo_models')
+        
+        # 使用时间戳或默认文件名
+        if model_timestamp:
+            prefix = f"mappo_{model_timestamp}_"
+        else:
+            prefix = "mappo_"
+        
+        # 加载每个actor网络
+        for obs_dim, actor in self.actors.items():
+            model_path = os.path.join(model_dir, f"{prefix}actor_{obs_dim}.pth")
+            if os.path.exists(model_path):
+                actor.load_state_dict(torch.load(model_path))
+                print(f"已加载actor模型: {model_path}")
+            else:
+                print(f"未找到actor模型: {model_path}")
+        
+        # 加载critic网络
+        critic_path = os.path.join(model_dir, f"{prefix}critic.pth")
+        if os.path.exists(critic_path):
+            self.critic.load_state_dict(torch.load(critic_path))
+            print(f"已加载critic模型: {critic_path}")
+        else:
+            print(f"未找到critic模型: {critic_path}")

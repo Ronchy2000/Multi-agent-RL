@@ -1,118 +1,206 @@
+import sys
+import os
 import torch
 import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 import argparse
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../agents')))
 from normalization import Normalization, RewardScaling
 from replay_buffer import ReplayBuffer
-from mappo_mpe import MAPPO_MPE
-from make_env import make_env
-
+from MAPPO_agent import MAPPO_MPE
+from pettingzoo.mpe import simple_adversary_v3, simple_spread_v3, simple_tag_v3
+import copy
+import csv
+from datetime import datetime
+import os
 
 class Runner_MAPPO_MPE:
-    def __init__(self, args, env_name, number, seed):
+    def __init__(self, agent, env, args, device, mode = 'train'):
+        self.agent = agent
+        self.env = env
         self.args = args
-        self.env_name = env_name
-        self.number = number
-        self.seed = seed
-        # Set random seed
-        np.random.seed(self.seed)
-        torch.manual_seed(self.seed)
-        # Create env
-        self.env = make_env(env_name, discrete=True) # Discrete action space
-        self.args.N = self.env.n  # The number of agents
-        self.args.obs_dim_n = [self.env.observation_space[i].shape[0] for i in range(self.args.N)]  # obs dimensions of N agents
-        self.args.action_dim_n = [self.env.action_space[i].n for i in range(self.args.N)]  # actions dimensions of N agents
-        # Only for homogenous agents environments like Spread in MPE,all agents have the same dimension of observation space and action space
-        self.args.obs_dim = self.args.obs_dim_n[0]  # The dimensions of an agent's observation space
-        self.args.action_dim = self.args.action_dim_n[0]  # The dimensions of an agent's action space
-        self.args.state_dim = np.sum(self.args.obs_dim_n)  # The dimensions of global state space（Sum of the dimensions of the local observation space of all agents）
-        print("observation_space=", self.env.observation_space)
-        print("obs_dim_n={}".format(self.args.obs_dim_n))
-        print("action_space=", self.env.action_space)
-        print("action_dim_n={}".format(self.args.action_dim_n))
+        self.device = device
+        self.mode = mode
+        
+        # 这里为什么新建而不是直接使用agent.agents.keys()？
+        # 因为pettingzoo中智能体死亡，这个字典就没有了，会导致更新出错
+        self.env_agents = [agent_id for agent_id in self.env.agents]
+        self.done = {agent_id: False for agent_id in self.env_agents}
+        
+        # 添加奖励记录相关的属性
+        self.episode_rewards = {}  # 存储每个智能体的详细奖励历史
+        self.all_adversary_mean_rewards = []  # 追捕者平均奖励
 
-        # Create N agents
-        self.agent_n = MAPPO_MPE(self.args)
-        self.replay_buffer = ReplayBuffer(self.args)
-
-        # Create a tensorboard
-        self.writer = SummaryWriter(log_dir='runs/MAPPO/MAPPO_env_{}_number_{}_seed_{}'.format(self.env_name, self.number, self.seed))
-
-        self.evaluate_rewards = []  # Record the rewards during the evaluating
-        self.total_steps = 0
-        if self.args.use_reward_norm:
-            print("------use reward norm------")
-            self.reward_norm = Normalization(shape=self.args.N)
-        elif self.args.use_reward_scaling:
-            print("------use reward scaling------")
-            self.reward_scaling = RewardScaling(shape=self.args.N, gamma=self.args.gamma)
-
-    def run(self, ):
-        evaluate_num = -1  # Record the number of evaluations
-        while self.total_steps < self.args.max_train_steps:
-            if self.total_steps // self.args.evaluate_freq > evaluate_num:
-                self.evaluate_policy()  # Evaluate the policy every 'evaluate_freq' steps
-                evaluate_num += 1
-
-            _, episode_steps = self.run_episode_mpe(evaluate=False)  # Run an episode
-            self.total_steps += episode_steps
-
-            if self.replay_buffer.episode_num == self.args.batch_size:
-                self.agent_n.train(self.replay_buffer, self.total_steps)  # Training
-                self.replay_buffer.reset_buffer()
-
-        self.evaluate_policy()
-        self.env.close()
-
-    def evaluate_policy(self, ):
-        evaluate_reward = 0
-        for _ in range(self.args.evaluate_times):
-            episode_reward, _ = self.run_episode_mpe(evaluate=True)
-            evaluate_reward += episode_reward
-
-        evaluate_reward = evaluate_reward / self.args.evaluate_times
-        self.evaluate_rewards.append(evaluate_reward)
-        print("total_steps:{} \t evaluate_reward:{}".format(self.total_steps, evaluate_reward))
-        self.writer.add_scalar('evaluate_step_rewards_{}'.format(self.env_name), evaluate_reward, global_step=self.total_steps)
-        # Save the rewards and models
-        np.save('./data_train/MAPPO_env_{}_number_{}_seed_{}.npy'.format(self.env_name, self.number, self.seed), np.array(self.evaluate_rewards))
-        self.agent_n.save_model(self.env_name, self.number, self.seed, self.total_steps)
-
-    def run_episode_mpe(self, evaluate=False):
-        episode_reward = 0
-        obs_n = self.env.reset()
-        if self.args.use_reward_scaling:
-            self.reward_scaling.reset()
-        if self.args.use_rnn:  # If use RNN, before the beginning of each episode，reset the rnn_hidden of the Q network.
-            self.agent_n.actor.rnn_hidden = None
-            self.agent_n.critic.rnn_hidden = None
-        for episode_step in range(self.args.episode_limit):
-            a_n, a_logprob_n = self.agent_n.choose_action(obs_n, evaluate=evaluate)  # Get actions and the corresponding log probabilities of N agents
-            s = np.array(obs_n).flatten()  # In MPE, global state is the concatenation of all agents' local obs.
-            v_n = self.agent_n.get_value(s)  # Get the state values (V(s)) of N agents
-            obs_next_n, r_n, done_n, _ = self.env.step(a_n)
-            episode_reward += r_n[0]
-
-            if not evaluate:
+        # 设置tensorboard
+        if mode == 'train':
+            self.writer = SummaryWriter(log_dir=f'runs/MAPPO/{args.env_name}_{args.seed}')
+        # 设置规范化工具
+        if args.use_reward_norm:
+            print("使用奖励规范化")
+            self.reward_norm = Normalization(shape=len(self.env_agents))
+        elif args.use_reward_scaling:
+            print("使用奖励缩放")
+            self.reward_scaling = RewardScaling(shape=len(self.env_agents), gamma=args.gamma)
+    
+    def train(self):
+        print("开始训练...")
+        total_steps = 0
+        self.episode_rewards = {agent_id: np.zeros(self.args.episode_num) for agent_id in self.env.agents}
+        # 创建经验回放缓冲区
+        replay_buffer = ReplayBuffer(self.args)
+        # 开始训练循环
+        for episode in range(self.args.episode_num):
+            # 重置环境
+            if self.args.use_variable_seeds:
+                obs, _ = self.env.reset(self.args.seed + episode)
+            else:
+                obs, _ = self.env.reset(self.args.seed)
+            self.done = {agent_id: False for agent_id in self.env_agents}
+            agent_reward = {agent_id: 0 for agent_id in self.env.agents}
+            # 如果使用奖励缩放，重置缩放器
+            if self.args.use_reward_scaling:
+                self.reward_scaling.reset()
+            # 一个回合的循环
+            for episode_step in range(self.args.episode_length):
+                # 选择动作
+                a_n, a_logprob_n = self.agent.choose_action(list(obs.values()), evaluate=False)
+                # 获取全局状态
+                s = np.concatenate(list(obs.values()), axis=0)     
+                # 获取值函数估计
+                v_n = self.agent.get_value(s)
+                # 执行动作
+                # 将a_n转换为字典
+                action_dict = {}
+                for i, agent_id in enumerate(self.env.agents):
+                    action_dict[agent_id] = a_n[i]
+                # 执行动作
+                next_obs, reward, terminated, truncated, _ = self.env.step(action_dict)
+                self.done = {agent_id: bool(terminated[agent_id] or truncated[agent_id]) for agent_id in self.env_agents}
+                # 整理奖励
+                r_n = np.array(list(reward.values()))
+                done_n = np.array([self.done[agent_id] for agent_id in self.env_agents])
+                # 可选：对奖励进行规范化处理
                 if self.args.use_reward_norm:
                     r_n = self.reward_norm(r_n)
-                elif args.use_reward_scaling:
+                elif self.args.use_reward_scaling:
                     r_n = self.reward_scaling(r_n)
+                # 存储转换
+                replay_buffer.store_transition(
+                    episode_step, 
+                    list(obs.values()), 
+                    s, 
+                    v_n, 
+                    a_n, 
+                    a_logprob_n, 
+                    r_n, 
+                    done_n
+                )
+                # 累积奖励
+                for agent_id, r in reward.items():
+                    agent_reward[agent_id] += r
+                # 更新观测
+                obs = copy.deepcopy(next_obs)
+                # 如果所有智能体都完成，跳出循环
+                if all(self.done.values()):
+                    break
+            # 回合结束，存储最后的值函数
+            s = np.concatenate(list(obs.values()), axis=0)
+            v_n = self.agent.get_value(s)
+            replay_buffer.store_last_value(episode_step + 1, v_n)
+            # 记录每个智能体的奖励
+            for agent_id, r in agent_reward.items():
+                self.episode_rewards[agent_id][episode] = r
+            # 计算追捕者平均奖励
+            adversary_rewards = []
+            for agent_id, r in agent_reward.items():
+                if agent_id.startswith('adversary_'):
+                    adversary_rewards.append(r)
+            adversary_mean = np.mean(adversary_rewards) if adversary_rewards else 0
+            self.all_adversary_mean_rewards.append(adversary_mean)
+            # 每隔一定回合训练一次
+            if replay_buffer.episode_num >= self.args.batch_size:
+                self.agent.train(replay_buffer, total_steps)
+                replay_buffer.reset_buffer()
+            # 输出训练进度
+            if (episode + 1) % 10 == 0:
+                message = f'Episode {episode + 1}/{self.args.episode_num}, '
+                for agent_id, r in agent_reward.items():
+                    message += f'{agent_id}: {r:.4f}; '
+                message += f'adversary_mean: {adversary_mean:.4f}'
+                print(message)
+            total_steps += episode_step + 1
+        # 保存模型和奖励记录
+        self.save_rewards_to_csv()
+        return self.episode_rewards, self.all_adversary_mean_rewards
 
-                # Store the transition
-                self.replay_buffer.store_transition(episode_step, obs_n, s, v_n, a_n, a_logprob_n, r_n, done_n)
+    def evaluate(self):
+        """评估训练好的智能体"""
+        print("正在评估...")
+        # 添加统计变量
+        successful_captures = 0
+        total_steps = 0
+        capture_steps = []
+        # 进行多次评估
+        for episode in range(self.args.evaluate_episode_num):
+            # 重置环境
+            if self.args.use_variable_seeds:
+                obs, _ = self.env.reset(self.args.seed + episode)
+            else:
+                obs, _ = self.env.reset(self.args.seed)
+            self.done = {agent_id: False for agent_id in self.env_agents}
+            agent_reward = {agent_id: 0 for agent_id in self.env.agents}
+            episode_step = 0
+            # 每个智能体与环境交互
+            while self.env.agents and not any(self.done.values()):
+                episode_step += 1
+                # 选择动作(评估模式)
+                a_n, _ = self.agent.choose_action(list(obs.values()), evaluate=True)
+                # 将a_n转换为字典
+                action_dict = {}
+                for i, agent_id in enumerate(self.env.agents):
+                    action_dict[agent_id] = a_n[i]
+                # 执行动作
+                next_obs, reward, terminated, truncated, info = self.env.step(action_dict)
+                self.done = {agent_id: bool(terminated[agent_id] or truncated[agent_id]) for agent_id in self.env_agents}
+                # 检查是否有捕获成功
+                captured = {agent_id: terminated[agent_id] for agent_id in self.env_agents}
+                captured_flag = any(captured.values())
+                if captured_flag:
+                    successful_captures += 1
+                    capture_steps.append(episode_step)
+                # 记录奖励
+                for agent_id, r in reward.items():
+                    agent_reward[agent_id] += r
+                # 更新观测
+                obs = copy.deepcopy(next_obs)
+                # 检查是否达到最大步数
+                if episode_step >= self.args.episode_length:
+                    break
+            total_steps += episode_step
+        # 计算捕获率和平均捕获步数
+        capture_rate = successful_captures / self.args.evaluate_episode_num
+        avg_capture_steps = np.mean(capture_steps) if capture_steps else 0
+        print(f"评估完成: 总场次={self.args.evaluate_episode_num}, 捕获成功率={capture_rate:.2f}, 平均捕获步数={avg_capture_steps:.2f}")
+        return capture_rate, avg_capture_steps
 
-            obs_n = obs_next_n
-            if all(done_n):
-                break
-
-        if not evaluate:
-            # An episode is over, store v_n in the last step
-            s = np.array(obs_n).flatten()
-            v_n = self.agent_n.get_value(s)
-            self.replay_buffer.store_last_value(episode_step + 1, v_n)
-
-        return episode_reward, episode_step + 1
+    def save_rewards_to_csv(self, prefix=''):
+        """保存奖励记录到CSV文件"""
+        # 实现类似于MATD3_runner.py中的保存方法
+        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M')
+        filename = f"{prefix}mappo_rewards_{timestamp}.csv"
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        plot_dir = os.path.join(current_dir, '../plot/mappo_data')
+        os.makedirs(plot_dir, exist_ok=True)
+        with open(os.path.join(plot_dir, filename), 'w', newline='') as f:
+            writer = csv.writer(f)
+            header = ['Episode'] + list(self.episode_rewards.keys()) + ['Adversary_Mean']
+            writer.writerow(header)
+            for ep in range(self.args.episode_num):
+                row = [ep + 1]
+                row += [self.episode_rewards[agent_id][ep] for agent_id in self.episode_rewards]
+                row.append(self.all_adversary_mean_rewards[ep] if ep < len(self.all_adversary_mean_rewards) else 0)
+                writer.writerow(row)
+        print(f"数据已保存到 {os.path.join(plot_dir, filename)}")
 
 
 if __name__ == '__main__':
@@ -145,5 +233,5 @@ if __name__ == '__main__':
     parser.add_argument("--use_value_clip", type=float, default=False, help="Whether to use value clip.")
 
     args = parser.parse_args()
-    runner = Runner_MAPPO_MPE(args, env_name="simple_spread", number=1, seed=0)
+    runner = Runner_MAPPO_MPE(args, env_name="simple_spread", number=3, seed=23)
     runner.run()

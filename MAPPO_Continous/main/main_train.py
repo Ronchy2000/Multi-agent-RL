@@ -1,25 +1,25 @@
-MODULE_NAME = "log_td3_main" # 使用logger保存训练日志
+MODULE_NAME = "log_mappo_main" # 使用logger保存训练日志
 
 from pettingzoo.mpe import simple_adversary_v3, simple_spread_v3, simple_tag_v3
 
 # 添加项目根目录到Python路径
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from envs import simple_tag_env, custom_agents_dynamics
-
-from main_parameters import main_parameters
-from agents.MATD3_runner import RUNNER
-
-from agents.MATD3_agent import MATD3
 import torch
 import random
 import numpy as np 
-
 import time
 from datetime import datetime, timedelta
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from envs import simple_tag_env, custom_agents_dynamics
+from agents.MAPPO_runner import Runner_MAPPO_MPE
+from agents.MAPPO_agent import MAPPO_MPE
+
+from main_parameters import main_parameters
 from utils.logger import TrainingLogger  # 添加导入
+
+
 
 
 def setup_seed(seed):
@@ -60,10 +60,18 @@ def get_env(env_name, ep_len=25, render_mode ="None", seed = None):
         _dim_info[agent_id].append(new_env.action_space(agent_id).shape[0])
         action_bound[agent_id].append(new_env.action_space(agent_id).low)
         action_bound[agent_id].append(new_env.action_space(agent_id).high)
+    
+    # 将环境信息添加到args
+    args = main_parameters()
+    args.agents = new_env.agents
+    args.dim_info = _dim_info  # 添加这行，传递维度信息
+    args.obs_dim = _dim_info[list(new_env.agents)[0]][0]  # 默认值
+    args.action_dim = _dim_info[list(new_env.agents)[0]][1]  # 假设所有智能体动作维度相同
+    args.state_dim = sum(_dim_info[agent_id][0] for agent_id in new_env.agents)
+
     print("_dim_info:",_dim_info)
     print("action_bound:",action_bound)
-    return new_env, _dim_info, action_bound
-
+    return new_env, _dim_info, action_bound, args  # 返回修改后的args
 
 if __name__ == '__main__':
     # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -74,12 +82,12 @@ if __name__ == '__main__':
     start_time = time.time() # 记录开始时间
     # 模型保存路径
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    chkpt_dir = os.path.join(current_dir, 'models', 'matd3_models')
+    chkpt_dir = os.path.join(current_dir, 'models', 'mappo_models')
+    
     # 定义参数
     args = main_parameters()
     # 创建环境
     print("Using Env's name",args.env_name)
-
     # 判断是否使用固定种子
     if args.seed is None:
         print("使用随机种子 (不固定)")
@@ -87,12 +95,12 @@ if __name__ == '__main__':
         print(f"使用固定种子: {args.seed}")
         setup_seed(args.seed)
     
-    env, dim_info, action_bound = get_env(args.env_name, args.episode_length, args.render_mode, seed = args.seed)
+    env, dim_info, action_bound, args = get_env(args.env_name, args.episode_length, args.render_mode, seed = args.seed)
     # print(env, dim_info, action_bound)
     # 创建MA-DDPG智能体 dim_info: 字典，键为智能体名字 内容为二维数组 分别表示观测维度和动作维度 是观测不是状态 需要注意。
-    agent = MATD3(dim_info, args.buffer_capacity, args.batch_size, args.actor_lr, args.critic_lr, action_bound, args.tau, _chkpt_dir = chkpt_dir, _device = device)
+    agent = MAPPO_MPE(args)
     # 创建运行对象
-    runner = RUNNER(agent, env, args, device, mode = 'train')
+    runner = Runner_MAPPO_MPE(agent, env, args, device, mode = 'train')
     
     # 记录训练开始时间
     start_time = datetime.now()
@@ -100,7 +108,7 @@ if __name__ == '__main__':
     print(f"训练开始时间: {start_time_str}")
     
     # 开始训练
-    runner.train()
+    episode_rewards, all_adversary_mean_rewards = runner.train()
     
     # 记录训练结束时间和计算训练用时
     end_time = datetime.now()
