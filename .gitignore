@@ -58,3 +58,12 @@ __pycache__
 
 **/log_td3_main/*
 !**/log_td3_main/.gitkeep
+
+**/models/*
+
+# 忽略 plot 目录及其子目录下的所有文件
+**/plot/*
+# 允许 plot 根目录下的 plot_*.py 文件
+!plot/plot_*.py
+# 允许 plot 根目录下的 README.md
+!plot/README.md
