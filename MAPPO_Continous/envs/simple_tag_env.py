@@ -52,7 +52,7 @@ class Custom_raw_env(SimpleEnv, EzPickle):
             dynamic_rescaling=dynamic_rescaling,
         )
         self.world_size = world_size  # Ronchy添加 world_size参数, 地图大小 world_size x world_size
-        self.metadata["name"] = "simple_tag_v3"
+        self.metadata["name"] = "simple_tag_env"
         # Ronchy添加轨迹记录
         self.history_positions = {agent.name: [] for agent in world.agents}
         # self.max_history_length = 500  # 最大轨迹长度

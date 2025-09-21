@@ -6,8 +6,8 @@ class ReplayBuffer:
     MAPPO的经验回放缓冲区，支持异构智能体(不同的观测维度)
     """
     def __init__(self, args):
+        self.args = args
         self.N = len(args.agents)  # 智能体数量
-        self.agents = args.agents  # 智能体ID列表
         self.obs_dims = {}  # 每个智能体的观测维度
         
         # 获取每个智能体的观测维度
@@ -18,10 +18,6 @@ class ReplayBuffer:
                 # 默认处理
                 self.obs_dims[agent_id] = 12 if agent_id.startswith('adversary_') else 10
         
-        self.action_dim = args.action_dim  # 动作维度
-        self.state_dim = args.state_dim    # 状态维度
-        self.episode_limit = args.episode_limit
-        self.batch_size = args.batch_size
         self.episode_num = 0
         self.buffer = None
         self.reset_buffer()
@@ -30,19 +26,19 @@ class ReplayBuffer:
         """重置缓冲区，使用对象数组存储不同维度的观测"""
         # 使用对象数组存储不同维度的观测
         self.buffer = {
-            'obs_n': np.zeros([self.batch_size, self.episode_limit, self.N], dtype=object),
-            's': np.zeros([self.batch_size, self.episode_limit, self.state_dim], dtype=np.float32),
-            'v_n': np.zeros([self.batch_size, self.episode_limit + 1, self.N], dtype=np.float32),
-            'a_n': np.zeros([self.batch_size, self.episode_limit, self.N, self.action_dim], dtype=np.float32),
-            'a_logprob_n': np.zeros([self.batch_size, self.episode_limit, self.N], dtype=np.float32),
-            'r_n': np.zeros([self.batch_size, self.episode_limit, self.N], dtype=np.float32),
-            'done_n': np.zeros([self.batch_size, self.episode_limit, self.N], dtype=np.float32)
+            'obs_n': np.zeros([self.args.batch_size, self.args.episode_num, self.N], dtype=object),
+            's': np.zeros([self.args.batch_size, self.args.episode_num, self.args.state_dim], dtype=np.float32),
+            'v_n': np.zeros([self.args.batch_size, self.args.episode_num + 1, self.N], dtype=np.float32),
+            'a_n': np.zeros([self.args.batch_size, self.args.episode_num, self.N, self.args.action_dim], dtype=np.float32),
+            'a_logprob_n': np.zeros([self.args.batch_size, self.args.episode_num, self.N], dtype=np.float32),
+            'r_n': np.zeros([self.args.batch_size, self.args.episode_num, self.N], dtype=np.float32),
+            'done_n': np.zeros([self.args.batch_size, self.args.episode_num, self.N], dtype=np.float32)
         }
         
         # 初始化观测数组
-        for idx in range(self.batch_size):
-            for step in range(self.episode_limit):
-                for i, agent_id in enumerate(self.agents):
+        for idx in range(self.args.batch_size):
+            for step in range(self.args.episode_num):
+                for i, agent_id in enumerate(self.args.agents):
                     self.buffer['obs_n'][idx, step, i] = np.zeros(self.obs_dims[agent_id], dtype=np.float32)
         
         self.episode_num = 0
@@ -54,7 +50,7 @@ class ReplayBuffer:
         # 将字典转换为列表
         if isinstance(obs_n, dict):
             obs_list = []
-            for agent_id in self.agents:
+            for agent_id in self.args.agents:
                 if agent_id in obs_n:
                     obs_list.append(obs_n[agent_id])
             obs_n = obs_list
@@ -74,7 +70,7 @@ class ReplayBuffer:
         """存储最后一步的值函数"""
         idx = self.episode_num
         self.buffer['v_n'][idx, episode_step] = v_n
-        self.episode_num = (self.episode_num + 1) % self.batch_size  # 更新episode计数器
+        self.episode_num = (self.episode_num + 1) % self.args.batch_size  # 更新episode计数器
         
     def get_training_data(self):
         """获取训练数据"""
@@ -85,7 +81,7 @@ class ReplayBuffer:
         agent_indices_by_dim = {}
         
         # 按观测维度分组智能体
-        for i, agent_id in enumerate(self.agents):
+        for i, agent_id in enumerate(self.args.agents):
             obs_dim = self.obs_dims[agent_id]
             if obs_dim not in obs_by_dim:
                 obs_by_dim[obs_dim] = []
@@ -98,11 +94,11 @@ class ReplayBuffer:
         
         for obs_dim, indices in agent_indices_by_dim.items():
             # 创建这个维度的观测张量
-            obs_tensor = np.zeros((self.batch_size, self.episode_limit, len(indices), obs_dim), dtype=np.float32)
+            obs_tensor = np.zeros((self.args.batch_size, self.args.episode_num, len(indices), obs_dim), dtype=np.float32)
             
             # 填充数据
-            for b_idx in range(self.batch_size):
-                for step in range(self.episode_limit):
+            for b_idx in range(self.args.batch_size):
+                for step in range(self.args.episode_num):
                     for i, agent_idx in enumerate(indices):
                         obs_tensor[b_idx, step, i] = self.buffer['obs_n'][b_idx, step, agent_idx]
             

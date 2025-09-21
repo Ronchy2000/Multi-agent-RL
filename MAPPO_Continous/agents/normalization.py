@@ -1,52 +1,64 @@
 import numpy as np
 
-
 class RunningMeanStd:
-    # Dynamically calculate mean and std
-    def __init__(self, shape):  # shape:the dimension of input data
+    def __init__(self, shape):
         self.n = 0
-        self.mean = np.zeros(shape)
-        self.S = np.zeros(shape)
-        self.std = np.sqrt(self.S)
+        # 确保shape是一个元组或整数
+        if isinstance(shape, int):
+            self.shape = (shape,)
+        else:
+            self.shape = shape
+            
+        self.mean = np.zeros(self.shape, dtype=np.float32)
+        self.S = np.zeros(self.shape, dtype=np.float32)
+        self.std = np.ones(self.shape, dtype=np.float32)
 
     def update(self, x):
-        x = np.array(x)
+        x = np.asarray(x, dtype=np.float32)
+        # 确保输入形状与初始化形状匹配
+        if x.shape != self.shape:
+            if x.size == np.prod(self.shape):
+                x = x.reshape(self.shape)
+            else:
+                raise ValueError(f"输入形状 {x.shape} 与期望形状 {self.shape} 不匹配")
+        
         self.n += 1
         if self.n == 1:
-            self.mean = x
-            self.std = x
+            self.mean = x.copy()
+            self.std = np.ones_like(x)
         else:
             old_mean = self.mean.copy()
             self.mean = old_mean + (x - old_mean) / self.n
             self.S = self.S + (x - old_mean) * (x - self.mean)
             self.std = np.sqrt(self.S / self.n)
 
-
 class Normalization:
     def __init__(self, shape):
         self.running_ms = RunningMeanStd(shape=shape)
 
     def __call__(self, x, update=True):
-        # Whether to update the mean and std,during the evaluating,update=False
+        # 将输入转换为numpy数组并确保形状正确
+        x = np.asarray(x, dtype=np.float32)
         if update:
             self.running_ms.update(x)
-        x = (x - self.running_ms.mean) / (self.running_ms.std + 1e-8)
-
-        return x
-
+        return (x - self.running_ms.mean) / (self.running_ms.std + 1e-8)
 
 class RewardScaling:
     def __init__(self, shape, gamma):
-        self.shape = shape  # reward shape=1
-        self.gamma = gamma  # discount factor
+        if isinstance(shape, int):
+            self.shape = (shape,)
+        else:
+            self.shape = shape
+        self.gamma = gamma
         self.running_ms = RunningMeanStd(shape=self.shape)
-        self.R = np.zeros(self.shape)
+        self.R = np.zeros(self.shape, dtype=np.float32)
 
     def __call__(self, x):
+        # 将输入转换为numpy数组
+        x = np.asarray(x, dtype=np.float32)
         self.R = self.gamma * self.R + x
         self.running_ms.update(self.R)
-        x = x / (self.running_ms.std + 1e-8)  # Only divided std
-        return x
+        return x / (self.running_ms.std + 1e-8)
 
-    def reset(self):  # When an episode is done,we should reset 'self.R'
-        self.R = np.zeros(self.shape)
+    def reset(self):
+        self.R = np.zeros(self.shape, dtype=np.float32)

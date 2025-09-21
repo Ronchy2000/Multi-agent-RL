@@ -108,7 +108,7 @@ if __name__ == '__main__':
     print(f"训练开始时间: {start_time_str}")
     
     # 开始训练
-    episode_rewards, all_adversary_mean_rewards = runner.train()
+    episode_rewards, all_adversary_mean_rewards = runner.run()
     
     # 记录训练结束时间和计算训练用时
     end_time = datetime.now()

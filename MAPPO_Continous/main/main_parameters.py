@@ -6,15 +6,13 @@ def main_parameters():
     parser.add_argument("--seed", type=int, default=-1, help='随机种子 (使用-1表示不使用固定种子)')
     parser.add_argument("--use_variable_seeds", type=bool, default=False, help="使用可变随机种子")
     
-    parser.add_argument("--env_name", type=str, default="simple_tag_env", help="环境名称",   
+    parser.add_argument("--env_name", type=str, default="simple_tag_v3", help="环境名称",   
                         choices=['simple_adversary_v3', 'simple_spread_v3', 'simple_tag_v3', 'simple_tag_env']) 
     parser.add_argument("--render_mode", type=str, default="None", help="渲染模式: None | human | rgb_array")
     
     # MAPPO训练参数
-    parser.add_argument("--max_train_steps", type=int, default=int(3e6), help="最大训练步数")
-    parser.add_argument("--episode_num", type=int, default=3000, help="训练轮数")
-    parser.add_argument("--episode_length", type=int, default=100, help="每轮最大步数")
-    parser.add_argument("--episode_limit", type=int, default=100, help="每轮最大步数(与episode_length保持一致)")
+    parser.add_argument("--episode_num", type=int, default=int(3e6), help="训练轮数") # max_train_steps
+    parser.add_argument("--episode_length", type=int, default=25, help="每轮最大步数")
     parser.add_argument("--evaluate_episode_num", type=int, default=100, help="评估轮数")
     parser.add_argument("--evaluate_freq", type=float, default=5000, help="每隔多少步评估一次策略")
     parser.add_argument("--evaluate_times", type=int, default=3, help="每次评估重复次数")
@@ -23,8 +21,8 @@ def main_parameters():
     parser.add_argument('--gamma', type=float, default=0.99, help='折扣因子')
     parser.add_argument('--batch_size', type=int, default=32, help='批次大小(回合数)')
     parser.add_argument('--mini_batch_size', type=int, default=8, help='小批量大小(回合数)')
-    parser.add_argument('--actor_lr', type=float, default=1e-4, help='Actor学习率')
-    parser.add_argument('--critic_lr', type=float, default=1e-4, help='Critic学习率')
+    parser.add_argument('--actor_lr', type=float, default=5e-4, help='Actor学习率')
+    parser.add_argument('--critic_lr', type=float, default=5e-4, help='Critic学习率')
     parser.add_argument('--lamda', type=float, default=0.95, help='GAE参数')
     parser.add_argument('--epsilon', type=float, default=0.2, help='PPO裁剪参数')
     parser.add_argument('--K_epochs', type=int, default=15, help='每批数据训练轮数')
