@@ -74,7 +74,7 @@ if __name__ == '__main__':
     start_time = time.time() # 记录开始时间
     # 模型保存路径
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    chkpt_dir = os.path.join(current_dir, 'models', 'matd3_models')
+    chkpt_dir = os.path.join(current_dir, "..", 'models', 'matd3_models')
     # 定义参数
     args = main_parameters()
     # 创建环境

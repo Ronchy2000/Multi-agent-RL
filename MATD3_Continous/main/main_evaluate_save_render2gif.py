@@ -108,8 +108,8 @@ if __name__ == '__main__':
     print("Using device:", device)
     # 模型存储路径
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    chkpt_dir = os.path.join(current_dir, 'models', 'matd3_models')
-    load_timestamp = "2025-04-15_22-23"  # 替换成你的模型时间戳
+    chkpt_dir = os.path.join(current_dir, "..", 'models', 'matd3_models')
+    load_timestamp = "2025-09-21_19-46" # 替换时间戳
     model_timestamp = None if load_timestamp == '' else load_timestamp
     
     # 定义参数
