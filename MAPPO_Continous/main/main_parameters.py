@@ -13,7 +13,6 @@ def main_parameters():
     # MAPPO训练参数
     parser.add_argument("--episode_num", type=int, default=int(3e6), help="训练轮数") # max_train_steps
     parser.add_argument("--episode_length", type=int, default=25, help="每轮最大步数")
-    parser.add_argument("--evaluate_episode_num", type=int, default=100, help="评估轮数")
     parser.add_argument("--evaluate_freq", type=float, default=5000, help="每隔多少步评估一次策略")
     parser.add_argument("--evaluate_times", type=int, default=3, help="每次评估重复次数")
     
@@ -44,21 +43,6 @@ def main_parameters():
     parser.add_argument("--use_rnn", type=bool, default=False, help="是否使用RNN网络")
     parser.add_argument("--add_agent_id", type=bool, default=False, help="是否添加智能体ID")
     parser.add_argument("--use_value_clip", type=bool, default=False, help="是否使用值函数裁剪")
-    
-    # 经验回放参数
-    parser.add_argument('--buffer_capacity', type=int, default=int(1e6), help='经验回放缓冲区容量')
-    parser.add_argument('--learn_interval', type=int, default=10, help='学习间隔步数')
-    parser.add_argument('--random_steps', type=int, default=500, help='初始随机探索步数')
-    
-    # 其他算法参数
-    parser.add_argument('--tau', type=float, default=0.01, help='软更新参数')
-    parser.add_argument('--comm_lr', type=float, default=0.00001, help='通信网络学习率')
-    parser.add_argument('--message_dim', type=int, default=3, help='通信消息维度')
-    parser.add_argument('--best_score', type=int, default=-20, help='最佳分数初始值')
-    
-    # 可视化参数
-    parser.add_argument('--visdom', action="store_true", help="是否使用visdom可视化")
-    parser.add_argument('--size_win', type=int, default=200, help="平滑窗口大小")
     
     # 训练设备
     parser.add_argument("--device", type=str, default='cpu', help="训练设备，cpu或cuda")
