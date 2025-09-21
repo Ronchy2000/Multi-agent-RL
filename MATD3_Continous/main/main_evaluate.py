@@ -61,7 +61,7 @@ if __name__ == '__main__':
     # 模型存储路径
     current_dir = os.path.dirname(os.path.abspath(__file__))
     chkpt_dir = os.path.join(current_dir, 'models', 'matd3_models')
-    load_timestamp = "2025-04-15_22-23"
+    load_timestamp = "2025-09-21_19-46"
     model_timestamp = None if load_timestamp == '' else load_timestamp
     # 定义参数
     args = main_parameters()

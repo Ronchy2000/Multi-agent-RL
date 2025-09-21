@@ -9,19 +9,19 @@ def main_parameters():
     parser.add_argument("--env_name", type=str, default="simple_tag_v3", help="name of the env",   
                         choices=['simple_adversary_v3', 'simple_spread_v3', 'simple_tag_v3', 'simple_tag_env']) 
     parser.add_argument("--render_mode", type=str, default="None", help="None | human | rgb_array")
-    parser.add_argument("--episode_num", type=int, default=3, help="训练轮数")
-    parser.add_argument("--episode_length", type=int, default=100, help="每轮最大步数")
+    parser.add_argument("--episode_num", type=int, default=1500, help="训练轮数")
+    parser.add_argument("--episode_length", type=int, default=100, help="每轮最大步数") # 训练时设置为100，测试时嫌麻烦可以设置为50
     parser.add_argument("--evaluate_episode_num", type=int, default=100, help="评估轮数")
     parser.add_argument('--learn_interval', type=int, default=10,
                         help='学习间隔步数')
     
-    parser.add_argument('--random_steps', type=int, default=500, help='初始随机探索步数')
+    parser.add_argument('--random_steps', type=int, default=200, help='初始随机探索步数')
     parser.add_argument('--tau', type=float, default=0.01, help='软更新参数')
-    parser.add_argument('--gamma', type=float, default=0.9, help='折扣因子')
+    parser.add_argument('--gamma', type=float, default=0.99, help='折扣因子')
     parser.add_argument('--buffer_capacity', type=int, default=int(1e6), help='经验回放缓冲区容量')
     parser.add_argument('--batch_size', type=int, default=128, help='批次大小')
-    parser.add_argument('--actor_lr', type=float, default=0.0001, help='Actor学习率')
-    parser.add_argument('--critic_lr', type=float, default=0.003, help='Critic学习率')
+    parser.add_argument('--actor_lr', type=float, default=0.00001, help='Actor学习率')
+    parser.add_argument('--critic_lr', type=float, default=0.0001, help='Critic学习率')
     parser.add_argument('--comm_lr', type=float, default=0.00001, help='Comm学习率')
     # 通信网络参数
     parser.add_argument('--message_dim', type=int, default=3, help='通信消息维度')
