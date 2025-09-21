@@ -114,6 +114,11 @@
 > MATD3 algorithm Reference: https://github.com/wild-firefox/FreeRL/blob/main/MADDPG_file/MATD3_simple.py
 
 <div align="center">
+  <img src="./MATD3_Continous/plot/simple_tag_v3_matd3_demo.gif" alt="MATD3算法表现" width="45%"/>
+  <p><strong>MATD3算法在simple_tag_v3环境中的表现（追逃博弈 pursuit-evasion game）</strong></p>
+</div>
+
+<div align="center">
   <img src="./MATD3_Continous/plot/training_rewards_demo.png" alt="训练收敛结果" width="80%"/>
   <p><strong>MATD3算法在simple_tag_env环境中的奖励收敛曲线</strong></p>
 </div>

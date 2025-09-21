@@ -10,6 +10,11 @@
 
 ## 📈 训练效果
 <div align="center">
+  <img src="./plot/simple_tag_v3_matd3_demo.gif" alt="MATD3算法表现" width="50%"/>
+  <p><strong>MATD3算法在simple_tag_v3环境中的表现（追逃博弈 pursuit-evasion game）</strong></p>
+</div>
+
+<div align="center">
   <img src="./plot/training_rewards_demo.png" alt="训练收敛结果" width="80%"/>
   <p><strong>MATD3算法在simple_tag_v3环境中的奖励收敛曲线</strong></p>
 </div>

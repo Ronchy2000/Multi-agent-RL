@@ -10,13 +10,18 @@
 
 ## 📈 Training Results
 <div align="center">
+  <img src="./plot/simple_tag_v3_matd3_demo.gif" alt="MATD3 performance" width="50%"/>
+  <p><strong>MATD3 performance in simple_tag_v3 (pursuit-evasion game)</strong></p>
+</div>
+
+<div align="center">
   <img src="./plot/training_rewards_demo.png" alt="Training Convergence" width="80%"/>
   <p><strong>Reward convergence curve of MATD3 algorithm in simple_tag_v3 environment</strong></p>
 </div>
 
 > **⚠️ Important Note**: Before using, please check the 🔍 [**Known Issues & Solutions**](KNOWN_ISSUES.md) document to understand common problems and their solutions, especially Windows rendering issues and PettingZoo version compatibility.
 
-> **Reward Function Optimization**: The official reward configuration cannot train good capture behaviors. This project specifically optimizes the predator's reward function to achieve more efficient cooperative capture.
+> **Reward Function Optimization**: The official reward configuration cannot train good capture behaviors. This project specifically optimizes the predator's reward function to achieve more efficient cooperative capture. For more details please [replace official files with our settings.](./envs)
 
 ## 🚀 Implementation Progress
 | Algorithm    | Status | Location          | Core Components                    |

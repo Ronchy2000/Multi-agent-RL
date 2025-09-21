@@ -124,7 +124,13 @@ Multi-agent extension version of the TD3 algorithm (MATD3: Twin Delayed Deep Det
 > MATD3 algorithm Reference: https://github.com/wild-firefox/FreeRL/blob/main/MADDPG_file/MATD3_simple.py
 
 <div align="center">
-  <img src="./MATD3_Continous/plot/training_rewards_demo.png" alt="Training Convergence" width="80%"/>
+  <img src="./MATD3_Continous/plot/simple_tag_v3_matd3_demo.gif" alt="MATD3 Performance" width="45%"/>
+  <p><strong>MATD3 performance in simple_tag_v3 (pursuit-evasion game)</strong></p>
+</div>
+
+
+<div align="center">
+  <img src="MATD3_Continous/plot/training_rewards_demo.png" alt="Training Convergence" width="80%"/>
   <p><strong>Reward convergence curve of MATD3 algorithm in simple_tag_v3 environment</strong></p>
 </div>
 
