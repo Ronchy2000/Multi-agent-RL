@@ -1,0 +1,10 @@
+# 训练曲线，csv
+plot/matd3_data/**
+
+# 忽略 models/matd3_models/ 下的所有内容
+models/matd3_models/*
+# 取消忽略特定目录及其内容
+!models/matd3_models/2025-09-21_19-46/
+!models/matd3_models/2025-09-21_19-46/**
+
+

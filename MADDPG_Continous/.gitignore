@@ -1,15 +1,3 @@
-# Python 编译文件
-**/__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-
-# PyCharm 设置
-.idea/
-
-# VSCode 设置
-.vscode/
-
 #如果你想忽略所有名为maddpg_models的文件夹，无论它们在项目中的位置如何，你可以在.gitignore文件中添加以下内容：
 **/maddpg_models/
 # 保留 maddpg_models 文件夹本身
