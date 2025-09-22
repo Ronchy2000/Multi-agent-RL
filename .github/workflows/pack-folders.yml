@@ -10,9 +10,9 @@ on:
         description: |
           变更日志内容或文件路径：
           - 直接输入内容（用 \n 换行）
-          - 或输入文件路径（如 CHANGELOG.md）
+          - 或输入文件路径（如 .github/CHANGELOG.md）
         required: true
-        default: 'CHANGELOG.md'
+        default: '.github/CHANGELOG.md'
 
 permissions:
   contents: write
@@ -86,8 +86,20 @@ jobs:
           - License: [MIT](LICENSE)
           EOF
           
-          # 获取变更日志输入
-          INPUT_CHANGELOG="${{ github.event.inputs.changelog }}"
+          # 获取触发类型
+          TRIGGER_TYPE="${{ github.event_name }}"
+          echo "触发类型: $TRIGGER_TYPE"
+          
+          # 确定变更日志来源
+          if [[ "$TRIGGER_TYPE" == "workflow_dispatch" ]]; then
+            # 手动触发：使用输入值
+            INPUT_CHANGELOG="${{ github.event.inputs.changelog }}"
+          else
+            # 标签触发：使用默认文件
+            INPUT_CHANGELOG=".github/CHANGELOG.md"
+          fi
+          
+          echo "变更日志来源: $INPUT_CHANGELOG"
           
           # 检测输入是否是文件路径
           if [ -f "$INPUT_CHANGELOG" ]; then
@@ -108,9 +120,8 @@ jobs:
           cat base_body.md >> full_body.md
           
           # 打印生成的内容用于调试
-          echo "===== 生成的发布说明预览（前10行） ====="
-          head -n 10 full_body.md
-          echo "..."
+          echo "===== 生成的发布说明预览 ====="
+          cat full_body.md  # 显示完整内容以便调试
           echo "====================================="
 
       - name: Package each folder
