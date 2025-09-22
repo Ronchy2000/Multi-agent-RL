@@ -1,4 +1,4 @@
-name: Package Folders with Shared Files
+name:  📦 Package Release
 
 on:
   push:
@@ -7,9 +7,12 @@ on:
   workflow_dispatch:  # 手动触发选项
     inputs:
       changelog:
-        description: 'Release changelog (Markdown格式)'
+        description: |
+          变更日志内容或文件路径：
+          - 直接输入内容（用 \n 换行）
+          - 或输入文件路径（如 CHANGELOG.md）
         required: true
-        default: ''
+        default: 'CHANGELOG.md'
 
 permissions:
   contents: write
@@ -19,6 +22,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # 获取足够的历史记录以包含标签
+          fetch-depth: 0
 
       - name: Prepare shared files
         run: |
@@ -35,7 +41,7 @@ jobs:
           -   **MADDPG_Continous**  
             多智能体深度确定性策略梯度算法（连续动作空间版本），适用于连续控制场景的多智能体协同训练。
 
-          -   ⚡️ **MATD3_Continous**  
+          -    ⚡️ **MATD3_Continous**  
             多智能体双延迟深度确定性策略梯度算法，在MADDPG基础上增加了延迟更新和策略平滑机制。
 
           - 📚 **RL_Learning-main**  
@@ -67,7 +73,7 @@ jobs:
           -  📚 **RL_Learning-main**  
             Fundamental RL tutorials with classic algorithm implementations.
 
-          -   🧠 **hands_on_RL**  
+          -    🧠 **hands_on_RL**  
             Interactive reinforcement learning projects via Jupyter Notebooks.
 
           ## Quick Start
@@ -80,13 +86,32 @@ jobs:
           - License: [MIT](LICENSE)
           EOF
           
-          # 拼接手动输入的变更日志
-          echo -e "# 变更日志 / Changelog\n\n${{ github.event.inputs.changelog }}\n\n---\n\n" > full_body.md
+          # 获取变更日志输入
+          INPUT_CHANGELOG="${{ github.event.inputs.changelog }}"
+          
+          # 检测输入是否是文件路径
+          if [ -f "$INPUT_CHANGELOG" ]; then
+            echo "从文件读取变更日志: $INPUT_CHANGELOG"
+            CHANGELOG_CONTENT=$(cat "$INPUT_CHANGELOG")
+          else
+            echo "处理手动输入的变更日志"
+            # 将 \n 替换为实际换行符
+            CHANGELOG_CONTENT=$(echo -e "$INPUT_CHANGELOG" | sed 's/\\n/\n/g')
+          fi
+          
+          # 添加版本号标题
+          VERSION="${{ github.ref_name }}"
+          CHANGELOG_CONTENT="# 版本 $VERSION\n\n$CHANGELOG_CONTENT"
+
+          # 创建完整的发布说明
+          echo -e "# 变更日志 / Changelog\n\n$CHANGELOG_CONTENT\n\n---\n\n" > full_body.md
           cat base_body.md >> full_body.md
           
           # 打印生成的内容用于调试
-          echo "Generated release body:"
-          cat full_body.md
+          echo "===== 生成的发布说明预览（前10行） ====="
+          head -n 10 full_body.md
+          echo "..."
+          echo "====================================="
 
       - name: Package each folder
         run: |
@@ -130,7 +155,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: "Release ${{ github.ref_name }}"
-          body_path: full_body.md  # 关键修改：使用文件路径而不是硬编码内容
+          body_path: full_body.md
           files: |
             zips/*.zip
         env:
