@@ -362,10 +362,28 @@ class MAPPO_MPE:
 
     def save_model(self, env_name, number, seed, total_steps):
 
-        # 创建models目录（如果不存在）
-        os.makedirs("./models", exist_ok=True)
-        torch.save(self.actor.state_dict(), "./models/MAPPO_actor_env_{}_number_{}_seed_{}_step_{}k.pth".format(env_name, number, seed, int(total_steps / 1000)))
-        torch.save(self.critic.state_dict(), "./models/MAPPO_critic_env_{}_number_{}_seed_{}_step_{}k.pth".format(env_name, number, seed, int(total_steps / 1000)))
+        # 获取脚本文件所在目录的绝对路径
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        # 在脚本目录下创建models目录
+        models_dir = os.path.join(current_dir, "models")
+        os.makedirs(models_dir, exist_ok=True)
+        
+        # 保存模型到正确的路径
+        actor_path = os.path.join(models_dir, f"MAPPO_actor_env_{env_name}_number_{number}_seed_{seed}_step_{int(total_steps / 1000)}k.pth")
+        critic_path = os.path.join(models_dir, f"MAPPO_critic_env_{env_name}_number_{number}_seed_{seed}_step_{int(total_steps / 1000)}k.pth")
+        
+        torch.save(self.actor.state_dict(), actor_path)
+        torch.save(self.critic.state_dict(), critic_path)
 
     def load_model(self, env_name, number, seed, step):
-        self.actor.load_state_dict(torch.load("./models/MAPPO_actor_env_{}_number_{}_seed_{}_step_{}k.pth".format(env_name, number, seed, step)))
+        # 获取脚本文件所在目录的绝对路径
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        # models目录路径
+        models_dir = os.path.join(current_dir, "models")
+        
+        # 加载模型
+        actor_path = os.path.join(models_dir, f"MAPPO_actor_env_{env_name}_number_{number}_seed_{seed}_step_{step}k.pth")
+        critic_path = os.path.join(models_dir, f"MAPPO_critic_env_{env_name}_number_{number}_seed_{seed}_step_{step}k.pth")
+        
+        self.actor.load_state_dict(torch.load(actor_path))
+        self.critic.load_state_dict(torch.load(critic_path))

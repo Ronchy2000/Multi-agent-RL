@@ -6,6 +6,7 @@ from torch.utils.data.sampler import *
 
 # Trick 8: orthogonal initialization
 '''
+Relu activation with Orthogonal Initialization
 函数作用:
 权重初始化：将神经网络层的权重矩阵初始化为正交矩阵
 偏置初始化：将偏置参数初始化为0

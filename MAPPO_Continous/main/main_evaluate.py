@@ -72,7 +72,7 @@ if __name__ == '__main__':
     chkpt_dir = os.path.join(current_dir, 'models', 'mappo_models')
     
     # 加载指定时间戳的模型
-    load_timestamp = "2025-07-02_16-10"  # 请根据实际保存的模型时间戳修改
+    load_timestamp = "2025-09-22_22-28"  # 请根据实际保存的模型时间戳修改
     model_timestamp = None if load_timestamp == '' else load_timestamp
     
     # 定义参数

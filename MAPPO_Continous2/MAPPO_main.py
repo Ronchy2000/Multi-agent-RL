@@ -7,7 +7,9 @@ from replay_buffer import ReplayBuffer
 from MAPPO import MAPPO_MPE
 
 from pettingzoo.mpe import simple_adversary_v3, simple_spread_v3, simple_tag_v3
-
+import os
+from datetime import datetime
+import csv
 
 def get_env(env_name, ep_len=25, render_mode ="None", seed = None , N = 1):
     """create environment and get observation and action dimension of each agent in this environment"""
@@ -51,7 +53,7 @@ class Runner_MAPPO_MPE:
         np.random.seed(self.seed)
         torch.manual_seed(self.seed)
         # Create env
-        self.env, _, _ = get_env(env_name = 'simple_spread_v3', N = self.number) # Continous action space
+        self.env, _, _ = get_env(env_name = 'simple_spread_v3', ep_len=self.args.episode_limit, N = self.number) # Continous action space
         print("self.env.agents",self.env.agents)
         self.args.agents = self.env.agents
         self.args.N = len(self.env.agents)
@@ -102,6 +104,7 @@ class Runner_MAPPO_MPE:
                 self.replay_buffer.reset_buffer()
 
         self.evaluate_policy()
+        self.save_rewards_to_csv() # 保存训练数据到CSV
         self.env.close()
 
     def evaluate_policy(self, ):
@@ -208,11 +211,34 @@ class Runner_MAPPO_MPE:
 
         return episode_reward, episode_step + 1
 
-
+    def save_rewards_to_csv(self):
+        """保存评估奖励数据到CSV文件"""
+        # 获取脚本文件所在目录
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        # 创建数据目录
+        data_dir = os.path.join(current_dir, "data")
+        os.makedirs(data_dir, exist_ok=True)
+        
+        # 获取当前时间作为文件名一部分
+        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M')
+        filename = os.path.join(data_dir, f"mappo_rewards_{self.env_name}_n{self.number}_s{self.seed}_{timestamp}.csv")
+        
+        # 准备数据：步数和对应的奖励
+        steps = [i * self.args.evaluate_freq for i in range(len(self.evaluate_rewards))]
+        
+        # 写入CSV文件
+        with open(filename, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(['Steps', 'Reward'])  # 写入标题行
+            for step, reward in zip(steps, self.evaluate_rewards):
+                writer.writerow([step, reward])
+        
+        print(f"评估奖励数据已保存到 {filename}")
+        
 if __name__ == '__main__':
     parser = argparse.ArgumentParser("Hyperparameters Setting for MAPPO in MPE environment")
-    parser.add_argument("--max_train_steps", type=int, default=int(3e6), help=" Maximum number of training steps")
-    parser.add_argument("--episode_limit", type=int, default=25, help="Maximum number of steps per episode")
+    parser.add_argument("--max_train_steps", type=int, default=int(2e5), help=" Maximum number of training steps")
+    parser.add_argument("--episode_limit", type=int, default=50, help="Maximum number of steps per episode")
     parser.add_argument("--evaluate_freq", type=float, default=5000, help="Evaluate the policy every 'evaluate_freq' steps")
     parser.add_argument("--evaluate_times", type=float, default=3, help="Evaluate times")
 
@@ -220,7 +246,7 @@ if __name__ == '__main__':
     parser.add_argument("--mini_batch_size", type=int, default=8, help="Minibatch size (the number of episodes)")
     parser.add_argument("--rnn_hidden_dim", type=int, default=64, help="The number of neurons in hidden layers of the rnn")
     parser.add_argument("--mlp_hidden_dim", type=int, default=64, help="The number of neurons in hidden layers of the mlp")
-    parser.add_argument("--lr", type=float, default=5e-4, help="Learning rate")
+    parser.add_argument("--lr", type=float, default=1e-4, help="Learning rate")
     parser.add_argument("--gamma", type=float, default=0.99, help="Discount factor")
     parser.add_argument("--lamda", type=float, default=0.95, help="GAE parameter")
     parser.add_argument("--epsilon", type=float, default=0.2, help="GAE parameter")
@@ -240,5 +266,5 @@ if __name__ == '__main__':
     parser.add_argument("--act_dim", type=float, default=5, help="Act_dimension") # 修改连续时添加
 
     args = parser.parse_args()
-    runner = Runner_MAPPO_MPE(args, number=1, seed=0)
+    runner = Runner_MAPPO_MPE(args, number=2, seed=23)
     runner.run()

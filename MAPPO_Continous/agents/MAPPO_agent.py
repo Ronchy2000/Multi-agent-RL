@@ -131,20 +131,20 @@ class MAPPO_MPE:
                         agent_id_tensor = torch.zeros(1, self.N, dtype=torch.float32)
                         agent_id_tensor[0, i] = 1.0
                         actor_inputs.append(agent_id_tensor)
-
+                    
                     actor_inputs = torch.cat(actor_inputs, dim=-1)  # (1, actor_input_dim)
-
+                    
                     # 连续动作
                     mean, std = actor(actor_inputs)
                     dist = torch.distributions.Normal(mean, std)
                     
                     if evaluate:
-                        action = torch.tanh(mean)  # 保持在[-1,1]
+                        action = torch.tanh(mean)  # 确保在[-1,1]范围内
                         log_prob = None
                     else:
                         # 采样并进行tanh-squash, 同时返回修正后的log_prob
-                        raw_action = dist.rsample()
-                        action = torch.tanh(raw_action)
+                        raw_action = dist.rsample()  # 使用rsample()支持重参数化
+                        action = torch.tanh(raw_action)  # 压缩到[-1,1]
                         # log_prob修正（tanh的雅可比）
                         log_prob = dist.log_prob(raw_action).sum(-1)
                         log_prob -= (2 * (np.log(2) - raw_action - F.softplus(-2 * raw_action))).sum(-1)
@@ -159,8 +159,7 @@ class MAPPO_MPE:
                 return a_np, lp_np
                 
             else:
-                # 处理numpy数组输入（向后兼容）
-                # 假设所有智能体有相同的观测维度
+                # 处理numpy数组输入
                 obs_n = np.asarray(obs_n, dtype=np.float32)
                 obs_tensor = torch.from_numpy(obs_n)  # shape: (N, obs_dim)
                 
@@ -170,28 +169,29 @@ class MAPPO_MPE:
                     actor = self.actors[obs_dim]
                 else:
                     actor = list(self.actors.values())[0]
-
+                
                 actor_inputs = [obs_tensor]
                 if self.args.add_agent_id:
                     actor_inputs.append(torch.eye(self.N, dtype=torch.float32))
-
+                
                 actor_inputs = torch.cat(actor_inputs, dim=-1)  # (N, actor_input_dim)
-
+                
                 # 连续动作
                 mean, std = actor(actor_inputs)
                 dist = torch.distributions.Normal(mean, std)
+                
                 if evaluate:
-                    a_n = torch.tanh(mean)  # 保持在[-1,1]
+                    a_n = torch.tanh(mean)  # 确保在[-1,1]范围内
                     a_logprob_n = None
                 else:
-                    # 采样并进行tanh-squash, 同时返回修正后的log_prob
-                    raw_action = dist.rsample()
-                    a_n = torch.tanh(raw_action)
-                    # log_prob修正（tanh的雅可比）
+                    # 采样并进行tanh-squash
+                    raw_action = dist.rsample()  # 使用rsample()支持重参数化
+                    a_n = torch.tanh(raw_action)  # 压缩到[-1,1]
+                    # log_prob修正
                     log_prob = dist.log_prob(raw_action).sum(-1)
                     log_prob -= (2 * (np.log(2) - raw_action - F.softplus(-2 * raw_action))).sum(-1)
                     a_logprob_n = log_prob
-
+                
                 a_np = a_n.cpu().numpy()
                 lp_np = None if a_logprob_n is None else a_logprob_n.cpu().numpy()
                 return a_np, lp_np
@@ -251,32 +251,45 @@ class MAPPO_MPE:
                 
                 for obs_dim, agent_indices in batch['agent_indices_by_dim'].items():
                     # 获取当前维度的观测数据
-                    actor_inputs = batch['obs_n_by_dim'][obs_dim][index]
-                    actor = self.actors[obs_dim]
+                    obs_batch = batch['obs_n_by_dim'][obs_dim][index]  # 正确获取观测数据
+                    actor = self.actors[obs_dim]  # 获取当前观测维度对应的actor
+                    
+                    # 构建actor的输入
+                    actor_inputs = [obs_batch]
+                    if self.args.add_agent_id:
+                        # 添加智能体ID
+                        n_agents_this_dim = len(agent_indices)
+                        agent_id_one_hot = torch.eye(self.N).unsqueeze(0).unsqueeze(0).repeat(
+                            self.args.mini_batch_size, self.args.episode_length, n_agents_this_dim, 1)
+                        actor_inputs.append(agent_id_one_hot)
+                    
+                    actor_input = torch.cat(actor_inputs, dim=-1)
                     
                     # 获取当前策略的动作分布
-                    mean_now, std_now = actor(actor_inputs)
+                    mean_now, std_now = actor(actor_input)
                     dist_now = torch.distributions.Normal(mean_now, std_now)
                     
-                    # 提取相应智能体的动作数据
-                    a_n = batch['a_n'][index, :, agent_indices, :]
-                    a_logprob_n = batch['a_logprob_n'][index, :, agent_indices]
-                    agent_adv = adv[index, :, agent_indices]
+                    # 提取当前智能体组的动作和优势函数
+                    a_n_batch = batch['a_n'][index, :, agent_indices]
+                    a_logprob_n_batch = batch['a_logprob_n'][index, :, agent_indices]
+                    agent_adv = adv[index, :, agent_indices]  # 获取当前智能体组的优势函数
                     
-                    # 计算动作对数概率（包含tanh变换）
+                    # 因为replay buffer里存的a_n已经是tanh后的值，需要先反变换回原始空间
                     eps = 1e-6
-                    a_n_raw = torch.atanh(torch.clamp(a_n, -1 + eps, 1 - eps))
+                    a_n_raw = torch.atanh(torch.clamp(a_n_batch, -1 + eps, 1 - eps))
+                    
+                    # 计算动作的log概率，包括tanh变换的雅可比行列式
                     log_prob = dist_now.log_prob(a_n_raw).sum(-1)
                     log_prob -= (2 * (np.log(2) - a_n_raw - F.softplus(-2 * a_n_raw))).sum(-1)
                     
-                    # 计算重要性权重
-                    ratios = torch.exp(log_prob - a_logprob_n.detach())
+                    # 计算重要性权重和策略损失
+                    ratios = torch.exp(log_prob - a_logprob_n_batch.detach())
                     
                     # PPO裁剪目标
                     surr1 = ratios * agent_adv
                     surr2 = torch.clamp(ratios, 1 - self.args.epsilon, 1 + self.args.epsilon) * agent_adv
                     
-                    # 策略熵
+                    # 策略熵 - 修复这一行
                     dist_entropy = dist_now.entropy().sum(-1)
                     
                     # 计算actor损失
@@ -310,8 +323,9 @@ class MAPPO_MPE:
                     
                 self.ac_optimizer.step()
         
+        # 学习率衰减
         if self.args.use_lr_decay:
-            self.args.actor_lr_decay(total_steps)
+            self.lr_decay(total_steps)
 
     def get_critic_inputs(self, batch):
         """获取critic网络输入"""
@@ -390,21 +404,21 @@ class MAPPO_MPE:
         if model_timestamp:
             prefix = f"mappo_{model_timestamp}_"
         else:
-            prefix = "mappo_"
+            prefix = "mappo_default_"
         
         # 加载每个actor网络
         for obs_dim, actor in self.actors.items():
-            model_path = os.path.join(model_dir, f"{prefix}actor_{obs_dim}.pth")
-            if os.path.exists(model_path):
-                actor.load_state_dict(torch.load(model_path))
-                print(f"已加载actor模型: {model_path}")
+            actor_path = os.path.join(model_dir, f"{prefix}actor_{obs_dim}.pth")
+            if os.path.exists(actor_path):
+                actor.load_state_dict(torch.load(actor_path, map_location='cpu'))
+                print(f"成功加载Actor网络: {actor_path}")
             else:
-                print(f"未找到actor模型: {model_path}")
+                print(f"无法找到Actor网络: {actor_path}")
         
         # 加载critic网络
         critic_path = os.path.join(model_dir, f"{prefix}critic.pth")
         if os.path.exists(critic_path):
-            self.critic.load_state_dict(torch.load(critic_path))
-            print(f"已加载critic模型: {critic_path}")
+            self.critic.load_state_dict(torch.load(critic_path, map_location='cpu'))
+            print(f"成功加载Critic网络: {critic_path}")
         else:
-            print(f"未找到critic模型: {critic_path}")
+            print(f"无法找到Critic网络: {critic_path}")

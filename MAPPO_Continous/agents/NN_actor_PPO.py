@@ -51,40 +51,42 @@ class Actor_RNN(nn.Module):
     
 #######################################################################################################################
 
+# 确保Actor_MLP类正确实现连续动作空间
 class Actor_MLP(nn.Module):
     def __init__(self, args, actor_input_dim):
         super(Actor_MLP, self).__init__()
         self.fc1 = nn.Linear(actor_input_dim, args.mlp_hidden_dim)
         self.fc2 = nn.Linear(args.mlp_hidden_dim, args.mlp_hidden_dim)
-        self.fc3 = nn.Linear(args.mlp_hidden_dim, args.action_dim)
-
         self.fc_mean = nn.Linear(args.mlp_hidden_dim, args.action_dim)
-
-        # log_std is independent of state, initialized to small negative value
-        self.log_std = nn.Parameter(torch.zeros(args.action_dim) - 0.5)  # or init to -0.5
-
+        
+        # 初始化log_std为参数，不依赖于状态
+        self.log_std = nn.Parameter(torch.zeros(args.action_dim) - 0.5)  # 或初始化为-0.5
+        
         self.activate_func = [nn.Tanh(), nn.ReLU()][args.use_relu]
-
+        
         if args.use_orthogonal_init:
             print("------use_orthogonal_init------")
             orthogonal_init(self.fc1)
             orthogonal_init(self.fc2)
-            orthogonal_init(self.fc3, gain=0.01)
-
+            orthogonal_init(self.fc_mean, gain=0.01)
+    
     def forward(self, actor_input):
-        # When 'choose_action': actor_input.shape=(N, actor_input_dim), prob.shape=(N, action_dim)
-        # When 'train':         actor_input.shape=(mini_batch_size, episode_limit, N, actor_input_dim), prob.shape(mini_batch_size, episode_limit, N, action_dim)
+        """
+        输入:
+            actor_input: 输入特征
+            
+        输出:
+            mean: 高斯分布的均值
+            std: 高斯分布的标准差
+        """
         x = self.activate_func(self.fc1(actor_input))
         x = self.activate_func(self.fc2(x))
-
-        '''
-        下方内容代表输出连续动作
-        '''
+        
+        # 输出连续动作的均值
         mean = self.fc_mean(x)
+        
+        # 限制log_std在合理范围内
         log_std = self.log_std.clamp(-20, 2)
         std = log_std.exp()
+        
         return mean, std
-
-        # 下方内容代表输出离散动作
-        # prob = torch.softmax(self.fc3(x), dim=-1)
-        # return prob

@@ -3,7 +3,7 @@ import torch
 
 class ReplayBuffer:
     """
-    MAPPO的经验回放缓冲区，支持异构智能体(不同的观测维度)
+    MAPPO的经验回放缓冲区，支持异构智能体(不同的观测维度)和连续动作空间
     """
     def __init__(self, args):
         self.args = args
@@ -15,7 +15,7 @@ class ReplayBuffer:
             if hasattr(args, 'dim_info') and agent_id in args.dim_info:
                 self.obs_dims[agent_id] = args.dim_info[agent_id][0]
             else:
-                # 默认处理
+                # 默认处理 - 根据agent类型设置不同的观测维度
                 self.obs_dims[agent_id] = 12 if agent_id.startswith('adversary_') else 10
         
         self.episode_num = 0
@@ -44,7 +44,18 @@ class ReplayBuffer:
         self.episode_num = 0
 
     def store_transition(self, episode_step, obs_n, s, v_n, a_n, a_logprob_n, r_n, done_n):
-        """存储一个转移"""
+        """存储一个转移
+        
+        参数:
+            episode_step: 当前episode中的步数
+            obs_n: 观测，字典格式 {agent_id: obs} 或 numpy数组格式 (N, obs_dim)
+            s: 全局状态
+            v_n: 值函数估计
+            a_n: 连续动作，numpy数组 (N, action_dim)
+            a_logprob_n: 动作对数概率
+            r_n: 奖励
+            done_n: 完成状态
+        """
         idx = self.episode_num
         
         # 将字典转换为列表

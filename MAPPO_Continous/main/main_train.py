@@ -123,8 +123,8 @@ if __name__ == '__main__':
     print(f"训练设备: {device}")
 
     # 使用logger保存训练日志
-    logger = TrainingLogger(module_name = MODULE_NAME)
-    logger.save_training_log(args, device, start_time_str, end_time_str, training_duration, runner)
+    # # logger = TrainingLogger(module_name = MODULE_NAME)
+    # logger.save_training_log(args, device, start_time_str, end_time_str, training_duration, runner)
 
     print("--- saving trained models ---")
     agent.save_model(timestamp = True)

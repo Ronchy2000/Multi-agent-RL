@@ -141,124 +141,92 @@ class Runner_MAPPO_MPE:
         
         return evaluate_reward
 
+    # 在run_episode_mpe方法中更新处理奖励和动作的代码
     def run_episode_mpe(self, evaluate=False):
-        """
-        运行一个回合
-        
-        参数:
-            evaluate: 是否为评估模式
-        """
-        # 初始化奖励字典 - 使用self.env_agents而不是self.env.agents
+        """运行一个回合"""
+        # 初始化回合奖励
         episode_reward = {agent_id: 0 for agent_id in self.env_agents}
         
         # 重置环境
-        if self.args.use_variable_seeds:
-            obs, _ = self.env.reset(seed=self.args.seed + len(self.episode_rewards[list(self.env_agents)[0]]))
-        else:
-            obs, _ = self.env.reset(seed=self.args.seed)
+        obs, _ = self.env.reset(seed=self.args.seed if not self.args.use_variable_seeds else 
+                            self.args.seed + len(self.episode_rewards[list(self.env_agents)[0]]))
         
-        # 重置done标记
+        # 重置完成状态
         self.done = {agent_id: False for agent_id in self.env_agents}
         
-        # 如果使用奖励缩放，重置缩放器
-        if self.args.use_reward_scaling:
+        # 重置奖励缩放
+        if hasattr(self, 'reward_scaling') and self.args.use_reward_scaling:
             self.reward_scaling.reset()
-            
-        # 如果使用RNN，重置隐藏状态
-        if self.args.use_rnn:
-            self.agent.actor.rnn_hidden = None
-            self.agent.critic.rnn_hidden = None
         
-        # 一个回合的循环
+        # 重置RNN隐藏状态
+        if self.args.use_rnn:
+            for actor in self.agent.actors.values():
+                if hasattr(actor, 'rnn_hidden'):
+                    actor.rnn_hidden = None
+            if hasattr(self.agent.critic, 'rnn_hidden'):
+                self.agent.critic.rnn_hidden = None
+        
+        # 运行一个回合
         episode_step = 0
-        while self.env.agents and not any(self.done.values()) and episode_step < self.args.episode_length:
+        while episode_step < self.args.episode_length and self.env.agents and not all(self.done.values()):
             # 选择动作
-            a_n, a_logprob_n = self.agent.choose_action(obs, evaluate=evaluate, env_agents=self.env_agents)
+            a_n, a_logprob_n = self.agent.choose_action(obs, evaluate, self.env_agents)
+            scale_factor = 100.0  # 调整此值控制动作大小
+            a_n = a_n * scale_factor
+            # 计算全局状态
+            s = np.concatenate([obs[agent_id] for agent_id in self.env_agents])
             
-            # 获取全局状态
-            s = np.concatenate(list(obs.values()), axis=0)
+            # 获取值函数
+            v_n = None if evaluate else self.agent.get_value(s)
             
-            # 获取值函数估计
-            v_n = self.agent.get_value(s) if not evaluate else None
-            
-            # 转换动作为字典格式
-            action_dict = {}
-            for i, agent_id in enumerate(self.env.agents):
-                action_dict[agent_id] = a_n[i]
-            
+            # 准备动作字典
+            actions = {agent_id: a_n[i] for i, agent_id in enumerate(self.env_agents) if agent_id in self.env.agents}
+            print("action:", a_n)
             # 执行动作
-            next_obs, reward, terminated, truncated, _ = self.env.step(action_dict)
+            next_obs, rewards, terminated, truncated, _ = self.env.step(actions)
             
-            # 更新done标记 - 确保使用self.env_agents
-            self.done = {agent_id: bool(terminated.get(agent_id, False) or truncated.get(agent_id, False)) 
-                    for agent_id in self.env_agents}
+            # 更新完成状态
+            for agent_id in self.env_agents:
+                if agent_id in terminated:
+                    self.done[agent_id] = terminated[agent_id] or truncated.get(agent_id, False)
             
-            # 记录奖励 - 添加检查确保键存在
-            for agent_id, r in reward.items():
-                if agent_id in episode_reward:  # 只更新存在的智能体奖励
-                    episode_reward[agent_id] += r
+            # 记录奖励
+            for agent_id in self.env_agents:
+                if agent_id in rewards:
+                    episode_reward[agent_id] += rewards[agent_id]
             
-            # 训练模式下存储经验
+            # 存储经验（训练模式）
             if not evaluate:
-                # 整理奖励为数组 - 始终使用固定的env_agents列表顺序
-                r_n = np.array([reward.get(agent_id, 0.0) for agent_id in self.env_agents], dtype=np.float32)
+                # 准备数据
+                r_n = np.array([rewards.get(agent_id, 0.0) for agent_id in self.env_agents])
                 done_n = np.array([self.done.get(agent_id, False) for agent_id in self.env_agents])
                 
                 # 奖励处理
                 if self.reward_norm is not None:
-                    r_n = self.reward_norm(r_n)
-                elif self.args.use_reward_scaling:
+                    r_n = self.reward_norm(r_n, update=True)
+                elif hasattr(self, 'reward_scaling') and self.args.use_reward_scaling:
                     r_n = self.reward_scaling(r_n)
-                
-                # 存储转换
-                self.replay_buffer.store_transition(
-                    episode_step, 
-                    obs, 
-                    s, 
-                    v_n, 
-                    a_n, 
-                    a_logprob_n, 
-                    r_n, 
-                    done_n
-                )
+                    
+                # 存储经验
+                self.replay_buffer.store_transition(episode_step, obs, s, v_n, a_n, a_logprob_n, r_n, done_n)
             
-            # 更新观测
-            obs = copy.deepcopy(next_obs)
+            # 更新状态
+            obs = next_obs
             episode_step += 1
-            
-            # 如果所有智能体都完成，跳出循环
-            if all(self.done.values()):
-                break
         
-        # 训练模式下，回合结束后存储最后的值函数
+        # 存储最后一步的值函数（训练模式）
         if not evaluate:
-            # 获取最终状态
-            s = np.concatenate(list(obs.values()), axis=0)
-            v_n = self.agent.get_value(s)
+            # 计算最后一个状态的值函数
+            if self.env.agents:  # 如果环境中还有智能体
+                s = np.concatenate([obs[agent_id] for agent_id in self.env_agents if agent_id in obs])
+                v_n = self.agent.get_value(s)
+            else:  # 如果环境中没有智能体（所有智能体都已完成）
+                v_n = np.zeros(len(self.env_agents))
             
-            # 最后一步的奖励和done都为0
-            r_n = np.zeros(len(self.env_agents), dtype=np.float32)
-            done_n = np.ones(len(self.env_agents), dtype=bool)  # 回合结束，所有智能体都完成
-            
-            # 奖励处理
-            if self.reward_norm is not None:
-                r_n = self.reward_norm(r_n)
-            elif self.args.use_reward_scaling:
-                r_n = self.reward_scaling(r_n)
-            
-            # 存储最终转换
-            self.replay_buffer.store_transition(
-                episode_step, 
-                obs, 
-                s, 
-                v_n, 
-                np.zeros_like(a_n),  # 虚拟动作
-                np.zeros_like(a_logprob_n) if a_logprob_n is not None else None,  # 虚拟log_prob
-                r_n, 
-                done_n
-            )
-                
-        return episode_reward, episode_step + 1
+            # 存储最后一步的值函数
+            self.replay_buffer.store_last_value(episode_step, v_n)
+        
+        return episode_reward, episode_step
 
     def save_rewards_to_csv(self, prefix=''):
         """
@@ -301,7 +269,45 @@ class Runner_MAPPO_MPE:
                 
         print(f"奖励数据已保存到 {os.path.join(plot_dir, filename)}")
 
+    def evaluate(self, n_episodes=10):
+        """
+        评估当前策略的性能
         
+        参数:
+            n_episodes: 要评估的回合数
+            
+        返回:
+            capture_rate: 捕获成功率
+            avg_capture_steps: 平均捕获步数
+        """
+        if self.mode != 'evaluate':
+            print("警告: 在非评估模式下调用evaluate()方法")
+        
+        print(f"评估{n_episodes}个回合...")
+        
+        captures = 0  # 成功捕获次数
+        capture_steps = []  # 每次捕获所需步数
+        
+        for ep in range(n_episodes):
+            # 运行一个回合
+            episode_reward, steps = self.run_episode_mpe(evaluate=True)
+            # 检查是否捕获 - 在simple_tag环境中
+            # 这里使用一个简单的启发式方法：如果逃跑者(agent_0)奖励足够低，认为被捕获
+            agent_0_reward = [reward for agent_id, reward in episode_reward.items() 
+                            if not agent_id.startswith('adversary_')]
+            
+            if agent_0_reward and agent_0_reward[0] < -15:  # 调整阈值可能需要根据环境实际情况
+                captures += 1
+                capture_steps.append(steps)
+        
+        # 计算统计指标
+        capture_rate = captures / n_episodes if n_episodes > 0 else 0
+        avg_capture_steps = np.mean(capture_steps) if capture_steps else self.args.episode_length
+        
+        print(f"评估完成! 成功率: {capture_rate:.4f}, 平均步数: {avg_capture_steps:.2f}")
+        
+        return capture_rate, avg_capture_steps
+
 # 如果直接运行此文件
 if __name__ == '__main__':
     print("请通过main_train.py运行MAPPO训练")
