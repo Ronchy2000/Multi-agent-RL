@@ -25,18 +25,17 @@ jobs:
           mkdir -p shared_files
           cp README.md README_en.md img.png shared_files/
 
-      # 添加准备发布说明的步骤
       - name: Prepare release body
         run: |
           # 创建基础模板
-          cat << EOF > base_body.md
+          cat << 'EOF' > base_body.md
           # 多模块独立发布包
 
           ## 模块介绍
-          -  🚀 **MADDPG_Continous**  
+          -   **MADDPG_Continous**  
             多智能体深度确定性策略梯度算法（连续动作空间版本），适用于连续控制场景的多智能体协同训练。
 
-          -  ⚡️ **MATD3_Continous**  
+          -   ⚡️ **MATD3_Continous**  
             多智能体双延迟深度确定性策略梯度算法，在MADDPG基础上增加了延迟更新和策略平滑机制。
 
           - 📚 **RL_Learning-main**  
@@ -68,7 +67,7 @@ jobs:
           -  📚 **RL_Learning-main**  
             Fundamental RL tutorials with classic algorithm implementations.
 
-          -  🧠 **hands_on_RL**  
+          -   🧠 **hands_on_RL**  
             Interactive reinforcement learning projects via Jupyter Notebooks.
 
           ## Quick Start
@@ -84,6 +83,10 @@ jobs:
           # 拼接手动输入的变更日志
           echo -e "# 变更日志 / Changelog\n\n${{ github.event.inputs.changelog }}\n\n---\n\n" > full_body.md
           cat base_body.md >> full_body.md
+          
+          # 打印生成的内容用于调试
+          echo "Generated release body:"
+          cat full_body.md
 
       - name: Package each folder
         run: |
@@ -127,7 +130,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: "Release ${{ github.ref_name }}"
-          body_path: full_body.md  # 使用生成的文件作为发布说明
+          body_path: full_body.md  # 关键修改：使用文件路径而不是硬编码内容
           files: |
             zips/*.zip
         env:
