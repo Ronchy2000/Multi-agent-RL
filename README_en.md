@@ -25,7 +25,7 @@ The projects in this repository form a complete learning path from basic reinfor
 
 For users interested in specific modules, we provide independent module release packages. You can access the latest release through the following link and download specific modules without cloning the entire repository:
 
-🔗 [Visit Release Page](https://github.com/Ronchy2000/Multi-agent-RL/releases/tag/v1.0)
+🔗 [Visit Release Page](https://github.com/Ronchy2000/Multi-agent-RL/releases)
 
 ### Available Modules
 

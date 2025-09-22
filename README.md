@@ -24,7 +24,7 @@
 
 为方便用户选择性下载感兴趣的模块，我们提供了独立的模块发布包。您可以通过以下链接访问最新发布版本，按需下载特定模块而无需克隆整个仓库：
 
-🔗 [访问发布页面](https://github.com/Ronchy2000/Multi-agent-RL/releases/tag/v1.0)
+🔗 [访问发布页面](https://github.com/Ronchy2000/Multi-agent-RL/releases)
 
 ### 可用模块
 
