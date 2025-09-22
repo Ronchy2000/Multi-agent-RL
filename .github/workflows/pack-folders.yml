@@ -10,9 +10,9 @@ on:
         description: |
           变更日志内容或文件路径：
           - 直接输入内容（用 \n 换行）
-          - 或输入文件路径（如 CHANGELOG.md）
+          - 或输入文件路径（如 .github/CHANGELOG.md）
         required: true
-        default: 'CHANGELOG.md'
+        default: '.github/CHANGELOG.md'
 
 permissions:
   contents: write
