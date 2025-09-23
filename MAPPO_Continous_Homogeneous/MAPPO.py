@@ -360,30 +360,41 @@ class MAPPO_MPE:
         critic_inputs = torch.cat([x for x in critic_inputs], dim=-1)  # critic_inputs.shape=(batch_size, episode_limit, N, critic_input_dim)
         return actor_inputs, critic_inputs
 
-    def save_model(self, env_name, number, seed, total_steps):
-
+    def save_model(self, env_name, number, seed, total_steps, time_stamp):
         # 获取脚本文件所在目录的绝对路径
         current_dir = os.path.dirname(os.path.abspath(__file__))
         # 在脚本目录下创建models目录
         models_dir = os.path.join(current_dir, "models")
         os.makedirs(models_dir, exist_ok=True)
-        
+        # 创建以时间戳命名的子目录
+        timestamp_dir = os.path.join(models_dir, time_stamp)
+        os.makedirs(timestamp_dir, exist_ok=True)
         # 保存模型到正确的路径
-        actor_path = os.path.join(models_dir, f"MAPPO_actor_env_{env_name}_number_{number}_seed_{seed}_step_{int(total_steps / 1000)}k.pth")
-        critic_path = os.path.join(models_dir, f"MAPPO_critic_env_{env_name}_number_{number}_seed_{seed}_step_{int(total_steps / 1000)}k.pth")
-        
+        actor_path = os.path.join(timestamp_dir, f"MAPPO_actor_env_{env_name}_number_{number}_seed_{seed}_step_{int(total_steps / 1000)}k.pth")
+        # critic_path = os.path.join(timestamp_dir, f"MAPPO_critic_env_{env_name}_number_{number}_seed_{seed}_step_{int(total_steps / 1000)}k.pth")
         torch.save(self.actor.state_dict(), actor_path)
-        torch.save(self.critic.state_dict(), critic_path)
+        # torch.save(self.critic.state_dict(), critic_path)
 
-    def load_model(self, env_name, number, seed, step):
+    def load_model(self, env_name, number, seed, step, timestamp=None):
         # 获取脚本文件所在目录的绝对路径
-        current_dir = os.path.dirname(os.path.abspath(__file__))
+        current_dir = os.path.dirname(os.path.abspath(__file__)) 
         # models目录路径
         models_dir = os.path.join(current_dir, "models")
+        # 如果提供了时间戳，使用指定的时间戳目录
+        if timestamp:
+            timestamp_dir = os.path.join(models_dir, timestamp)
+        else:
+            # 如果没有提供时间戳但有类属性时间戳，使用类属性
+            if self.timestamp:
+                timestamp_dir = os.path.join(models_dir, self.timestamp)
+            else:
+                # 如果都没有，直接使用models目录
+                timestamp_dir = models_dir
+        # 构建模型路径
+        actor_path = os.path.join(timestamp_dir, f"MAPPO_actor_env_{env_name}_number_{number}_seed_{seed}_step_{step}k.pth")
+        # critic_path = os.path.join(timestamp_dir, f"MAPPO_critic_env_{env_name}_number_{number}_seed_{seed}_step_{step}k.pth")
         
         # 加载模型
-        actor_path = os.path.join(models_dir, f"MAPPO_actor_env_{env_name}_number_{number}_seed_{seed}_step_{step}k.pth")
-        critic_path = os.path.join(models_dir, f"MAPPO_critic_env_{env_name}_number_{number}_seed_{seed}_step_{step}k.pth")
-        
         self.actor.load_state_dict(torch.load(actor_path))
-        self.critic.load_state_dict(torch.load(critic_path))
+        # self.critic.load_state_dict(torch.load(critic_path))
+        print("加载模型:", actor_path)

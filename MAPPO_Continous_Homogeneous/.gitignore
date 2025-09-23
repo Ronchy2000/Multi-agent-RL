@@ -1,0 +1,4 @@
+data/*
+!data/plot_*.py
+
+models/*

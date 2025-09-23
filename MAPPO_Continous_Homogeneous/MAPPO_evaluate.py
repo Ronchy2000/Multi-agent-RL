@@ -79,68 +79,14 @@ class MAPPO_Evaluator:
         
         # 保存所有智能体ID列表，用于后续引用
         self.agent_n.all_agents = [agent_id for agent_id in self.env.agents]
-        
+
         # 加载模型
-        if args.model_path:
-            print(f"从指定路径加载模型: {args.model_path}")
-            self.load_model_directly(args.model_path)
-        elif args.model_step > 0:
+        if self.args.model_step > 0:
             print(f"加载模型 step {args.model_step}k")
-            self.agent_n.load_model(self.env_name, self.number, self.seed, args.model_step)
+            self.agent_n.load_model(self.env_name, self.number, self.seed, self.args.model_step, self.args.timestamp)
         else:
             print("未指定模型步数或路径，将使用随机策略进行评估")
-    
-    def load_model_directly(self, model_path_prefix):
-        """直接从指定路径加载模型"""
-        # 获取当前脚本的绝对路径
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        
-        # 如果提供的是相对路径，转换为绝对路径
-        if model_path_prefix.startswith('./') or not os.path.isabs(model_path_prefix):
-            model_path_prefix = os.path.join(current_dir, model_path_prefix)
-        
-        # 检查是否指定了actor还是critic
-        if 'critic' in model_path_prefix:
-            model_path_prefix = model_path_prefix.replace('critic', 'actor')
-        
-        # 构建actor和critic路径
-        if model_path_prefix.endswith('.pth'):
-            actor_path = model_path_prefix
-            critic_path = actor_path.replace('actor', 'critic')
-        else:
-            actor_path = f"{model_path_prefix}.pth"
-            critic_path = actor_path.replace('actor', 'critic')
-        
-        # 检查文件是否存在
-        if not os.path.exists(actor_path):
-            print(f"无法找到actor模型: {actor_path}")
-            print("尝试在models目录下查找...")
-            
-            # 尝试在models子目录查找
-            models_dir = os.path.join(current_dir, "models")
-            base_filename = os.path.basename(actor_path)
-            alternative_path = os.path.join(models_dir, base_filename)
-            
-            if os.path.exists(alternative_path):
-                actor_path = alternative_path
-                critic_path = actor_path.replace('actor', 'critic')
-                print(f"找到模型: {actor_path}")
-            else:
-                print(f"警告：无法找到模型文件!")
-                return False
-        
-        print(f"加载actor模型: {actor_path}")
-        print(f"加载critic模型: {critic_path}")
-        
-        # 加载模型
-        try:
-            self.agent_n.actor.load_state_dict(torch.load(actor_path))
-            self.agent_n.critic.load_state_dict(torch.load(critic_path))
-            print("模型加载成功!")
-            return True
-        except Exception as e:
-            print(f"加载模型失败: {e}")
-            return False
+
     
     def evaluate(self):
         """评估训练好的智能体"""
@@ -207,10 +153,10 @@ if __name__ == '__main__':
                         help="智能体数量（仅在simple_spread_v3中有效）")
     parser.add_argument("--seed", type=int, default=23, 
                         help="随机种子")
-    parser.add_argument("--model_step", type=int, default=0, 
+    parser.add_argument("--timestamp", type=str, default="2025-09-23_20-24", 
+                    help="模型时间戳目录，例如：'2025-09-23_01-30'")
+    parser.add_argument("--model_step", type=int, default=95, 
                         help="要加载的模型步数（单位：k）")
-    parser.add_argument("--model_path", type=str, default="./models/MAPPO_actor_env_simple_spread_v3_number_2_seed_23_step_175k", 
-                        help="指定模型路径前缀，例如: './models/MAPPO_actor_env_simple_spread_v3_number_1_seed_0_step_1255k'")
     parser.add_argument("--episode_limit", type=int, default=50, 
                         help="每回合最大步数")
     parser.add_argument("--evaluate_episodes", type=int, default=10, 
