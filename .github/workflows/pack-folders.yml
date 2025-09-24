@@ -38,16 +38,22 @@ jobs:
           # 多模块独立发布包
 
           ## 模块介绍
-          -   **MADDPG_Continous**  
+          - **MADDPG_Continous**  
             多智能体深度确定性策略梯度算法（连续动作空间版本），适用于连续控制场景的多智能体协同训练。
 
-          -    ⚡️ **MATD3_Continous**  
+          - **MATD3_Continous**  
             多智能体双延迟深度确定性策略梯度算法，在MADDPG基础上增加了延迟更新和策略平滑机制。
 
-          - 📚 **RL_Learning-main**  
+          - **HAPPO-MAPPO_Continous_Heterogeneous**  
+            异质智能体近端策略优化算法，支持不同类型智能体的混合训练场景。
+
+          - **MAPPO_Continous_Homogeneous**  
+            同质智能体近端策略优化算法，针对同类型智能体的高效训练优化。
+
+          - **RL_Learning-main**  
             赵世钰老师强化学习基础教程合集，包含经典算法实现和示例代码。
 
-          -  **hands_on_RL**  
+          - **hands_on_RL**  
             动手学强化学习实践项目，通过Jupyter Notebook提供互动式学习体验。
 
           ## 使用说明
@@ -67,13 +73,19 @@ jobs:
           -  **MADDPG_Continous**  
             Multi-Agent Deep Deterministic Policy Gradient (continuous action space version) for cooperative multi-agent control.
 
-          - ️ **MATD3_Continous**  
+          - **MATD3_Continous**  
             Multi-Agent Twin Delayed DDPG, featuring delayed updates and policy smoothing.
 
-          -  📚 **RL_Learning-main**  
+          - **HAPPO-MAPPO_Continous_Heterogeneous**  
+            Heterogeneous Agent Proximal Policy Optimization for mixed-type agent scenarios.
+
+          - **MAPPO_Continous_Homogeneous**  
+            Homogeneous Agent Proximal Policy Optimization for efficient training of same-type agents.
+
+          - **RL_Learning-main**  
             Fundamental RL tutorials with classic algorithm implementations.
 
-          -    🧠 **hands_on_RL**  
+          - **hands_on_RL**  
             Interactive reinforcement learning projects via Jupyter Notebooks.
 
           ## Quick Start
@@ -131,6 +143,8 @@ jobs:
           TARGET_FOLDERS=(
             "MADDPG_Continous"
             "MATD3_Continous"
+            "HAPPO-MAPPO_Continous_Heterogeneous"
+            "MAPPO_Continous_Homogeneous"
             "RL_Learning-main"
             "动手学强化学习"   # 保留原始中文名称
           )
@@ -155,9 +169,9 @@ jobs:
               
               # 打包为英文名称的ZIP
               (cd "temp_$output_name" && zip -r "../zips/$output_name.zip" .)
-              echo "✅ Packaged: $folder as $output_name.zip"
+              echo "Packaged: $folder as $output_name.zip"
             else
-              echo "⚠️ Folder not found: $folder"
+              echo "Folder not found: $folder"
             fi
           done
 
