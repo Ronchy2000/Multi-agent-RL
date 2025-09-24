@@ -12,7 +12,7 @@ This repository contains multiple projects related to Reinforcement Learning (RL
 | [Hands-on RL](./动手学强化学习/) | ![Status](https://img.shields.io/badge/status-reference-informational) | ![Completion](https://img.shields.io/badge/completion-100%25-brightgreen) | ![Tech](https://img.shields.io/badge/tech-DQN%20to%20DDPG-blue) | [README](./动手学强化学习/README.md) |
 | [MADDPG_Continous](./MADDPG_Continous/) | ![Status](https://img.shields.io/badge/status-completed-success) | ![Completion](https://img.shields.io/badge/completion-100%25-brightgreen) | ![Tech](https://img.shields.io/badge/tech-continuous%20MADDPG-blue) | [README](./MADDPG_Continous/README_EN.md) |
 | [MATD3_Continous](./MATD3_Continous/) | ![Status](https://img.shields.io/badge/status-completed-success) | ![Completion](https://img.shields.io/badge/completion-100%25-brightgreen) | ![Tech](https://img.shields.io/badge/tech-continuous%20MATD3-blue) | [README](./MATD3_Continous/readme_en.md) |
-
+| [HAPPO-MAPPO_Continous_Heterogeneous](./HAPPO-MAPPO_Continous_Heterogeneous/) | ![Status](https://img.shields.io/badge/status-completed-success) | ![Completion](https://img.shields.io/badge/completion-95%25-brightgreen) | ![Tech](https://img.shields.io/badge/tech-PPO%20Heterogeneous-blue) | [Documentation](./HAPPO-MAPPO_Continous_Heterogeneous/Readme_en.md) |
 ## Learning Path and Project Connections
 
 The projects in this repository form a complete learning path from basic reinforcement learning to multi-agent reinforcement learning:
@@ -52,8 +52,7 @@ Reproduction of Professor Shiyu Zhao's reinforcement learning course code from W
 - [Professor Zhao's Reinforcement Learning Course](https://www.bilibili.com/video/BV1sd4y167NS)
 - [Mathematical Foundation of Reinforcement Learning](https://github.com/MathFoundationRL/Book-Mathematical-Foundation-of-Reinforcement-Learning)
 
-#### Code Location
-[Professor Zhao's RL Code Repository: ./RL_Learning-main](./RL_Learning-main/scripts)
+#### Code Location [Professor Zhao's RL Code Repository: ./RL_Learning-main](./RL_Learning-main/scripts)
 
 #### Update Log
 **2024.6.7**  
@@ -78,8 +77,7 @@ Reproduction and expansion of the code from the book "Hands-on Reinforcement Lea
 #### Learning Path
 This section demonstrates the learning path from basic DQN to DDPG, and then to MADDPG, laying the foundation for understanding multi-agent reinforcement learning.
 
-#### Code Location
-[./动手学强化学习](./动手学强化学习/)
+#### Code Location [./动手学强化学习](./动手学强化学习/)
 
 #### References
 - [Hands-on Reinforcement Learning](https://hrl.boyuai.com/chapter/2/dqn%E7%AE%97%E6%B3%95)
@@ -107,15 +105,14 @@ Personal implementation of the MADDPG algorithm based on the latest version of t
   <p><strong>Reward convergence curve of MADDPG algorithm in simple_tag_v3 environment</strong></p>
 </div>
 
-#### Implementation Progress
+##### Implementation Progress
 | Algorithm      | Status | Location              | Core Components                    |
 |----------------|--------|----------------------|----------------------------------|
 | MADDPG         | ✅ 1.0 | `agents/maddpg/`     | MADDPG_agent, DDPG_agent, buffer |
 | Independent RL | ⏳ Planned | `agents/independent/`| IndependentRL (planned)        |
 | Centralized RL | ⏳ Planned | `agents/centralized/`| CentralizedRL (planned)        |
 
-#### Code Location
-[./MADDPG_Continous](./MADDPG_Continous)
+##### Code Location [./MADDPG_Continous](./MADDPG_Continous)
 
 #### 3.2 MATD3_Continous: Multi-Agent Twin Delayed Deep Deterministic Policy Gradient Algorithm
 
@@ -134,7 +131,7 @@ Multi-agent extension version of the TD3 algorithm (MATD3: Twin Delayed Deep Det
   <p><strong>Reward convergence curve of MATD3 algorithm in simple_tag_v3 environment</strong></p>
 </div>
 
-#### MATD3 vs MADDPG
+##### MATD3 vs MADDPG
 MATD3 enhances standard MADDPG with these key improvements:
 
 1. **Double Q-Network Design**: Reduces overestimation of action values
@@ -142,8 +139,29 @@ MATD3 enhances standard MADDPG with these key improvements:
 3. **Target Policy Smoothing**: Prevents overfitting by adding noise to target actions
 4. **Adaptive Noise Adjustment**: Dynamically adjusts exploration noise based on training progress
 
-#### Code Location
-[./MATD3_Continous](./MATD3_Continous)
+##### Code Location [./MATD3_Continous](./MATD3_Continous)
+
+
+#### 3.3 HAPPO-MAPPO: Supporting Heterogeneous Agents in Multi-Agent Proximal Policy Optimization
+
+Implementation of two PPO-based multi-agent algorithms: MAPPO (Multi-Agent Proximal Policy Optimization) and HAPPO (Heterogeneous-Agent Proximal Policy Optimization), providing solutions for continuous action spaces and heterogeneous agent environments.
+
+<div align="center">
+  <img src="./HAPPO-MAPPO_Continous_Heterogeneous/data/happo_learning_curve_simple_tag_v3_s23.png" alt="HAPPO Algorithm Performance" width="45%"/>
+  <p><strong>HAPPO Algorithm Features: Supporting heterogeneous agent cooperation and competition, where each agent can have different observation dimensions</strong></p>
+</div>
+
+##### Advantages of HAPPO/MAPPO
+
+1. **No Need for Deterministic Policies**: Based on PPO, using stochastic policies, reducing overfitting
+2. **Heterogeneous Agent Support**: HAPPO specifically supports heterogeneous agents with different observation dimensions and capabilities
+3. **Training Stability**: PPO's clipping mechanism provides more stable training process
+4. **Sample Efficiency**: Improves sample utilization through multi-epoch updates
+5. **Hyperparameter Robustness**: Less sensitive to hyperparameter selection
+
+##### Code Location [`./MAPPO_Continous_Homogeneous`](./MAPPO_Continous_Homogeneous)
+##### Code Location [`./HAPPO-MAPPO_Continous_Heterogeneous`](./HAPPO-MAPPO_Continous_Heterogeneous)
+
 
 ## Ongoing Projects
 - **MARL**: Multi-agent cooperation and coordination based on deep reinforcement learning

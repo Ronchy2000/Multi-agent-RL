@@ -1,4 +1,4 @@
 data/*
 !data/plot_*.py
-
+!data/happo_learning_curve_simple_tag_v3_s23.png
 models/*

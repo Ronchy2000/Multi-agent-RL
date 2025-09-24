@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import os
 import glob
 import argparse
+import re
 
 def plot_rewards(file_path=None, data_dir=None, show=True, save=True):
     """
@@ -32,7 +33,7 @@ def plot_rewards(file_path=None, data_dir=None, show=True, save=True):
     # If file not specified, find the latest CSV file
     if file_path is None:
         # 修改：支持自动查找最新的happo奖励文件
-        csv_files = glob.glob(os.path.join(data_dir, "happo_rewards_*.csv"))
+        csv_files = glob.glob(os.path.join(data_dir, "happo_rewards_simple_tag_v3_n1_s23_2025-09-24_20-12.csv"))
         if not csv_files:
             print(f"Error: No HAPPO reward CSV files found in directory {data_dir}")
             return
@@ -54,20 +55,12 @@ def plot_rewards(file_path=None, data_dir=None, show=True, save=True):
     filename = os.path.basename(file_path)
     parts = filename.split('_')
     
-    # 修改：更好的文件名解析逻辑
     algorithm = "HAPPO"  # 默认算法名
-    env_name = "unknown"
-    agents = "?"
-    seed = "?"
-    
-    if filename.startswith("happo_rewards_"):
-        # 格式: happo_rewards_{env_name}_n{number}_s{seed}_{timestamp}.csv
-        try:
-            env_name = parts[2]  # simple_tag_v3
-            agents = parts[3][1:] if parts[3].startswith('n') else parts[3]  # 去掉'n'前缀
-            seed = parts[4][1:] if parts[4].startswith('s') else parts[4]    # 去掉's'前缀
-        except IndexError:
-            pass  # 使用默认值
+    env_name = "simple_tag_v3"
+    # 从文件名中提取种子值
+    seed_match = re.search(r"_s(\d+)_", filename)
+    if seed_match:
+        seed = seed_match.group(1)
     
     # Create chart with better styling
     plt.figure(figsize=(12, 8))
@@ -76,7 +69,7 @@ def plot_rewards(file_path=None, data_dir=None, show=True, save=True):
     plt.ylabel('Evaluation Reward', fontsize=12)
     
     # 修改：使用英文标题，更清晰的格式
-    plt.title(f'{algorithm} Learning Curve | Env: {env_name} | Agents: {agents} | Seed: {seed}', 
+    plt.title(f'{algorithm} Learning Curve | Env: {env_name} | Seed: {seed}', 
               fontsize=14, fontweight='bold')
     plt.grid(True, linestyle='--', alpha=0.3)
     
@@ -118,7 +111,7 @@ def plot_rewards(file_path=None, data_dir=None, show=True, save=True):
         plots_dir = os.path.join(current_dir)
         os.makedirs(plots_dir, exist_ok=True)
         # 修改：更清晰的文件名
-        plt_filename = os.path.join(plots_dir, f"{algorithm.lower()}_learning_curve_{env_name}_n{agents}_s{seed}.png")
+        plt_filename = os.path.join(plots_dir, f"{algorithm.lower()}_learning_curve_{env_name}_s{seed}.png")
         plt.savefig(plt_filename, dpi=300, bbox_inches='tight')
         print(f"Chart saved to: {plt_filename}")
     

@@ -11,7 +11,7 @@
 | [动手学强化学习](./动手学强化学习/) | ![状态](https://img.shields.io/badge/状态-参考实现-informational) | ![完成度](https://img.shields.io/badge/完成度-100%25-brightgreen) | ![技术](https://img.shields.io/badge/技术-DQN到DDPG-blue) | [README](./动手学强化学习/README.md) |
 | [MADDPG_Continous](./MADDPG_Continous/) | ![状态](https://img.shields.io/badge/状态-已完成-success) | ![完成度](https://img.shields.io/badge/完成度-100%25-brightgreen) | ![技术](https://img.shields.io/badge/技术-连续MADDPG-blue) | [中文文档](./MADDPG_Continous/README.md#项目特色) |
 | [MATD3_Continous](./MATD3_Continous/) | ![状态](https://img.shields.io/badge/状态-已完成-success) | ![完成度](https://img.shields.io/badge/完成度-100%25-brightgreen) | ![技术](https://img.shields.io/badge/技术-连续MATD3-blue) | [中文文档](./MATD3_Continous/readme.md) |
-
+| [HAPPO-MAPPO_Continous_Heterogeneous](./HAPPO-MAPPO_Continous_Heterogeneous/) | ![状态](https://img.shields.io/badge/状态-已完成-success) | ![完成度](https://img.shields.io/badge/完成度-95%25-brightgreen) | ![技术](https://img.shields.io/badge/技术-PPO异构智能体-blue) | [中文文档](./HAPPO-MAPPO_Continous_Heterogeneous/Readme.md) |
 
 ## 学习路径与项目关联
 本仓库中的项目构成了一条从基础强化学习到多智能体强化学习的完整学习路径：
@@ -49,7 +49,7 @@
 #### 参考资源
 - [赵老师强化学习课程](https://www.bilibili.com/video/BV1sd4y167NS)
 - [强化学习的数学原理](https://github.com/MathFoundationRL/Book-Mathematical-Foundation-of-Reinforcement-Learning)
-#### 代码位置  [`赵老师强化学习代码仓库: ./RL_Learning-main`](./RL_Learning-main/scripts)
+#### 代码位置 [`赵老师强化学习代码仓库: ./RL_Learning-main`](./RL_Learning-main/scripts)
 
 #### 更新日志
 
@@ -98,13 +98,13 @@
 </div>
 
 
-#### 实现进度
+##### 实现进度
 | 算法            | 状态   | 位置                  | 核心组件                           |
 |----------------|--------|----------------------|----------------------------------|
 | MADDPG         | ✅ 1.0 | `agents/maddpg/`        | MADDPG_agent, DDPG_agent, buffer |
 | Independent RL | ⏳ 待完成 | `agents/independent/`| IndependentRL (计划中)          |
 | Centralized RL | ⏳ 待完成 | `agents/centralized/`| CentralizedRL (计划中)          |
-#### 代码位置  [`./MADDPG_Continous`](./MADDPG_Continous)
+##### 代码位置 [`./MADDPG_Continous`](./MADDPG_Continous)
 
 
 #### 3.2 MATD3_Continous：多智能体双延迟深度确定性策略梯度算法
@@ -123,7 +123,7 @@
   <p><strong>MATD3算法在simple_tag_env环境中的奖励收敛曲线</strong></p>
 </div>
 
-#### MATD3 vs MADDPG
+##### MATD3 vs MADDPG
 MATD3对标准MADDPG进行了以下关键增强：
 
 1. **双Q网络设计**: 减少对动作值的过估计
@@ -131,9 +131,27 @@ MATD3对标准MADDPG进行了以下关键增强：
 3. **目标策略平滑**: 通过在目标动作中加入噪声防止过拟合
 4. **自适应噪声调整**: 根据训练进度动态调整探索噪声
 
-#### 代码位置  [`./MATD3_Continous`](./MATD3_Continous)
+##### 代码位置 [`./MATD3_Continous`](./MATD3_Continous)
 
+#### 3.3 MAPPO-HAPPO算法：支持同构/异构智能体的多智能体近端策略优化
 
+实现了两种基于PPO的多智能体算法：MAPPO（多智能体近端策略优化）和HAPPO（异构智能体近端策略优化），为连续动作空间和异构智能体环境提供了解决方案。
+
+<div align="center">
+  <img src="./HAPPO-MAPPO_Continous_Heterogeneous/data/happo_learning_curve_simple_tag_v3_s23.png" alt="HAPPO算法表现" width="80%"/>
+  <p><strong>HAPPO算法特点：支持异构智能体协作与竞争，每个智能体可以有不同的观察维度</strong></p>
+</div>
+
+##### HAPPO/MAPPO的优势
+
+1. **无需采用确定性策略**：基于PPO，使用随机策略，减轻过拟合
+2. **异构智能体支持**：HAPPO特别支持不同观察维度和能力的异构智能体
+3. **训练稳定性**：PPO的截断机制提供更稳定的训练过程
+4. **采样效率**：通过多回合更新提高样本利用效率
+5. **超参数鲁棒性**：对超参数选择不那么敏感
+
+##### 代码位置 [`./MAPPO_Continous_Homogeneous`](./MAPPO_Continous_Homogeneous)
+##### 代码位置 [`./HAPPO-MAPPO_Continous_Homogeneous`](./HAPPO-MAPPO_Continous_Heterogeneous)
 
 ## 进行中的项目
 - **MARL**: 基于深度强化学习的多智能体协作与协调
