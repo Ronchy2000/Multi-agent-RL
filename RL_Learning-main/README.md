@@ -85,7 +85,7 @@ conda create -n rl_learning python=3.7
 conda activate rl_learning
 
 # 安装依赖
-pip install numpy matplotlib torch gym tensorboard
+pip install numpy matplotlib torch gymnasium tensorboard
 ```
 
 ## 使用示例
@@ -200,7 +200,7 @@ Major update! The original author's render coordinates were inconsistent with th
 conda create -n rl_learning python=3.7
 conda activate rl_learning
 # Install dependencies
-pip install numpy matplotlib torch gym tensorboard
+pip install numpy matplotlib torch gymnasium tensorboard
 
 ```
 
