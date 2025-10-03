@@ -5,6 +5,9 @@ import glob
 import argparse
 import re
 
+plt.rcParams['font.sans-serif'] = ['PingFang SC', 'Arial Unicode MS', 'STHeiti']
+plt.rcParams['axes.unicode_minus'] = False
+
 def plot_rewards(file_path=None, data_dir=None, show=True, save=True):
     """
     Plot training reward curves
