@@ -192,3 +192,10 @@ Fight for MARL.
    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Ronchy2000/Multi-agent-RL&type=Date" />
  </picture>
 </a>
+
+---
+
+<p align="center">
+  <em> ❤️ Thanks for visiting!</em><br><br>
+  <img src="https://visitor-badge.laobi.icu/badge?page_id=ronchy2000.Multi-agent-RL&style=for-the-badge&color=00d4ff" alt="Views">
+</p>
