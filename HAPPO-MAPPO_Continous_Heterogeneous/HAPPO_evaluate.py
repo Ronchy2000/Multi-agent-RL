@@ -6,7 +6,7 @@ from HAPPO import HAPPO_MPE
 from pettingzoo.mpe import simple_adversary_v3, simple_spread_v3, simple_tag_v3
 
 def setup_seed(seed):
-    """设置随机种子以确保结果可复现"""
+    """Set random seed to ensure reproducibility"""
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed(seed)
@@ -16,7 +16,7 @@ def setup_seed(seed):
     torch.backends.cudnn.benchmark = False
 
 def get_env(env_name, ep_len=25, render_mode="human", seed=None, num_good=1, num_adversaries=3):
-    """创建环境并获取每个智能体的观察和动作维度"""
+    """Create environment and get observation and action dimensions for each agent"""
     new_env = None
     if env_name == 'simple_adversary_v3':
         new_env = simple_adversary_v3.parallel_env(max_cycles=ep_len, continuous_actions=True, render_mode=render_mode)
@@ -26,7 +26,7 @@ def get_env(env_name, ep_len=25, render_mode="human", seed=None, num_good=1, num
     elif env_name == 'simple_tag_v3':
         new_env = simple_tag_v3.parallel_env(render_mode=render_mode, num_good=num_good, num_adversaries=num_adversaries, num_obstacles=0, max_cycles=ep_len, continuous_actions=True)
     
-    # 使用reset时处理种子
+    # Handle seed when resetting environment
     if seed is not None:
         new_env.reset(seed=seed)
     else:
@@ -35,7 +35,7 @@ def get_env(env_name, ep_len=25, render_mode="human", seed=None, num_good=1, num
     _dim_info = {}
     action_bound = {}
     for agent_id in new_env.agents:
-        print(f"智能体ID: {agent_id}")
+        print(f"Agent ID: {agent_id}")
         _dim_info[agent_id] = []
         action_bound[agent_id] = []
         _dim_info[agent_id].append(new_env.observation_space(agent_id).shape[0])
@@ -43,7 +43,7 @@ def get_env(env_name, ep_len=25, render_mode="human", seed=None, num_good=1, num
         action_bound[agent_id].append(new_env.action_space(agent_id).low)
         action_bound[agent_id].append(new_env.action_space(agent_id).high)
     
-    print(f"环境智能体维度信息: {_dim_info}")
+    print(f"Environment agent dimension info: {_dim_info}")
     return new_env, _dim_info, action_bound
 
 class HAPPO_Evaluator:
@@ -52,12 +52,12 @@ class HAPPO_Evaluator:
         self.env_name = args.env_name
         self.seed = args.seed
         
-        # 设置随机种子
+        # Set random seed
         setup_seed(self.seed)
         
-        # 创建环境 - 根据环境类型使用不同参数
+        # Create environment - use different parameters based on environment type
         if self.env_name == 'simple_tag_v3':
-            # simple_tag_v3 环境使用 num_good 和 num_adversaries
+            # simple_tag_v3 environment uses num_good and num_adversaries
             self.env, self.dim_info, _ = get_env(
                 env_name=self.env_name, 
                 ep_len=args.episode_limit, 
@@ -67,7 +67,7 @@ class HAPPO_Evaluator:
                 num_adversaries=args.num_adversaries
             )
         else:
-            # 其他环境使用 number 参数
+            # Other environments use number parameter
             self.env, self.dim_info, _ = get_env(
                 env_name=self.env_name, 
                 ep_len=args.episode_limit, 
@@ -76,7 +76,7 @@ class HAPPO_Evaluator:
                 num_good=args.number
             )
         
-        # 设置环境参数
+        # Set environment parameters
         self.args.agents = self.env.agents
         self.args.N = len(self.env.agents)
         self.args.obs_dim_n = [self.env.observation_space(i).shape[0] for i in self.args.agents]

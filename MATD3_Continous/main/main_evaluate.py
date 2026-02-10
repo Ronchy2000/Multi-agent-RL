@@ -1,5 +1,5 @@
 from pettingzoo.mpe import simple_adversary_v3, simple_spread_v3, simple_tag_v3
-from main_parameters import main_parameters
+from main_parameters import main_parameters, setup_seed
 
 # 修改导入路径
 import sys
@@ -15,16 +15,6 @@ import random
 import numpy as np
 from envs import simple_tag_env
 
-def setup_seed(seed):
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed(seed)
-        torch.cuda.manual_seed_all(seed)
-    np.random.seed(seed)
-    random.seed(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-
 
 def get_env(env_name, ep_len=50, render_mode = "None", seed = None):
     """create environment and get observation and action dimension of each agent in this environment"""
@@ -38,7 +28,11 @@ def get_env(env_name, ep_len=50, render_mode = "None", seed = None):
     if env_name == 'simple_tag_env':
         new_env = simple_tag_env.parallel_env(render_mode = render_mode, num_good=1, num_adversaries=3, num_obstacles=0, max_cycles=ep_len, continuous_actions=True)
 
-    new_env.reset(seed)
+    # Reset environment with seed when provided to ensure reproducibility
+    if seed is not None:
+        new_env.reset(seed=seed)
+    else:
+        new_env.reset()
     _dim_info = {}
     action_bound = {}
     for agent_id in new_env.agents:
@@ -58,23 +52,23 @@ if __name__ == '__main__':
     device ='cpu'
     # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Using device:",device)
-    # 模型存储路径
+    # Model storage path
     current_dir = os.path.dirname(os.path.abspath(__file__))
     chkpt_dir = os.path.join(current_dir, "..", 'models', 'matd3_models')
-    load_timestamp = "2025-09-21_19-46" # 替换时间戳
+    load_timestamp = "2025-09-21_19-46" # Replace with your timestamp
     model_timestamp = None if load_timestamp == '' else load_timestamp
-    # 定义参数
+    # Define parameters
     args = main_parameters()
     args.render_mode = "human"
     # args.episode_num = 1
 
-    # 创建环境
+    # Create environment
     print("Using Env's name",args.env_name)
-        # 判断是否使用固定种子
+    # Check if using fixed seed
     if args.seed is None:
-        print("使用随机种子 (不固定)")
+        print("Using random seed (not fixed)")
     else:
-        print(f"使用固定种子: {args.seed}")
+        print(f"Using fixed seed: {args.seed}")
         setup_seed(args.seed)
     
     env, dim_info, action_bound = get_env(args.env_name, args.episode_length, args.render_mode, seed = args.seed)

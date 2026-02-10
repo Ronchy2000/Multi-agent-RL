@@ -150,6 +150,7 @@ python -m visdom.server -port 8097
 ```python
 env_name = 'simple_tag_v3'  # 可选：simple_adversary_v3/simple_spread_v3
 episode_num = 5000         # 总训练回合数
+seed = None                # 随机种子 (None为随机种子，设置数字以确保可复现性)
 # 训练参数
 batch_size = 128          # 经验回放批次大小
 actor_lr = 0.01           # Actor网络学习率

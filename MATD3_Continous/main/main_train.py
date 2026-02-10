@@ -9,7 +9,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from envs import simple_tag_env, custom_agents_dynamics
 
-from main_parameters import main_parameters
+from main_parameters import main_parameters, setup_seed
 from agents.MATD3_runner import RUNNER
 
 from agents.MATD3_agent import MATD3
@@ -21,16 +21,6 @@ import time
 from datetime import datetime, timedelta
 from utils.logger import TrainingLogger  # 添加导入
 
-
-def setup_seed(seed):
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed(seed)
-        torch.cuda.manual_seed_all(seed)
-    np.random.seed(seed)
-    random.seed(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
 
 def get_env(env_name, ep_len=25, render_mode ="None", seed = None):
     """create environment and get observation and action dimension of each agent in this environment"""
@@ -80,11 +70,11 @@ if __name__ == '__main__':
     # 创建环境
     print("Using Env's name",args.env_name)
 
-    # 判断是否使用固定种子
+    # Check if using fixed seed
     if args.seed is None:
-        print("使用随机种子 (不固定)")
+        print("Using random seed (not fixed)")
     else:
-        print(f"使用固定种子: {args.seed}")
+        print(f"Using fixed seed: {args.seed}")
         setup_seed(args.seed)
     
     env, dim_info, action_bound = get_env(args.env_name, args.episode_length, args.render_mode, seed = args.seed)

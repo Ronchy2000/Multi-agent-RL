@@ -165,6 +165,7 @@ Set environment and algorithm parameters in `main_parameters.py`:
 ```python
 env_name = 'simple_tag_v3'  # Options: simple_adversary_v3/simple_spread_v3
 episode_num = 5000         # Total training episodes
+seed = None                # Random seed (None for random, set number for reproducibility)
 # Training parameters
 batch_size = 128          # Experience replay batch size
 actor_lr = 0.0002         # Actor network learning rate

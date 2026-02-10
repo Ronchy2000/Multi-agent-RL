@@ -189,6 +189,23 @@ python HAPPO_evaluate.py \
 | `gamma` | 0.99 | 折扣因子 |
 | `epsilon` | 0.2 | PPO裁剪参数 |
 | `K_epochs` | 15 | PPO更新轮数 |
+| `seed` | 23 | 随机种子 (None为随机种子，设置数字以确保可复现性) |
+
+### 种子配置说明
+
+HAPPO实现包含全面的种子管理，确保实验可复现：
+
+- **PyTorch种子**: 用于神经网络初始化和训练
+- **NumPy种子**: 用于数据处理操作
+- **环境种子**: 用于PettingZoo环境的随机性
+
+设置固定种子可确保每次训练结果一致：
+```python
+# 在HAPPO_main.py中
+runner = Runner_MAPPO_MPE(args, num_good=1, num_adversaries=3, seed=23, env_name='simple_tag_v3')
+```
+
+设置`seed=None`可在每次运行时使用不同的随机初始化。
 
 ### 评估参数
 

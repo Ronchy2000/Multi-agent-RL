@@ -155,6 +155,7 @@ Configure environment parameters in [`main_parameter.py`](main_parameters.py)
 ``` bash
    env_name = 'simple_tag_v3'  # Options: simple_adversary_v3/ simple_spread_v3
    episode_num = 5000         # Total training episodes
+   seed = None                # Random seed (None for random, set number for reproducibility)
    # Training parameters
    batch_size = 128          # Experience replay batch  size
    actor_lr = 0.01            # Actor network learning   rate

@@ -1,10 +1,37 @@
 import argparse
+import torch
+import numpy as np
+import random
+
+
+def setup_seed(seed):
+    """Set random seeds for torch, numpy and python.random.
+    If seed is None, do not set deterministic behavior.
+    """
+    if seed is None:
+        print("No fixed seed set, using random seed")
+        return
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    try:
+        import os
+        os.environ['PYTHONHASHSEED'] = str(seed)
+    except Exception:
+        pass
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    print(f"Fixed seed set to: {seed}")
+
 
 def main_parameters():
     parser = argparse.ArgumentParser("MADDPG legacy")
-    ############################################ 选择环境 ############################################
-    parser.add_argument("--seed", type=int, default=-1, help='随机种子 (使用-1表示不使用固定种子)')
-    parser.add_argument("--use_variable_seeds", type=bool, default=False, help="使用可变随机种子")
+    ############################################ Environment Selection ############################################
+    parser.add_argument("--seed", type=int, default=None, help='Random seed (None for random seed)')
+    parser.add_argument("--use_variable_seeds", type=bool, default=False, help="Use variable random seeds")
     
     parser.add_argument("--env_name", type=str, default="simple_tag_v3", help="name of the env",   
                         choices=['simple_adversary_v3', 'simple_spread_v3', 'simple_tag_v3', 'simple_tag_env']) 
@@ -36,9 +63,5 @@ def main_parameters():
     parser.add_argument("--device", type=str, default='cpu', help="训练设备，默认自动选择cpu")
 
     args = parser.parse_args()
-    
-    # 如果seed为-1，则设置为None
-    if args.seed == -1:
-        args.seed = None
         
     return args

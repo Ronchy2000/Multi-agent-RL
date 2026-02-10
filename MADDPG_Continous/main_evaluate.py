@@ -1,12 +1,12 @@
 from pettingzoo.mpe import simple_adversary_v3, simple_spread_v3, simple_tag_v3
-from main_parameters import main_parameters
+from main_parameters import main_parameters, setup_seed
 from utils.runner import RUNNER
 from agents.maddpg.MADDPG_agent import MADDPG
 import torch
 from envs import simple_tag_env
 import os
 
-def get_env(env_name, ep_len=50, render_mode = "None"):
+def get_env(env_name, ep_len=50, render_mode = "None", seed=None):
     """create environment and get observation and action dimension of each agent in this environment"""
     new_env = None
     if env_name == 'simple_adversary_v3':
@@ -16,7 +16,11 @@ def get_env(env_name, ep_len=50, render_mode = "None"):
     if env_name == 'simple_tag_v3':
         new_env = simple_tag_v3.parallel_env(render_mode = render_mode, num_good=1, num_adversaries=3, num_obstacles=0, max_cycles=ep_len, continuous_actions=True)
         # new_env = simple_tag_env.parallel_env(render_mode = render_mode, num_good=1, num_adversaries=3, num_obstacles=0, max_cycles=ep_len, continuous_actions=True)
-    new_env.reset()
+    # reset environment with seed when provided to ensure reproducibility
+    if seed is not None:
+        new_env.reset(seed=seed)
+    else:
+        new_env.reset()
     _dim_info = {}
     action_bound = {}
     for agent_id in new_env.agents:
@@ -36,20 +40,22 @@ if __name__ == '__main__':
     device ='cpu'
     # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Using device:",device)
-    # 模型存储路径
+    # Model storage path
     current_dir = os.path.dirname(os.path.abspath(__file__))
     chkpt_dir = os.path.join(current_dir, 'models/maddpg_models/')
-    # 加载模型的时间戳
-    load_timestamp = "" # 请输入形如：2025-04-15_15-51   ->  时间戳位置models/maddpg_models/xxxx
+    # Load model timestamp
+    load_timestamp = "2026-02-10_20-48" # Enter timestamp like: 2025-04-15_15-51 -> models/maddpg_models/xxxx
     model_timestamp = None if load_timestamp == '' else load_timestamp
-    # 定义参数
+    # Define parameters
     args = main_parameters()
+    # Set seed if provided, and change render mode to human
+    setup_seed(args.seed)
     args.render_mode = "human"
 
-    # 创建环境
-    env, dim_info, action_bound = get_env(args.env_name, args.episode_length, args.render_mode)
+    # Create environment
+    env, dim_info, action_bound = get_env(args.env_name, args.episode_length, args.render_mode, seed=args.seed)
     # print(env, dim_info, action_bound)
-    # 创建MA-DDPG智能体 dim_info: 字典，键为智能体名字 内容为二维数组 分别表示观测维度和动作维度 是观测不是状态 需要注意
+    # Create MADDPG agent. dim_info: dict with agent names as keys, values are [obs_dim, act_dim]
     agent = MADDPG(dim_info, args.buffer_capacity, args.batch_size, args.actor_lr, args.critic_lr, action_bound, _chkpt_dir = chkpt_dir, _model_timestamp = model_timestamp)
     print("--- Loading models ---")
     agent.load_model()

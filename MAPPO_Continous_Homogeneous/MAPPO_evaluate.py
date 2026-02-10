@@ -6,7 +6,7 @@ from MAPPO import MAPPO_MPE
 from pettingzoo.mpe import simple_adversary_v3, simple_spread_v3, simple_tag_v3
 
 def setup_seed(seed):
-    """设置随机种子以确保结果可复现"""
+    """Set random seed to ensure reproducibility"""
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed(seed)
@@ -16,7 +16,7 @@ def setup_seed(seed):
     torch.backends.cudnn.benchmark = False
 
 def get_env(env_name, ep_len=25, render_mode="human", seed=None, N=1):
-    """创建环境并获取每个智能体的观察和动作维度"""
+    """Create environment and get observation and action dimensions for each agent"""
     new_env = None
     if env_name == 'simple_adversary_v3':
         new_env = simple_adversary_v3.parallel_env(max_cycles=ep_len, continuous_actions=True, render_mode=render_mode)
@@ -25,7 +25,7 @@ def get_env(env_name, ep_len=25, render_mode="human", seed=None, N=1):
     if env_name == 'simple_tag_v3':
         new_env = simple_tag_v3.parallel_env(render_mode=render_mode, num_good=1, num_adversaries=3, num_obstacles=0, max_cycles=ep_len, continuous_actions=True)
     
-    # 使用reset时处理种子
+    # Handle seed when resetting environment
     if seed is not None:
         new_env.reset(seed=seed)
     else:
@@ -34,7 +34,7 @@ def get_env(env_name, ep_len=25, render_mode="human", seed=None, N=1):
     _dim_info = {}
     action_bound = {}
     for agent_id in new_env.agents:
-        print(f"智能体ID: {agent_id}")
+        print(f"Agent ID: {agent_id}")
         _dim_info[agent_id] = []
         action_bound[agent_id] = []
         _dim_info[agent_id].append(new_env.observation_space(agent_id).shape[0])
@@ -51,10 +51,10 @@ class MAPPO_Evaluator:
         self.number = args.number
         self.seed = args.seed
         
-        # 设置随机种子
+        # Set random seed
         setup_seed(self.seed)
         
-        # 创建环境
+        # Create environment
         self.env, dim_info, _ = get_env(env_name=self.env_name, 
                                       ep_len=args.episode_limit, 
                                       render_mode=args.render_mode, 
@@ -70,14 +70,14 @@ class MAPPO_Evaluator:
         self.args.action_dim = self.args.action_dim_n[0]
         self.args.state_dim = np.sum(self.args.obs_dim_n)
         
-        print(f"观察空间维度: {self.args.obs_dim_n}")
-        print(f"动作空间维度: {self.args.action_dim_n}")
+        print(f"Observation space dimensions: {self.args.obs_dim_n}")
+        print(f"Action space dimensions: {self.args.action_dim_n}")
         
-        # 创建智能体
+        # Create agents
         self.agent_n = MAPPO_MPE(self.args)
         self.agent_n.env = self.env
         
-        # 保存所有智能体ID列表，用于后续引用
+        # Save all agent IDs for later reference
         self.agent_n.all_agents = [agent_id for agent_id in self.env.agents]
 
         # 加载模型
