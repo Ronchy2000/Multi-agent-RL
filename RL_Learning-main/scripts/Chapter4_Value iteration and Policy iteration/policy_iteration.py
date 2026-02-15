@@ -6,9 +6,10 @@ import numpy as np
 from torch.utils import data
 from torch.utils.tensorboard import SummaryWriter  # 导入SummaryWriter
 
-# 引用上级目录
+# 引用上级目录 - 使用绝对路径，跨平台兼容
 import sys
-sys.path.append("..")
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import grid_env
 
 class  class_policy_iteration:
@@ -186,4 +187,4 @@ if __name__ == "__main__":
     solver.show_policy()  # solver.env.render()
     solver.show_state_value(solver.state_value, y_offset=0.25)
 
-    gird_world2x2.render()
+    gird_world2x2.render(block=True)

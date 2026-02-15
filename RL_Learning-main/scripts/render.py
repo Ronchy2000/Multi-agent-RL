@@ -8,42 +8,107 @@ import numpy as np
 np.random.seed(1)
 class Render:
     def __init__(self, target: Union[list, tuple, np.ndarray], forbidden: Union[list, tuple, np.ndarray],
-                 size=5):
+                 size=5, ax=None):
         """ Render 类的构造函数
 
         :param target:目标点的位置
         :param forbidden:障碍物区域位置
         :param size:网格世界的size 默认为 5x5
+        :param ax: Optional Matplotlib Axes to draw into (e.g. for subplots).
         """
-        # 初始化
+        # NOTE:
+        # Create the Matplotlib figure lazily. Many scripts in this repo create the env
+        # (and thus Render) before calling `plt.show()` for other plots. If we eagerly
+        # create the figure here, that later `plt.show()` will also display the grid
+        # window early (often "empty" before arrows/values are drawn).
+        #
+        # Lazy-init avoids the "first blank map, then final map" behavior across
+        # VSCode/PyCharm and Win/macOS backends.
+        self._inited = False
+        self._shown_once = False
+        self.fig = None
+        self.ax = ax
+        if self.ax is not None:
+            # Use the caller-provided axes (subplot) and its figure.
+            self.fig = self.ax.figure
+
         self.agent = None
-        self.target = target
-        self.forbidden = forbidden
+        self.target = np.array(target)
+        self.forbidden = [np.array(p) for p in forbidden]
         self.size = size
-        self.fig = plt.figure(figsize=(10, 10), dpi=self.size * 20)
-        self.ax = plt.gca()
+        self.trajectory = []
+
+    def _ensure_axes(self) -> None:
+        if self._inited:
+            return
+
+        if self.ax is None:
+            self.fig = plt.figure(figsize=(10, 10), dpi=self.size * 20)
+            self.ax = self.fig.add_subplot(111)
+        else:
+            if self.fig is None:
+                self.fig = self.ax.figure
+            # Clear in case the caller reused an axes.
+            self.ax.cla()
         self.ax.xaxis.set_ticks_position('top')
-        self.ax.invert_yaxis()
-        self.ax.xaxis.set_ticks(range(0, size + 1))
-        self.ax.yaxis.set_ticks(range(0, size + 1))
-        self.ax.grid(True, linestyle="-", color="gray", linewidth="1", axis='both')
-        self.ax.tick_params(bottom=False, left=False, right=False, top=False, labelbottom=False, labelleft=False,
-                            labeltop=False)
-        # 绘制网格世界的state index 以及grid边框的标号
-        # index = 0
-        for y in range(size):
-            self.write_word(pos=(-0.6, y), word=str(y + 1), size_discount=0.8)
-            self.write_word(pos=(y, -0.6), word=str(y + 1), size_discount=0.8)
-            # for x in range(size):
-            #     self.write_word(pos=(x, y), word="s" + str(index), size_discount=0.65)
-            #     index += 1
+
+        # Keep cells square and use the grid world coordinate convention:
+        # x increases to the right, y increases downward.
+        self.ax.set_aspect('equal', adjustable='box')
+        self.ax.set_xlim(0, self.size)
+        self.ax.set_ylim(self.size, 0)
+
+        # Major ticks define grid boundaries; minor ticks label cell indices at centers.
+        self.ax.set_xticks(np.arange(0, self.size + 1), minor=False)
+        self.ax.set_yticks(np.arange(0, self.size + 1), minor=False)
+        self.ax.grid(True, which='major', linestyle='-', color='gray', linewidth=1, axis='both')
+
+        centers = np.arange(self.size) + 0.5
+        self.ax.set_xticks(centers, minor=True)
+        self.ax.set_yticks(centers, minor=True)
+        # 0-based indexing, shown faintly outside the map (tick labels), not inside cells.
+        self.ax.set_xticklabels([str(i) for i in range(self.size)], minor=True)
+        self.ax.set_yticklabels([str(i) for i in range(self.size)], minor=True)
+
+        # Hide major tick labels/marks; show only minor labels on top and left.
+        self.ax.tick_params(which='major',
+                            bottom=False, left=False, right=False, top=False,
+                            labelbottom=False, labelleft=False, labelright=False, labeltop=False)
+        self.ax.tick_params(which='minor',
+                            bottom=False, left=False, right=False, top=False,
+                            labelbottom=False, labelleft=True, labeltop=True, labelright=False,
+                            pad=2)
+
+        label_alpha = 0.25
+        label_size = max(6, int(0.55 * (30 - 2 * self.size)))
+        for lbl in (self.ax.get_xticklabels(minor=True) + self.ax.get_yticklabels(minor=True)):
+            lbl.set_alpha(label_alpha)
+            lbl.set_color('black')
+            lbl.set_fontsize(label_size)
+
         # 填充障碍物和目标格子
         for pos in self.forbidden:
-            self.fill_block(pos=pos)
-        self.fill_block(pos=self.target, color='darkturquoise')
-        self.trajectory = []
+            self.ax.add_patch(
+                patches.Rectangle((pos[0], pos[1]),
+                                  width=1.0,
+                                  height=1.0,
+                                  facecolor='#EDB120',
+                                  fill=True,
+                                  alpha=0.90,
+                                  ))
+        self.ax.add_patch(
+            patches.Rectangle((self.target[0], self.target[1]),
+                              width=1.0,
+                              height=1.0,
+                              facecolor='darkturquoise',
+                              fill=True,
+                              alpha=0.90,
+                              ))
+
         self.agent = patches.Arrow(-10, -10, 0.4, 0, color='red', width=0.5)
         self.ax.add_patch(self.agent)
+
+        self._inited = True
 
     def fill_block(self, pos: Union[list, tuple, np.ndarray], color: str = '#EDB120', width=1.0,
                    height=1.0) -> patches.RegularPolygon:
@@ -55,6 +120,7 @@ class Render:
         :param color: 填充的颜色 默认为‘EDB120’表示 forbidden 格子 ,‘#4DBEEE’表示 target 格子
         :return: Rectangle对象
         """
+        self._ensure_axes()
         return self.ax.add_patch(
             patches.Rectangle((pos[0], pos[1]),
                               width=1.0,
@@ -71,6 +137,7 @@ class Render:
         :param pos2: 终点所在位置的坐标
         :return:None
         """
+        self._ensure_axes()
         offset1 = np.random.uniform(low=-0.05, high=0.05, size=1)
         offset2 = np.random.uniform(low=-0.05, high=0.05, size=1)
         x = [pos1[0] + 0.5, pos2[0] + 0.5]
@@ -91,6 +158,7 @@ class Render:
         :param color: 'lime'表示 绿色
         :return: CirclePolygon
         """
+        self._ensure_axes()
         return self.ax.add_patch(
             patches.Circle((pos[0] + 0.5, pos[1] + 0.5),
                            radius=radius,
@@ -110,6 +178,7 @@ class Render:
         :param color: 箭头的颜色 默认为green
         :return:None
         """
+        self._ensure_axes()
         if not np.array_equal(np.array(toward), np.array([0, 0])):
             self.ax.add_patch(
                 patches.Arrow(pos[0] + 0.5, pos[1] + 0.5, dx=toward[0],
@@ -119,18 +188,21 @@ class Render:
             self.draw_circle(pos=tuple(pos), color='white', radius=radius, fill=False)
 
     def write_word(self, pos: Union[list, np.ndarray, tuple], word: str, color: str = 'black', y_offset: float = 0,
-                   size_discount: float = 1.0) -> None:
+                   size_discount: float = 1.0, x_offset: float = 0.0) -> None:
         """
         在网格上对应位置写字
         :param pos: 需要写字的格子的左下角坐标
         :param word: 要写的字
         :param color: 字的颜色
+        :param x_offset: 字在x方向上关于网格中心的偏移
         :param y_offset: 字在y方向上关于网格中心的偏移
         :param size_discount: 字体大小 (0-1)
         :return: None
         """
-        self.ax.text(pos[0] + 0.5, pos[1] + 0.5 + y_offset, word, size=size_discount * (30 - 2 * self.size), ha='center',
-                 va='center', color=color)
+        self._ensure_axes()
+        self.ax.text(pos[0] + 0.5 + x_offset, pos[1] + 0.5 + y_offset, word,
+                     size=size_discount * (30 - 2 * self.size),
+                     ha='center', va='center', color=color)
 
     def upgrade_agent(self, pos: Union[list, np.ndarray, tuple], action,
                       next_pos: Union[list, np.ndarray, tuple], ) -> None:
@@ -144,13 +216,47 @@ class Render:
 
         self.trajectory.append([tuple(pos), action, tuple(next_pos)])
 
-    def show_frame(self, t: float = 0.2) -> None:
+    def show_frame(self, t: float = 0.2, block: bool = False) -> None:
         """
         显示figure 持续一段时间后 关闭
         :param t: 持续时间
+        :param block: 是否阻塞直到窗口被关闭；用于脚本末尾希望窗口保持不自动退出的场景。
         :return: None
         """
-        self.fig.show()
+        self._ensure_axes()
+
+        # Ensure newly-added artists (texts/arrows/patches) are actually rendered.
+        # Across backends (Qt5Agg/TkAgg/MacOSX), the most portable way to refresh is
+        # to run the GUI event loop briefly via `plt.pause()`.
+        self.fig.canvas.draw_idle()
+        try:
+            self.fig.canvas.flush_events()
+        except Exception:
+            pass
+
+        if block:
+            # Block the process so the window won't disappear when the script finishes.
+            try:
+                plt.show(block=True)
+            except TypeError:
+                # Older Matplotlib
+                plt.show()
+            self._shown_once = True
+            return
+
+        if not self._shown_once:
+            # Non-blocking show: works well in scripts + VSCode/PyCharm interactive backends.
+            try:
+                plt.show(block=False)
+            except TypeError:
+                # Older Matplotlib
+                plt.show()
+            self._shown_once = True
+
+        # Even if the caller doesn't want an animation delay, we still need a tiny
+        # pause to pump the GUI event loop so the window actually updates.
+        pause_s = 0.001 if t is None else float(t)
+        plt.pause(max(pause_s, 0.001))
 
     def save_frame(self, name: str) -> None:
         """
@@ -158,6 +264,7 @@ class Render:
         :param name:保存的文件名
         :return: None
         """
+        self._ensure_axes()
         self.fig.savefig(name + ".jpg")
 
     def save_video(self, name: str) -> None:
@@ -166,6 +273,7 @@ class Render:
         :param name:视频文件的名字
         :return:None
         """
+        self._ensure_axes()
         anim = animation.FuncAnimation(self.fig, self.animate, init_func=self.init(), frames=len(self.trajectory),
                                        interval=25, repeat=False)
         anim.save(name + '.mp4')
@@ -196,10 +304,26 @@ class Render:
         self.draw_random_line(pos1=location, pos2=next_location)
 
     def draw_episode(self):
+        self._ensure_axes()
         for i in range(len(self.trajectory)):
             location = self.trajectory[i][0]
             next_location = self.trajectory[i][2]
             self.draw_random_line(pos1=location, pos2=next_location)
+
+    def plot_title(self, title: str = "title") -> None:
+        self._ensure_axes()
+        self.ax.set_title(title)
+
+    def close_frame(self) -> None:
+        # Best-effort: safe to call even if the figure was never created.
+        if self.fig is None:
+            return
+        plt.close(self.fig)
+        self.fig = None
+        self.ax = None
+        self.agent = None
+        self._inited = False
+        self._shown_once = False
 
     def add_subplot_to_fig(self, fig, x, y, subplot_position, xlabel, ylabel, title=''):
         """
