@@ -1,13 +1,19 @@
-import random
 import time
 import numpy as np
 import matplotlib.pyplot as plt
-from torch.utils.tensorboard import SummaryWriter  # 导入SummaryWriter
 
-# 引用上级目录
+try:
+    from torch.utils.tensorboard import SummaryWriter  # type: ignore
+except Exception:
+    SummaryWriter = None  # Optional dependency (keeps the script runnable without torch).
+
+# 引用上级目录 - 使用绝对路径，跨平台兼容
 import sys
-sys.path.append("..")
+from pathlib import Path
+# 将 scripts 目录添加到 sys.path（当前文件的父目录的父目录）
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import grid_env
+import render
 
 
 '''
@@ -22,14 +28,14 @@ class TD_learning_with_FunctionApproximation():
          self.action_space_size = env.action_space_size
          self.state_space_size = env.size ** 2
          self.reward_space_size, self.reward_list = len(
-             self.env.reward_list), [-1,-1,0,1]  # [-10,-10,0,1]  reward list
+             self.env.reward_list), self.env.reward_list  # reward_list[other, target, forbidden, overflow]
          self.state_value = np.zeros(shape=self.state_space_size)  # 一维列表
          print("self.state_value:", self.state_value)
          self.qvalue = np.zeros(shape=(self.state_space_size, self.action_space_size))  # 二维： state数 x action数
          self.mean_policy = np.ones(     #self.mean_policy shape: (25, 5)
              shape=(self.state_space_size, self.action_space_size)) / self.action_space_size  # 平均策略，即取每个动作的概率均等
          self.policy = self.mean_policy.copy()
-         self.writer = SummaryWriter("logs")  # 实例化SummaryWriter对象
+         self.writer = SummaryWriter("logs") if SummaryWriter is not None else None  # 实例化SummaryWriter对象
 
          print("action_space_size: {} state_space_size：{}".format(self.action_space_size, self.state_space_size))
          print("state_value.shape:{} , qvalue.shape:{} , mean_policy.shape:{}".format(self.state_value.shape,
@@ -183,12 +189,20 @@ class TD_learning_with_FunctionApproximation():
             qvalue += self.gamma * self.env.Psa[state, action, next_state] * state_value[next_state]
         return qvalue
 
-    def td_state_value_hat(self, epochs=5000, fourier=False, ord=1):  # False 时为多项式feature vector
-        self.state_value = self.policy_evaluation(self.policy)
+    def td_state_value_hat(self, epochs=5000, episode_len: int = 50, fourier=False, ord=1):  # False 时为多项式feature vector
+        """
+        TD(0) with linear function approximation to evaluate the uniform policy.
+
+        Returns:
+            value_hat: approximated V(s)
+            rmse: RMSE curve against the ground-truth V(s) (computed by DP using the model)
+        """
+        # 评估均匀策略的真实状态值
+        self.state_value = self.policy_evaluation(self.mean_policy)
         if not isinstance(self.learning_rate, float) or not isinstance(epochs, int) or not isinstance(
                 fourier, bool) or not isinstance(ord, int):
             raise TypeError("Invalid input type")
-        if self.learning_rate <= 0 or epochs <= 0 or ord <= 0:
+        if self.learning_rate <= 0 or epochs <= 0 or ord <= 0 or episode_len <= 0:
             raise ValueError("Invalid input value")
 
         dim = (ord + 1) ** 2 if fourier else np.arange(ord + 2).sum()  #条件表达式;  计算特征向量的维度
@@ -198,11 +212,15 @@ class TD_learning_with_FunctionApproximation():
         rmse = []  #均方根误差RMSE（Root Mean Square Error） RMSE = √(Σ(yi - Ŷi)²/n)
         value_hat = np.zeros(self.state_space_size)
 
+        # simple progress bar (no extra deps like tqdm)
+        start_time = time.time()
+        bar_width = 30
+
         for epoch in range(epochs):
             start_state = np.random.randint(self.state_space_size)
             start_action = np.random.choice(np.arange(self.action_space_size),
                                             p=self.mean_policy[start_state])
-            episode = self.obtain_episode(self.mean_policy, start_state, start_action, length=epochs)
+            episode = self.obtain_episode(self.mean_policy, start_state, start_action, length=episode_len)
             for sample in episode:
                 reward = sample['reward']
                 state = sample['state']
@@ -212,59 +230,81 @@ class TD_learning_with_FunctionApproximation():
                 # gradient = self.get_feature_vector(fourier, state, ord)  # phi(s)*w的梯度为phi(s)，即feature vector本身
                 # w = w + learning_rate * error * gradient
                 #书中的TD-Linear公式
-                w += (self.learning_rate*
-                      (reward
-                    + self.gamma*np.dot(self.get_feature_vector(fourier, next_state, ord),w)
-                    - np.dot(self.get_feature_vector(fourier, state, ord),w) ))
+                phi_s = self.get_feature_vector(fourier, state, ord)
+                phi_next = self.get_feature_vector(fourier, next_state, ord)
+                td_error = reward + self.gamma * np.dot(phi_next, w) - np.dot(phi_s, w)
+                w += self.learning_rate * td_error * phi_s
 
             for state in range(self.state_space_size):
                 value_hat[state] = np.dot(self.get_feature_vector(fourier, state, ord), w)
             rmse.append(np.sqrt(np.mean((value_hat - self.state_value) ** 2)))
-            print(epoch)
-
-        X, Y = np.meshgrid(np.arange(1, 6), np.arange(1, 6))  # position on grid world.
-        Z = self.state_value.reshape(5, 5)
-        Z1 = value_hat.reshape(5, 5)
-        # 绘制 3D 曲面图
-        fig = plt.figure(figsize=(8, 6))  # 设置图形的尺寸，宽度为8，高度为6
-        ax = fig.add_subplot(121, projection='3d')
-
-        ax.plot_surface(X, Y, Z)
-        ax.set_title('True State Value')
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('State Value')
-        z_min,z_max = -5,-2
-        ax.set_zlim(z_min, z_max)
-        ax1 = fig.add_subplot(122, projection='3d')
-        ax1.plot_surface(X, Y, Z1)
-        ax1.set_title('Estimated State Value')
-        ax1.set_xlabel('X')
-        ax1.set_zlim(z_min, z_max)
-        fig_rmse = plt.figure(figsize=(8, 6))  # 设置图形的尺寸，宽度为8，高度为6
-        ax_rmse = fig_rmse.add_subplot(111)
-
-        # 绘制 rmse 图像
-        ax_rmse.plot(rmse)
-        ax_rmse.set_title('RMSE')
-        ax_rmse.set_xlabel('Epoch')
-        ax_rmse.set_ylabel('RMSE')
-        plt.show()
-        return value_hat
+            if epoch % 100 == 0 or epoch == epochs - 1:
+                progress = (epoch + 1) / epochs
+                filled = int(bar_width * progress)
+                bar = "#" * filled + "-" * (bar_width - filled)
+                elapsed = time.time() - start_time
+                sys.stdout.write(
+                    f"\r[{bar}] {progress*100:6.2f}%  epoch {epoch+1}/{epochs}  rmse {rmse[-1]:.4f}  elapsed {elapsed:6.1f}s"
+                )
+                sys.stdout.flush()
+        sys.stdout.write("\n")
+        return value_hat, rmse
 
 if __name__ == "__main__":
     print("Creating grid world")
-    gird_world = grid_env.GridEnv(size=5, target=[2, 3],
-                                  forbidden=[[1, 1], [2, 1], [2, 2], [1, 3], [3, 3], [1, 4]],
-                                  render_mode='')
+    reward_list = [0, 1, -1, -1]  # reward_list[other, target, forbidden, overflow]
+    target = [2, 3]
+    forbidden = [[1, 1], [2, 1], [2, 2], [1, 3], [3, 3], [1, 4]]
+    gird_world = grid_env.GridEnv(size=5, target=target,
+                                  forbidden=forbidden,
+                                  render_mode='',
+                                  reward_list=reward_list)
 
     print("Creating solver")
-    solver = TD_learning_with_FunctionApproximation(alpha=0.0005, env=gird_world)  # 实例化5
+    solver = TD_learning_with_FunctionApproximation(alpha=0.0005, env=gird_world)
 
-    print("Calculating state value hat")
-    state_value_hat = solver.td_state_value_hat()
-    solver.show_state_value(state_value=state_value_hat, y_offset=-0.25)
-    solver.show_state_value(state_value=solver.state_value, y_offset=-0.25)
-    print("state_value_hat:", state_value_hat)
-    print("solver.state_value:", solver.state_value)
-    gird_world.render()
+    print("Calculating state value hat (evaluating uniform policy)")
+    # 使用 TD-Linear 估计均匀策略的状态值
+    state_value_hat, rmse = solver.td_state_value_hat(epochs=5000, episode_len=50)
+
+    # 3D 曲面图对比：真实值 vs 估计值
+    X, Y = np.meshgrid(np.arange(1, gird_world.size + 1), np.arange(1, gird_world.size + 1))
+    Z = solver.state_value.reshape(gird_world.size, gird_world.size)
+    Z1 = state_value_hat.reshape(gird_world.size, gird_world.size)
+    z_min = float(min(Z.min(), Z1.min()))
+    z_max = float(max(Z.max(), Z1.max()))
+
+    fig_surf = plt.figure(figsize=(12, 5))
+    ax_surf_true = fig_surf.add_subplot(121, projection='3d')
+    ax_surf_true.plot_surface(X, Y, Z)
+    ax_surf_true.set_title('True State Value (Uniform Policy)')
+    ax_surf_true.set_xlabel('X')
+    ax_surf_true.set_ylabel('Y')
+    ax_surf_true.set_zlabel('V')
+    ax_surf_true.set_zlim(z_min, z_max)
+
+    ax_surf_hat = fig_surf.add_subplot(122, projection='3d')
+    ax_surf_hat.plot_surface(X, Y, Z1)
+    ax_surf_hat.set_title('Estimated State Value (TD-Linear)')
+    ax_surf_hat.set_xlabel('X')
+    ax_surf_hat.set_ylabel('Y')
+    ax_surf_hat.set_zlabel('V_hat')
+    ax_surf_hat.set_zlim(z_min, z_max)
+
+    # RMSE 曲线
+    fig_rmse = plt.figure(figsize=(8, 4))
+    ax_rmse = fig_rmse.add_subplot(111)
+    ax_rmse.plot(rmse)
+    ax_rmse.set_title('RMSE (True vs Estimated)')
+    ax_rmse.set_xlabel('Epoch')
+    ax_rmse.set_ylabel('RMSE')
+
+    # 在 grid world 上显示数值对比
+    gird_world.plot_title("State Value Comparison")
+    solver.show_state_value(state_value=solver.state_value, y_offset=-0.25)  # 真实值显示在上方
+    solver.show_state_value(state_value=state_value_hat, y_offset=0.25)  # 估计值显示在下方
+    gird_world.render(block=True)
+    
+    print("\nstate_value (true):", solver.state_value)
+    print("state_value_hat (estimated):", state_value_hat)
+    print("Final RMSE:", rmse[-1])

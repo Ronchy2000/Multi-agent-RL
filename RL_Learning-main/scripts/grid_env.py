@@ -32,13 +32,14 @@ v  +y
 class GridEnv(gym.Env):
 
     def __init__(self, size: int, target: Union[list, tuple, np.ndarray], forbidden: Union[list, tuple, np.ndarray],
-                 render_mode: str):
+                 render_mode: str, reward_list: Optional[List[float]] = None):
         """
         GridEnv 的构造函数
         :param size: grid_world 的边长
         :param target: 目标点的pos
         :param forbidden: 不可通行区域 二维数组 或者嵌套列表 如 [[1,2],[2,2]]
         :param render_mode: 渲染模式 video表示保存视频
+        :param reward_list: 奖励列表，索引顺序固定为 [other, target, forbidden, overflow]
         """
         # 初始化可视化
         self.agent_location = np.array([0, 0])
@@ -55,12 +56,20 @@ class GridEnv(gym.Env):
         self.action_space, self.action_space_size = spaces.Discrete(5,seed = 42), spaces.Discrete(5).n  #seed = 42, “42 是 “生命、宇宙和一切终极问题的答案”
         print("self.action_space:{}, self.action_space_size:{}".format(self.action_space, self.action_space_size))  #从0开始索引
 
+        # reward_list index convention (used by Rsa):
         # reward_list[other, target, forbidden, overflow]
-        # self.reward_list = [0, 1, -10, -10]
-        # self.reward_list = [0, 1, -1, -10]
-        # self.reward_list = [-1, 0, -10, -10] #chapter7
-        # self.reward_list = [0, 1, -1, -1]  #reward list for TD linear
-        self.reward_list = [0, 1, -10, -10]  # reward list chapter8
+        #
+        # Examples:
+        # reward_list[other, target, forbidden, overflow]
+        # - [0, 1, -10, -10]  # strong penalty for forbidden/overflow (default) , reward list chapter8
+        # - [0, 1, -1, -10]   # small forbidden penalty, strong overflow penalty
+        # - [-1, 0, -10, -10] # chapter7: step cost -1, target 0
+        # - [0, 1, -1, -1]    # reward list for TD linear: small penalty for forbidden/overflow,
+        default_reward_list = [0, 1, -10, -10] # reward list chapter8
+        reward_list = default_reward_list if reward_list is None else reward_list
+        if len(reward_list) != 4:
+            raise ValueError("reward_list must have length 4: [other, target, forbidden, overflow]")
+        self.reward_list = list(reward_list)
         self.observation_space = spaces.Dict(
             {
                 "agent": spaces.Box(low = 0, high = size - 1, shape=(2,), dtype=int),
@@ -105,11 +114,11 @@ class GridEnv(gym.Env):
         info = self.get_info()
         return observation, reward, terminated, False, info
 
-    def render(self) -> Optional[Union[RenderFrame, List[RenderFrame]]]:
+    def render(self, t: float = 0.3, block: bool = False) -> Optional[Union[RenderFrame, List[RenderFrame]]]:
         if self.render_mode == "video":
             self.render_.save_video('image/' + str(time.time()))
 
-        self.render_.show_frame(0.3)
+        self.render_.show_frame(t=t, block=block)
         return None
     def render_clear(self):
         self.render_.close_frame()
