@@ -57,7 +57,7 @@ class MC_Basic:
         :param policy: 由指定策略产生episode
         :param start_state: 起始state
         :param start_action: 起始action
-        :param length: 一个episode 长度
+        :param length: 一个episode 最大长度
         :return: 一个列表，其中是字典格式: state,action,reward,next_state,next_action
         """
         self.env.agent_location = self.env.state2pos(start_state)
@@ -74,6 +74,8 @@ class MC_Basic:
                                            p=policy[next_state])
             episode.append({"state": state, "action": action, "reward": reward, "next_state": next_state,
                             "next_action": next_action})  #向列表中添加一个字典
+            if done:
+                break
         return episode  #返回列表，其中的元素为字典
 
 

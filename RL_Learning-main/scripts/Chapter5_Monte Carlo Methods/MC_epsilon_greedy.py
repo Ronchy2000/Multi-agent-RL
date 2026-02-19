@@ -52,7 +52,7 @@ class MC_epsilon_greedy:
         :param policy: 由指定策略产生episode
         :param start_state: 起始state
         :param start_action: 起始action
-        :param length: 一个episode 长度
+        :param length: 一个episode 最大长度
         :return: 一个 state,action,reward,next_state,next_action 列表，其中是字典格式
         """
         self.env.agent_location = self.env.state2pos(start_state)
@@ -69,6 +69,8 @@ class MC_epsilon_greedy:
                                            p=policy[next_state])  #p参数的例子： p=[0.1, 0.2, 0.3, 0.1, 0.3]的概率从 [0,1,2,3,4]这四个数中选取3个数
             episode.append({"state": state, "action": action, "reward": reward, "next_state": next_state,
                             "next_action": next_action})  #向列表中添加一个字典
+            if done:
+                break
         return episode
 
     def mc_epsilon_greedy(self, episodes, episode_length, epsilon = 0.5 ):

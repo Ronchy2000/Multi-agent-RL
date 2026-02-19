@@ -73,6 +73,12 @@ sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 ## 更新日志
 
+<a id="fix-issue-8"></a>
+**2026.2.19**  
+1. 修复 [issue-8](https://github.com/Ronchy2000/Multi-agent-RL/issues/8)：`obtain_episode()` 现在在达到终止状态（`done=True`）时提前结束采样，`length` 仅作为最大步数上限。  
+  - 影响文件：`scripts/solver.py`、`scripts/Chapter5_Monte Carlo Methods/MC_Basic.py`、`scripts/Chapter5_Monte Carlo Methods/MC_Exploring_Starts.py`、`scripts/Chapter5_Monte Carlo Methods/MC_epsilon_greedy.py`。  
+  - 这样可避免 episode 在终止后继续采样带来的回报偏差，更符合 episodic 任务定义。  
+
 <a id="fix-issue-7"></a>
 **2026.2.19**  
 1. 修复 [issue-7](https://github.com/Ronchy2000/Multi-agent-RL/issues/7)：修正 `scripts/Chapter5_Monte Carlo Methods/MC_Basic.py` 中 `mc_basic_simple` 与 `mc_basic_simple_GUI` 的缩进错误。  
@@ -202,6 +208,12 @@ sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__f
 ```
 
 ## Update Log
+
+<a id="fix-issue-8-en"></a>
+**2026.2.19**  
+Fix [issue-8](https://github.com/Ronchy2000/Multi-agent-RL/issues/8): `obtain_episode()` now stops early when `done=True`, with `length` used only as a maximum horizon.  
+- Updated files: `scripts/solver.py`, `scripts/Chapter5_Monte Carlo Methods/MC_Basic.py`, `scripts/Chapter5_Monte Carlo Methods/MC_Exploring_Starts.py`, `scripts/Chapter5_Monte Carlo Methods/MC_epsilon_greedy.py`.  
+- This avoids post-terminal sampling bias and better matches episodic-task return definitions.  
 
 <a id="fix-issue-7-en"></a>
 **2026.2.19**  

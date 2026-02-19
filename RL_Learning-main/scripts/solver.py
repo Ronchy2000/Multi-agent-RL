@@ -146,7 +146,7 @@ class Solve:
         :param policy: 由指定策略产生episode
         :param start_state: 起始state
         :param start_action: 起始action
-        :param length: episode 长度
+        :param length: episode 最大长度
         :return: 一个 state,action,reward,next_state,next_action 序列
         """
         self.env.agent_location = self.env.state2pos(start_state)
@@ -163,6 +163,8 @@ class Solve:
                                            p=policy[next_state])
             episode.append({"state": state, "action": action, "reward": reward, "next_state": next_state,
                             "next_action": next_action})
+            if done:
+                break
         return episode
 
     def mc_basic(self, length=30, epochs=10):
