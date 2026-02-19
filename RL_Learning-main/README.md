@@ -73,6 +73,13 @@ sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 ## 更新日志
 
+<a id="fix-issue-7"></a>
+**2026.2.19**  
+1. 修复 [issue-7](https://github.com/Ronchy2000/Multi-agent-RL/issues/7)：修正 `scripts/Chapter5_Monte Carlo Methods/MC_Basic.py` 中 `mc_basic_simple` 与 `mc_basic_simple_GUI` 的缩进错误。  
+  - `sum_qvalue_list.append(sum_qvalue)` 现在位于 `for each_episode in episodes:` 循环内部，确保每条 episode 的回报都被统计。  
+  - 修复后 `self.qvalue[state][action] = np.mean(sum_qvalue_list)` 将基于完整采样集合计算均值，不再只使用最后一条 episode 的回报。  
+
+<a id="fix-issue-1"></a>
 **2026.2.15**  
 1. 修复 [issue-1](https://github.com/Ronchy2000/Multi-agent-RL/issues/1)：第8章 TD-Linear（线性函数逼近）实现中的两个问题：  
   - 修正 `scripts/Chapter8_Value Function Approximaton/1.TD-Linear.py` 中 `reward_list` 与 `scripts/grid_env.py` 的 `Rsa` 奖励索引顺序不一致的问题（索引约定固定为 `[other, target, forbidden, overflow]`），避免 `policy_evaluation()` 得到错误的状态值。  
@@ -196,6 +203,13 @@ sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 ## Update Log
 
+<a id="fix-issue-7-en"></a>
+**2026.2.19**  
+Fix [issue-7](https://github.com/Ronchy2000/Multi-agent-RL/issues/7): fixed an indentation bug in `scripts/Chapter5_Monte Carlo Methods/MC_Basic.py` (`mc_basic_simple` and `mc_basic_simple_GUI`).  
+- `sum_qvalue_list.append(sum_qvalue)` is now inside the `for each_episode in episodes:` loop, so every sampled episode return is included.  
+- After the fix, `self.qvalue[state][action] = np.mean(sum_qvalue_list)` uses the full sampled set instead of only the last episode return.  
+
+<a id="fix-issue-1-en"></a>
 **2026.2.15**  
 Fixes for Chapter 8 TD-Linear (linear function approximation):  
 - Align `reward_list` in `scripts/Chapter8_Value Function Approximaton/1.TD-Linear.py` with `scripts/grid_env.py`'s `Rsa` reward-index convention by using `env.reward_list` (`[other, target, forbidden, overflow]`), so `policy_evaluation()` computes correct state values.  
