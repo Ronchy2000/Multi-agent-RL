@@ -133,7 +133,7 @@ class MC_Basic:
                         sum_qvalue = 0
                         for i in range(len(each_episode)):
                             sum_qvalue += (self.gama**i) * each_episode[i]['reward']
-                    sum_qvalue_list.append(sum_qvalue)
+                        sum_qvalue_list.append(sum_qvalue)
                     self.qvalue[state][action] = np.mean(sum_qvalue_list) #the average return of all the episodes starting from (s, a)
                     # self.qvalue[state][action] = np.sum(sum_qvalue_list)/num_episode
                 #Policy improvement:
@@ -164,7 +164,7 @@ class MC_Basic:
                         sum_qvalue = 0
                         for i in range(len(each_episode)):
                             sum_qvalue += (self.gama ** i) * each_episode[i]['reward']
-                    sum_qvalue_list.append(sum_qvalue)
+                        sum_qvalue_list.append(sum_qvalue)
                     self.qvalue[state][action] = np.mean(
                         sum_qvalue_list)  # the average return of all the episodes starting from (s, a)
                     # self.qvalue[state][action] = np.sum(sum_qvalue_list)/num_episode
